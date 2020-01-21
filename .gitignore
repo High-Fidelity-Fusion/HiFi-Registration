@@ -98,5 +98,4 @@ ENV/
 # mypy
 .mypy_cache/
 
-hifireg/hifireg/settings.py
 .idea
