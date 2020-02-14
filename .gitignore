@@ -98,4 +98,6 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Dev environments
 .idea
+.vscode
