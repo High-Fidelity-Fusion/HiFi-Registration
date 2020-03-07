@@ -5,7 +5,9 @@ class UserSession(models.Model):
     DjangoSession = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
 
     def get_current_id():
-        return UserSession.get_current().id
+        if UserSession.get_current() is not None:
+            return UserSession.get_current().id
+        return None
 
     def get_current():
         return UserSession.objects.first() #TODO update to get the actual current UserSession based on the current DjangoSession

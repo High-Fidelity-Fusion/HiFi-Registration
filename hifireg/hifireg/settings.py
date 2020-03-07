@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'hifireg.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'HOST': os.getenv('DBHOST'),
         'PORT': os.getenv('DBPORT'),
         'USER': os.getenv('DBUSER'),
