@@ -1,0 +1,33 @@
+<!-- artifact from the stone age that needs to be included because reasons -->
+<!DOCTYPE html>
+
+<!-- root - wraps all content of page -->
+<html>
+
+    <!-- head contains all the stuff you want to include on the HTML page, that isn't the content you are showing to your page's viewers.
+    This includes things like keywords and a page description that you want to appear in search results, CSS to style our content, character set declarations, and more. -->
+    <head>
+
+        <!-- character set UTF-8 contains basically all text legible to humans. Setting it can prevent later problems. -->
+        <meta charset="utf-8">
+
+        <!-- <title> sets the title of your page, which is the title that appears in the browser tab the page is loaded in, and is used to describe the page when you bookmark/favorite it. -->
+        <title>
+        </title>
+
+    </head>
+
+    <!-- body - wraps all content shown to page users -->
+    <body>
+        <form action="{% url 'submit' %}" method="post">
+            {% csrf_token %}
+            <h1>High-Fidelity Fusion Registration Form</h1>
+            <h2>Code of Conduct</h2>
+            COC full text. Lorem Ipsum...
+            <br><br>
+            {{registration_form}}
+            <br><br>
+            <input type="submit">
+        </form>
+    </body>
+</html>
