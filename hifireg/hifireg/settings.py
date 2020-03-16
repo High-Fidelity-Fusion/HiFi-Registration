@@ -74,15 +74,24 @@ WSGI_APPLICATION = 'hifireg.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+local_database = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+}
+
+development_database = local_database
+
+production_database = {
+    'ENGINE': 'django.db.backends.postgresql',
+    'HOST': os.getenv('DBHOST'),
+    'PORT': os.getenv('DBPORT'),
+    'USER': os.getenv('DBUSER'),
+    'PASSWORD': os.getenv('DBPASSWORD'),
+    'NAME': os.getenv('DBNAME'),
+}
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': os.getenv('DBHOST'),
-        'PORT': os.getenv('DBPORT'),
-        'USER': os.getenv('DBUSER'),
-        'PASSWORD': os.getenv('DBPASSWORD'),
-        'NAME': os.getenv('DBNAME'),
-    }
+    'default': production_database
 }
 
 
