@@ -23,6 +23,7 @@ class OrderTestCase(TestCase):
     def test_add_item__simple_case(self):
         order = Order.objects.first()
         product = Product.objects.first()
+        registration = Registration.objects.first()
 
         result = order.add_item(product, 1)
 
@@ -37,6 +38,8 @@ class OrderTestCase(TestCase):
         self.assertEqual(order.accessible_price, 2000)
         self.assertEqual(order.is_accessible_pricing, False)
         self.assertEqual(order.is_submitted, False)
+        self.assertEqual(registration.is_accessible_pricing, False)
+        self.assertEqual(registration.is_submitted, False)
 
     def test_add_item__two_quantity(self):
         order = Order.objects.first()
@@ -118,6 +121,7 @@ class OrderTestCase(TestCase):
         order.save()
 
         self.assertEqual(order.is_submitted, True)
+        self.assertEqual(Registration.objects.first().is_submitted, True)
         with self.assertRaises(SuspiciousOperation):
             order.add_item(product, 1)
 
@@ -161,6 +165,7 @@ class OrderTestCase(TestCase):
         self.assertEqual(order.original_price, 2000)
         self.assertEqual(order.accessible_price, 0)
         self.assertEqual(order.is_accessible_pricing, True)
+        self.assertEqual(Registration.objects.first().is_accessible_pricing, True)
 
     def test_claim_accessible_pricing__fund_insufficient(self):
         product = Product.objects.first()
