@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.sessions.models import Session
 from django.db import transaction, IntegrityError
 from django.core.exceptions import SuspiciousOperation
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 class UserSession(models.Model):
     DjangoSession = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
@@ -57,11 +57,11 @@ class Registration(models.Model):
 
     @property
     def is_submitted(self):
-        return self.order_set.exists(is_submitted=True)
+        return self.order_set.filter(user_session=None).exists()
 
     @property
     def is_accessible_pricing(self):
-        return self.order_set.exists(is_accessible_pricing=True)
+        return self.order_set.filter(original_price__gt=F('accessible_price')).exists()
 
     @property
     def is_comped(self):
