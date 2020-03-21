@@ -2,10 +2,13 @@
 
 <a href="registration_form"><button type="button">New Reg</button></a>
 
+<!--
+Form returns numeric input for selecting Registration Object to edit
 {% if maximum > 0 %}
     <form action="{% url 'tmp_edit' %}" method="POST">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" id="Edit" name="Edit" value="Edit Reg">
+        <input type="submit" id="edit" name="edit" value="Edit Reg">
     </form>
 {% endif %}
+-->

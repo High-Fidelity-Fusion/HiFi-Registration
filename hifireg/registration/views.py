@@ -7,10 +7,9 @@ from .helpers.router import *
 
 
 def index(request):
-    maxindex = Registration.objects.count()-1
-    form = tmpedit(maxindex=maxindex)
-    print(form)
-    return render(request, 'registration/index.html', {'maximum': maxindex, 'form': form})
+    # maxindex = Registration.objects.count()-1
+    # f = tmpedit(maxindex=maxindex)
+    return render(request, 'registration/index.html')  # , {'maximum': maxindex, 'form': f}) This code is related to tmpedit
 
 
 def login(request):
@@ -27,25 +26,19 @@ def login(request):
     return render(request, 'registration/index.html', {'form': f})
 
 
-def tmp_edit(request):
-    if request.method == 'POST':
-        form = tmpedit(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            dbindex = cd.get('index')
-            reg = Registration.objects.all()[dbindex]
-            f = policy_form(instance=reg)
-            context = {'form': f, 'submit': 'submit'}
-            return render(request, 'registration/reg_form.html', context)
-        else:
-            print('it broke')
-            return redirect('login')
-
-
-def form(request):
-    f = policy_form()
-    context = {'form': f}
-    return render(request, 'registration/reg_form.html', context)
+# def tmp_edit(request):
+#     if request.method == 'POST':
+#         form = tmpedit(request.POST)
+#         if form.is_valid():
+#             cd = form.cleaned_data
+#             dbindex = cd.get('index')
+#             reg = Registration.objects.all()[dbindex]
+#             f = policy_form(instance=reg)
+#             context = {'form': f, 'submit': 'submit'}
+#             return render(request, 'registration/reg_form.html', context)
+#         else:
+#             print('it broke')
+#             return redirect('login')
 
 
 def registration_form_view(request):
@@ -101,17 +94,6 @@ def registration_form_view(request):
     else:
         context = router()
         request.session['current_page'] = context['current_page']
-        return render(request, 'registration/reg_form.html', context)
-
-
-def submit(request):
-    print(request.POST)
-    f = policy_form(request.POST)
-    if f.is_valid():
-        f.save()
-        return redirect('confirmation')
-    else:
-        context = {'form': f}
         return render(request, 'registration/reg_form.html', context)
 
 

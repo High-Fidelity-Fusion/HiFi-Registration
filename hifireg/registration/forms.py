@@ -19,10 +19,11 @@ class accessibility_form(ModelForm):
     def formtype(self):
         return 'accessibility_form'
 
-class tmpedit(forms.Form):
-    index = forms.IntegerField(label='Entry:', initial=1, min_value=1)
-    def __init__(self, *args, **kwargs):
-        maxindex = kwargs.pop('maxindex', None)
-        super(tmpedit, self).__init__(*args, **kwargs)
-        if maxindex:
-            self.fields['index'] = forms.IntegerField(label='Entry:', initial=0, min_value=0, max_value=maxindex)
+# class tmpedit(forms.Form):
+#     index = forms.IntegerField(label='Entry:', initial=1, min_value=1)
+#     def __init__(self, *args, **kwargs):
+#         maxindex = kwargs.pop('maxindex', None)
+#         super(tmpedit, self).__init__(*args, **kwargs)
+#         if maxindex:
+#             self.fields['index'] = forms.IntegerField(label='Entry:', initial=0, min_value=0, max_value=maxindex)
+
