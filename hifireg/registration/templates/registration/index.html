@@ -1,1 +1,11 @@
-<h1>hello world template</h1>
+<h1>hello world template</h1><br>
+
+<a href="registration_form"><button type="button">New Reg</button></a>
+
+{% if maximum > 0 %}
+    <form action="{% url 'tmp_edit' %}" method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" id="Edit" name="Edit" value="Edit Reg">
+    </form>
+{% endif %}

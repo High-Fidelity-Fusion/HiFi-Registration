@@ -13,21 +13,26 @@
 
         <!-- <title> sets the title of your page, which is the title that appears in the browser tab the page is loaded in, and is used to describe the page when you bookmark/favorite it. -->
         <title>
+            High-Fidelity Fusion Registration Form
         </title>
 
     </head>
 
     <!-- body - wraps all content shown to page users -->
     <body>
-        <form action="{% url 'submit' %}" method="post">
+        <h1>High-Fidelity Fusion Registration Form</h1>
+        <form action="{% url 'registration_form' %}" method="post">
             {% csrf_token %}
-            <h1>High-Fidelity Fusion Registration Form</h1>
-            <h2>Code of Conduct</h2>
-            COC full text. Lorem Ipsum...
-            <br><br>
-            {{registration_form}}
-            <br><br>
-            <input type="submit">
+            {{form}}
+            {% if prev %}
+            <input type="submit", name="prev", value="Previous">
+            {% endif %}
+            {% if next %}
+            <input type="submit", name="next", value="Next">
+            {% endif %}
+            {% if submit %}
+            <input type="submit", name="submit">
+            {% endif %}
         </form>
     </body>
 </html>

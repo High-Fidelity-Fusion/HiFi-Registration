@@ -3,6 +3,7 @@ from django.contrib.sessions.models import Session
 from django.db import transaction, IntegrityError
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Sum
+from .validators import validate_agree
 
 class UserSession(models.Model):
     DjangoSession = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
