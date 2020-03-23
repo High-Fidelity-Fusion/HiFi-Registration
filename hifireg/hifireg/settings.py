@@ -79,9 +79,7 @@ local_database = {
     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 }
 
-development_database = local_database
-
-production_database = {
+database = {
     'ENGINE': 'django.db.backends.postgresql',
     'HOST': os.getenv('DBHOST'),
     'PORT': os.getenv('DBPORT'),
@@ -90,8 +88,10 @@ production_database = {
     'NAME': os.getenv('DBNAME'),
 }
 
+# database['NAME'] = os.getenv('DBNAME_DEV')
+
 DATABASES = {
-    'default': production_database
+    'default': database
 }
 
 
