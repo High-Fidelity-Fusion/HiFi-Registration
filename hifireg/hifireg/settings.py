@@ -79,7 +79,7 @@ local_database = {
     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 }
 
-database = {
+remote_database = {
     'ENGINE': 'django.db.backends.postgresql',
     'HOST': os.getenv('DBHOST'),
     'PORT': os.getenv('DBPORT'),
@@ -88,10 +88,10 @@ database = {
     'NAME': os.getenv('DBNAME'),
 }
 
-# database['NAME'] = os.getenv('DBNAME_DEV')
+# remote_database['NAME'] = os.getenv('DBNAME_DEV')
 
 DATABASES = {
-    'default': database
+    'default': remote_database
 }
 
 
