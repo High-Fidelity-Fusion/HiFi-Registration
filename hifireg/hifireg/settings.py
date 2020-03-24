@@ -132,3 +132,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Custom User Model
+# https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
+AUTH_USER_MODEL = 'registration.User'
