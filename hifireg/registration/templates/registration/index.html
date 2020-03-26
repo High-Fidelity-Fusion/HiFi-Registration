@@ -1,1 +1,9 @@
-<h1>hello world template</h1>
+{% extends "base.html" %}
+
+{% block content %}
+
+<p>Hi, {{ user.get_full_name }}!</p>
+<p>Thanks for logging in. Wanna dance?</p>
+<p><a href={% url 'form' %}>Yes</a> <a href={% url 'logout' %}>No</a></p>
+
+{% endblock %}

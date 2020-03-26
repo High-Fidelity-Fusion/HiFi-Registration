@@ -1,26 +1,29 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.contrib.auth import authenticate, login
 from .forms import UserCreationForm
 from .forms import RegistrationForm
 
 
 def index(request):
-    # if not logged in -- redirect to make-account
     if not request.user.is_authenticated:
-        return redirect('create-user')
+        return redirect('login')
+    
+    context = { 'user': request.user }
+    return render(request, 'registration/index.html', context)
 
-    return render(request, 'registration/index.html')
 
 def create_user(request):
     if request.method == 'POST':
         f = UserCreationForm(request.POST)
         if f.is_valid():
-            f.save()
+            user = f.save()
             messages.success(request, 'Account created successfully')
-            return redirect('login')
-
+            login(request, user)
+            # TODO: A lot of tutorials tend to authenticate the user before logging them in
+            #       but I've seen this succeed without doing that. Probably need to figure
+            #       out what the deal is there.
+            return redirect('index')
     else:
         f = UserCreationForm()
 
@@ -35,6 +38,7 @@ def submit(request):
     f = RegistrationForm(request.POST or None)
     if f.is_valid():
         f.save()
-        return render(request,'registration/index.html')
+        return redirect('index')
     else:
-        return render(request, 'registration/form.html'),{'error_message': "Sucks to suck."}
+        context = {'error_message': "Sucks to suck."}
+        return render(request, 'registration/form.html', context)
