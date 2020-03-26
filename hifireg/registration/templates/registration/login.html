@@ -18,12 +18,14 @@
 <form method="post" action="{% url 'login' %}">
 {% csrf_token %}
 <table>
-{{ form.as_table }}
+    {{ form.as_table }}
 </table>
 
 <input type="submit" value="login">
 <input type="hidden" name="next" value="{{ next }}">
 </form>
+
+<a href={% url 'create-user' %}>I don't have an account.</a>
 
 {# Assumes you setup the password_reset view in your URLconf #}
 <p><a href="{% url 'password_reset' %}">Lost password?</a></p>

@@ -133,7 +133,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
 # Custom User Model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'registration.User'
+
+# LoginView
+# https://docs.djangoproject.com/en/3.0/topics/auth/default/#django.contrib.auth.views.LoginView
+LOGIN_REDIRECT_URL = '/registration/'
