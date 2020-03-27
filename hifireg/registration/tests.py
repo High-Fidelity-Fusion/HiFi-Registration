@@ -15,6 +15,7 @@ def setup_test_data():
     user_session2 = UserSession.objects.create()
     Order.objects.create(registration=registration2, user_session=user_session2)
     APFund.objects.create(contribution=2000, notes='notes')
+    CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
 
 class OrderTestCase(TestCase):
     def setUp(self):
@@ -125,6 +126,21 @@ class OrderTestCase(TestCase):
         with self.assertRaises(SuspiciousOperation):
             order.add_item(product, 1)
 
+    def test_add_item__comped(self):
+        comp_code = CompCode.objects.first()
+        registration = Registration.objects.first()
+        registration.add_comp_code(comp_code.code)
+        order = Order.objects.create(registration=registration, user_session=UserSession.objects.first())
+        non_compable_product = Product.objects.first()
+        compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description')
+
+        order.add_item(non_compable_product, 1)
+        order.add_item(compable_product, 1)
+
+        self.assertEqual(order.original_price, 2000)
+        self.assertEqual(order.accessible_price, 2000)
+        self.assertEqual(order.is_accessible_pricing, False)
+
     def test_remove_item__full_quantity(self):
         order = Order.objects.first()
         product = Product.objects.first()
@@ -209,6 +225,33 @@ class OrderTestCase(TestCase):
         self.assertEqual(order.accessible_price, 1000)
         self.assertEqual(order.is_accessible_pricing, False)
 
+class RegistrationTestCase(TestCase):
+    def setUp(self):
+        setup_test_data()
 
+    def test_add_comp_code__success(self):
+        comp_code = CompCode.objects.first()
+        registration = Registration.objects.first()
+        Order.objects.create(registration=registration, user_session=None) #Finalized orders should not be deleted
 
+        registration.add_comp_code(comp_code.code)
 
+        self.assertEqual(registration.comp_code, comp_code)
+        self.assertEqual(len(comp_code.code), 5)
+        self.assertEqual(registration.order_set.count(), 1)
+
+    def test_add_comp_code__invalid_comp_code(self):
+        registration = Registration.objects.first()
+
+        with self.assertRaises(SuspiciousOperation):
+            registration.add_comp_code('nope')
+
+    def test_add_comp_code__already_used_comp_code(self):
+        comp_code = CompCode.objects.first()
+        registration1 = Registration.objects.first()
+        registration2 = Registration.objects.last()
+
+        registration1.add_comp_code(comp_code.code)
+
+        with self.assertRaises(SuspiciousOperation):
+            registration2.add_comp_code(comp_code.code)
