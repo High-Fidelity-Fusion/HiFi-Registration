@@ -88,7 +88,12 @@ remote_database = {
     'NAME': os.getenv('DBNAME'),
 }
 
-# remote_database['NAME'] = os.getenv('DBNAME_DEV')
+# DEBUG, set the database name DBNAME_DEV from environment
+if DEBUG: 
+    remote_database['NAME'] = os.getenv('DBNAME_DEV')
+
+# If database name isn't set, use the local SQLite database
+database = remote_database if remote_database['NAME'] else local_database
 
 DATABASES = {
     'default': remote_database
@@ -112,6 +117,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# If DEBUG is set, turn off password validators
+if DEBUG: 
+    AUTH_PASSWORD_VALIDATORS = []
 
 
 # Internationalization
