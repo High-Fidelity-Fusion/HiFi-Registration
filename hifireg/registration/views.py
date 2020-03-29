@@ -4,6 +4,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
+from django.contrib.auth.views import LoginView as LoginView_
+
+from .forms import AuthenticationForm
 from .forms import UserCreationForm
 from .forms import RegistrationForm
 from .forms import RegCompCodeForm
@@ -18,7 +21,6 @@ def index(request):
     context = { 'user': request.user }
     return render(request, 'registration/index.html', context)
 
-
 def create_user(request):
     if request.method == 'POST':
         f = UserCreationForm(request.POST)
@@ -32,8 +34,10 @@ def create_user(request):
             return redirect('index')
     else:
         f = UserCreationForm()
+    
+    context = {'form': f}
+    return render(request, 'registration/create_user.html', context)
 
-    return render(request, 'registration/create_user.html', {'form': f})
 
 @login_required
 def register_comp_code(request):
@@ -74,7 +78,8 @@ def register_ticket_selection(request):
 def form(request):
     f = RegistrationForm()
     context = {'registration_form' : f}
-    return render(request,'registration/form.html', context)
+    return render(request,'registration/form_test.html', context)
+
 
 def submit(request):
     f = RegistrationForm(request.POST or None)
@@ -83,4 +88,8 @@ def submit(request):
         return redirect('index')
     else:
         context = {'error_message': "Sucks to suck."}
-        return render(request, 'registration/form.html', context)
+        return render(request, 'registration/form_test.html', context)
+
+
+class LoginView(LoginView_):
+    authentication_form = AuthenticationForm

@@ -101,3 +101,8 @@ ENV/
 # Dev environments
 .idea
 .vscode
+
+# Node.js
+node_modules/
+package-lock.json
+css/

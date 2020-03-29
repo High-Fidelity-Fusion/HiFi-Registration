@@ -23,3 +23,7 @@ test:
 
 shell:
 	$(MANAGE) shell
+	
+style:
+	npm run css-build
+
