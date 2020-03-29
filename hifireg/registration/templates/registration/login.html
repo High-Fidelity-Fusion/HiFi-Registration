@@ -1,11 +1,12 @@
-{% extends "base.html" %}
+{% extends "registration/base.html" %}
 
-{% block content %}
+{% block card_content %}
 
 {% if form.errors %}
 <p>Your username and password didn't match. Please try again.</p>
 {% endif %}
 
+{# TODO: What is this? #}
 {% if next %}
     {% if user.is_authenticated %}
     <p>Your account doesn't have access to this page. To proceed,
@@ -16,13 +17,11 @@
 {% endif %}
 
 <form method="post" action="{% url 'login' %}">
-{% csrf_token %}
-<table>
-    {{ form.as_table }}
-</table>
+    {% csrf_token %}
+    {% include "registration/form_input.html" %}
 
-<input type="submit" value="login">
-<input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="button is-link">Login</button>
+    <input type="hidden" name="next" value="{{ next }}">
 </form>
 
 <a href={% url 'create-user' %}>I don't have an account.</a>

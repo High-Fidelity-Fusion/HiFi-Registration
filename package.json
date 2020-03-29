@@ -1,0 +1,19 @@
+{
+  "name": "hifi-bulma",
+  "version": "1.0.0",
+  "description": "Bulma style customization for High Fidelity Registration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "css-build": "node-sass --omit-source-map-url --output-style compressed hifireg/registration/sass/hifi-styles.scss hifireg/registration/static/css/hifi-styles.css",
+    "css-watch": "npm run css-build -- --watch",
+    "start": "npm run css-watch"
+  },
+  "author": "High Fidelity Fusion",
+  "license": "ISC",
+  "devDependencies": {
+    "@vizuaalog/bulmajs": "^0.10.3",
+    "bulma": "^0.8.1",
+    "node-sass": "^4.13.1"
+  }
+}
