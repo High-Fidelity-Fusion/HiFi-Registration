@@ -1,15 +1,13 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
-from .models import User, Registration, CompCode
-from .models.comp_code import CompCodeHelper
-from django.core.exceptions import ValidationError
-
-from django.contrib.auth.forms import AuthenticationForm as AuthenticationForm_
 from django.contrib.auth import password_validation
+from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
+from django.contrib.auth.forms import AuthenticationForm as AuthenticationForm_
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-
+from .models import User, Registration, CompCode
 from .models import User, Registration
+from .models.comp_code import CompCodeHelper
 
 class RegistrationForm(forms.ModelForm):
     class Meta:

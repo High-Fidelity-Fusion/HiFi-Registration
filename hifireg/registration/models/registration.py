@@ -1,9 +1,10 @@
-from django.db import models
 from django.contrib.sessions.models import Session
-from django.db import transaction
-from django.core.exceptions import SuspiciousOperation
-from django.db.models import Sum, F
 from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
+from django.db import models
+from django.db import transaction
+from django.db.models import Sum, F
+
 from .comp_code import CompCode
 
 class UserSession(models.Model):

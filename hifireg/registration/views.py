@@ -1,17 +1,17 @@
-from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView as LoginView_
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
-from django.contrib.auth.views import LoginView as LoginView_
+from django.shortcuts import render, redirect
 
+from .decorators import must_have_registration, must_have_order
 from .forms import AuthenticationForm
 from .forms import UserCreationForm
 from .forms import RegistrationForm
 from .forms import RegCompCodeForm
 from .models.registration import Registration, CompCode
-from .decorators import must_have_registration, must_have_order
 
 
 def index(request):
