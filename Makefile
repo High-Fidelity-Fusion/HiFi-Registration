@@ -27,3 +27,9 @@ shell:
 style:
 	npm run css-build
 
+format:
+	black -S -l150 hifireg/registration
+
+lint:
+	pylint hifireg/registration
+
