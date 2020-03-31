@@ -149,3 +149,5 @@ AUTH_USER_MODEL = 'registration.User'
 # LoginView
 # https://docs.djangoproject.com/en/3.0/topics/auth/default/#django.contrib.auth.views.LoginView
 LOGIN_REDIRECT_URL = '/registration/'
+LOGIN_URL = '/registration/'
+LOGOUT_REDIRECT_URL = '/registration/'

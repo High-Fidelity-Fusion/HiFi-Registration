@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.sessions.models import Session
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Sum, F
-import string, random
+from django.conf import settings
+from .comp_code import CompCode
 
 class UserSession(models.Model):
     DjangoSession = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
@@ -17,31 +18,6 @@ class UserSession(models.Model):
     @classmethod
     def get_current(cls):
         return UserSession.objects.first() #TODO update to get the actual current UserSession based on the current DjangoSession
-
-class CompCodeHelper():
-    CODE_LENGTH = 5
-
-    @classmethod
-    def generate_random_code(cls):
-        letters = string.ascii_letters
-        return ''.join(random.choice(letters) for i in range(cls.CODE_LENGTH))
-
-class CompCode(models.Model):
-    STAFF = 'STAFF'
-    ORGANIZER = 'ORGNZ'
-    PARTNER = 'PRTNR'
-    OTHER = 'OTHER'
-    TYPES = [
-        (STAFF, 'Hired Staff'),
-        (ORGANIZER, 'Organizer'),
-        (PARTNER, 'Partner Program'),
-        (OTHER, 'Other')
-    ]
-
-    code = models.CharField(help_text='Enter a custom code or leave blank to auto generate', max_length=CompCodeHelper.CODE_LENGTH, default=CompCodeHelper.generate_random_code)
-    type = models.CharField(max_length=5, choices=TYPES)
-    max_uses = models.PositiveIntegerField()
-    notes = models.CharField(max_length=200, null=True)
 
 class ProductCategory(models.Model):
     DANCE = 'DANCE'
@@ -77,6 +53,7 @@ class Product(models.Model):
         return self.total_quantity - (self.orderitem_set.aggregate(Sum('quantity'))['quantity__sum'] or 0)
 
 class Registration(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     comp_code = models.ForeignKey(CompCode, on_delete=models.PROTECT, null=True)
     referral_code = models.CharField(max_length=15, null=True)
     agree_to_coc = models.BooleanField(verbose_name='Do you agree to the Code of Conduct?', null=True, blank=False)
@@ -84,7 +61,7 @@ class Registration(models.Model):
 
     @property
     def is_submitted(self):
-        return self.order_set.filter(user_session=None).exists()
+        return self.order_set.filter(session=None).exists()
 
     @property
     def is_accessible_pricing(self):
@@ -94,28 +71,15 @@ class Registration(models.Model):
     def is_comped(self):
         return self.comp_code is not None
 
-    @transaction.atomic
-    def add_comp_code(self, code):
-        if (not CompCode.objects.filter(code=code).exists()):
-            raise SuspiciousOperation('Invalid comp code')
-
-        comp_code = CompCode.objects.get(code=code)
-        if (comp_code.max_uses <= comp_code.registration_set.count()):
-            raise SuspiciousOperation('Comp code already expended')
-
-        self.comp_code = comp_code
-        self.order_set.filter(user_session__isnull=False).delete()
-        self.save()
-
 class Order(models.Model):
-    user_session = models.OneToOneField(UserSession, on_delete=models.CASCADE, null=True, default=UserSession.get_current_id)
+    session = models.OneToOneField(Session, on_delete=models.CASCADE, null=True)
     registration = models.ForeignKey(Registration, on_delete=models.CASCADE)
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
 
     @property
     def is_submitted(self):
-        return self.user_session is None
+        return self.session is None
 
     @property
     def is_accessible_pricing(self):

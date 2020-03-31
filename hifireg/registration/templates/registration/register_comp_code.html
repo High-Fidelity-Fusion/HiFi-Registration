@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p>Let's get started!</p>
+<form action="{% url 'register-comp-code' %}" method="post">
+  {% csrf_token %}
+  {{RegCompCodeForm.as_p}}
+  <input type="submit", name="navigation", value="Next">
+
+</form>
+{% endblock %}

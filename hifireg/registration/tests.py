@@ -1,6 +1,8 @@
 from django.test import TestCase
 from registration.models import *
 from django.core.exceptions import SuspiciousOperation
+from django.contrib.sessions.models import Session
+from django.utils import timezone
 
 
 def setup_test_data():
@@ -9,11 +11,11 @@ def setup_test_data():
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description')
     product.category_slots.set([slot_1])
     registration1 = Registration.objects.create()
-    user_session1 = UserSession.objects.create()
-    Order.objects.create(registration=registration1, user_session=user_session1)
+    session1 = Session.objects.create(pk='a', expire_date=timezone.now())
+    Order.objects.create(registration=registration1, session=session1)
     registration2 = Registration.objects.create()
-    user_session2 = UserSession.objects.create()
-    Order.objects.create(registration=registration2, user_session=user_session2)
+    session2 = Session.objects.create(pk='b', expire_date=timezone.now())
+    Order.objects.create(registration=registration2, session=session2)
     APFund.objects.create(contribution=2000, notes='notes')
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
 
@@ -118,7 +120,7 @@ class OrderTestCase(TestCase):
     def test_add_item__is_submitted(self):
         order = Order.objects.first()
         product = Product.objects.first()
-        order.user_session = None
+        order.session = None
         order.save()
 
         self.assertEqual(order.is_submitted, True)
@@ -128,9 +130,10 @@ class OrderTestCase(TestCase):
 
     def test_add_item__comped(self):
         comp_code = CompCode.objects.first()
-        registration = Registration.objects.first()
-        registration.add_comp_code(comp_code.code)
-        order = Order.objects.create(registration=registration, user_session=UserSession.objects.first())
+        registration = Registration.objects.create()
+        registration.comp_code = comp_code
+        registration.save()
+        order = Order.objects.create(registration=registration, session=Session.objects.create(pk='test_add_item__comped', expire_date=timezone.now()))
         non_compable_product = Product.objects.first()
         compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description')
 
@@ -224,34 +227,3 @@ class OrderTestCase(TestCase):
         self.assertEqual(order.original_price, 1000)
         self.assertEqual(order.accessible_price, 1000)
         self.assertEqual(order.is_accessible_pricing, False)
-
-class RegistrationTestCase(TestCase):
-    def setUp(self):
-        setup_test_data()
-
-    def test_add_comp_code__success(self):
-        comp_code = CompCode.objects.first()
-        registration = Registration.objects.first()
-        Order.objects.create(registration=registration, user_session=None) #Finalized orders should not be deleted
-
-        registration.add_comp_code(comp_code.code)
-
-        self.assertEqual(registration.comp_code, comp_code)
-        self.assertEqual(len(comp_code.code), 5)
-        self.assertEqual(registration.order_set.count(), 1)
-
-    def test_add_comp_code__invalid_comp_code(self):
-        registration = Registration.objects.first()
-
-        with self.assertRaises(SuspiciousOperation):
-            registration.add_comp_code('nope')
-
-    def test_add_comp_code__already_used_comp_code(self):
-        comp_code = CompCode.objects.first()
-        registration1 = Registration.objects.first()
-        registration2 = Registration.objects.last()
-
-        registration1.add_comp_code(comp_code.code)
-
-        with self.assertRaises(SuspiciousOperation):
-            registration2.add_comp_code(comp_code.code)
