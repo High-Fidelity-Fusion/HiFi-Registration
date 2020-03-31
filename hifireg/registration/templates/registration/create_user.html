@@ -6,9 +6,6 @@
     Create Account
 </p>
 
-{# TODO: Loop over non-field errors and display them as notifications? #}
-{# TODO: Figure out how to make the password hints not get injected... this is some voodoo #}
-
 <form method="post">
     {% csrf_token %}
     {% include "registration/form_input.html" %}
@@ -18,4 +15,5 @@
         </div>
     </div>
 </form>
+
 {% endblock %}
