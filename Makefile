@@ -21,3 +21,5 @@ super:
 test:
 	$(MANAGE) test
 
+shell:
+	$(MANAGE) shell

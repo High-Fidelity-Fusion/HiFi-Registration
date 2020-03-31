@@ -1,8 +1,14 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, IntegrityError
 from .forms import UserCreationForm
 from .forms import RegistrationForm
+from .forms import RegCompCodeForm
+from .models.registration import Registration, CompCode
+from .decorators import must_have_registration, must_have_order
 
 
 def index(request):
@@ -28,6 +34,42 @@ def create_user(request):
         f = UserCreationForm()
 
     return render(request, 'registration/create_user.html', {'form': f})
+
+@login_required
+def register_comp_code(request):
+    try:
+        registration = Registration.objects.get(user=request.user)
+    except ObjectDoesNotExist:
+        registration = Registration(user=request.user)
+        registration.save()
+
+    nextPage = 'index'
+
+    # Skip condition
+    if (registration.comp_code is not None):
+        return redirect(nextPage)
+
+    if request.method == 'POST':
+        form = RegCompCodeForm(request.POST)
+
+        with transaction.atomic():
+            CompCode.objects.select_for_update()
+            if form.is_valid():
+                if form.cleaned_data.get('code'):
+                    registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
+                    registration.order_set.filter(session__isnull=False).delete()
+                    registration.save()
+                return redirect(nextPage)
+
+    else:
+        form = RegCompCodeForm(initial={'code': registration.comp_code.code if registration.comp_code else ''})
+    return render(request, 'registration/register_comp_code.html', {RegCompCodeForm.__name__: form})
+
+@login_required
+@must_have_registration
+def register_ticket_selection(request):
+    return render(request, 'registration/register_ticket_selection.html', {RegCompCodeForm.__name__: form})
+
 
 def form(request):
     f = RegistrationForm()
