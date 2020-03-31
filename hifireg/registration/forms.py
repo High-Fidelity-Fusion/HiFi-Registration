@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm as AuthenticationForm_
 from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
 from django.contrib.auth.forms import UsernameField
@@ -37,7 +36,9 @@ class UserCreationForm(UserCreationForm_):
         label=_("Password"),
         strip=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', 'class': 'input'}),
-        help_text=password_validation.password_validators_help_text_html(),
+        # help_text='<br>'.join(password_validation.password_validators_help_texts()),
+        #TODO: figure out what to do with this password validation text
+        # perhaps stick it in the view somewhere? In a separate column or something? not sure
     )
     password2 = forms.CharField(
         label=_("Password confirmation"),
@@ -54,7 +55,6 @@ class UserCreationForm(UserCreationForm_):
             'first_name': forms.TextInput(attrs={'class': 'input'}),
             'last_name': forms.TextInput(attrs={'class': 'input'}),
         }
-
 
 # Override AuthenticationForm to apply styling class and use EmailInput widget for UsernameField
 # username is actually the email address -- this translation happens in in base class.

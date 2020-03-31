@@ -23,9 +23,9 @@ def index(request):
 
 def create_user(request):
     if request.method == 'POST':
-        f = UserCreationForm(request.POST)
-        if f.is_valid():
-            user = f.save()
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
             messages.success(request, 'Account created successfully')
             login(request, user)
             # TODO: A lot of tutorials tend to authenticate the user before logging them in
@@ -33,9 +33,9 @@ def create_user(request):
             #       out what the deal is there.
             return redirect('index')
     else:
-        f = UserCreationForm()
+        form = UserCreationForm()
     
-    context = {'form': f}
+    context = {'form': form}
     return render(request, 'registration/create_user.html', context)
 
 

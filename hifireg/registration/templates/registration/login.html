@@ -2,9 +2,7 @@
 
 {% block card_content %}
 
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+
 
 {# TODO: What is this? #}
 {% if next %}
@@ -20,7 +18,13 @@
     {% csrf_token %}
     {% include "registration/form_input.html" %}
 
-    <button type="submit" class="button is-link">Login</button>
+    <div class="control">
+        <button type="submit" class="button is-link">Login</button>
+        {% if form.errors %}
+        <p class="help is-danger">Your username and password didn't match. Please try again.</p>
+        {% endif %}
+    </div>
+
     <input type="hidden" name="next" value="{{ next }}">
 </form>
 
