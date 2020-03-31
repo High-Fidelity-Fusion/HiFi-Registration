@@ -88,12 +88,10 @@ remote_database = {
     'NAME': os.getenv('DBNAME'),
 }
 
-# DEBUG, set the database name DBNAME_DEV from environment
-if DEBUG: 
+# DEBUG: set the database name DBNAME_DEV from environment or use local SQLite database if empty
+if DEBUG:
     remote_database['NAME'] = os.getenv('DBNAME_DEV')
-
-# If database name isn't set, use the local SQLite database
-database = remote_database if remote_database['NAME'] else local_database
+    database = remote_database if remote_database['NAME'] else local_database
 
 DATABASES = {
     'default': remote_database
