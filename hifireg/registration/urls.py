@@ -1,6 +1,7 @@
-from django.urls import include, path
-from . import views
 from django.contrib.auth import views as auth_views
+from django.urls import include, path
+
+from . import views
 
 # app_name = "registration" # a namespace for the named URLs
 
