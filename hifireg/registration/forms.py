@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
 from django.contrib.auth.forms import AuthenticationForm as AuthenticationForm_
+from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
+from django.contrib.auth.forms import UsernameField
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -9,10 +10,12 @@ from .models import User, Registration, CompCode
 from .models import User, Registration
 from .models.comp_code import CompCodeHelper
 
+
 class RegistrationForm(forms.ModelForm):
     class Meta:
         model = Registration
         fields = ['agree_to_coc','allergens_severe']
+
 
 class RegCompCodeForm(forms.Form):
     code = forms.CharField(label='If you have a Comp Code for a free ticket, enter it here:', max_length=CompCodeHelper.CODE_LENGTH, required=False)
@@ -53,21 +56,12 @@ class UserCreationForm(UserCreationForm_):
         }
 
 
-# TODO: there is some sort of magic happening such that this form actually works correctly
-#       under the custom user model as long as I don't try to modify the username field.
-#       It seems to balk when I set the username to something saying that it doesn't exist
-#       How does it know to not use that field?
+# Override AuthenticationForm to apply styling class and use EmailInput widget for UsernameField
+# username is actually the email address -- this translation happens in in base class.
 class AuthenticationForm(AuthenticationForm_):
-    # username = UsernameField(widget=forms.EmailInput(attrs={'autofocus': True, 'class': 'input'}))
-    # username = UsernameField(widget=forms.TextInput(attrs={'autofocus': True}))
-
+    username = UsernameField(widget=forms.EmailInput(attrs={'autofocus': True, 'class': 'input'}))
     password = forms.CharField(
         label=_("Password"),
         strip=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'current-password', 'class': 'input'}),
     )
-
-    # class Meta:
-    #     widgets = {
-    #         'email': forms.EmailInput(attrs={'class': 'input'}),
-    #     }
