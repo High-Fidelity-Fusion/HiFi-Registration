@@ -68,8 +68,14 @@
                     </div>
                 </div>
 
+
                 <div class="navbar-end">
                     <div class="navbar-item">
+                        {% if user.is_authenticated %}
+                        <a class="button is-light" href="{% url 'logout' %}">
+                                Log out
+                            </a>
+                        {% else %}
                         <div class="buttons">
                             <a class="button is-primary" href="{% url 'create-user' %}">
                                 <strong>Create Account</strong>
@@ -78,8 +84,10 @@
                                 Log in
                             </a>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
+
             </div>
         </div>
     </nav>
