@@ -1,16 +1,26 @@
 {% for field in form %}
 <div class="field">
+    {# Field label and input #}
     <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
     <div class="control">
         {{ field }}
     </div>
+    
+    {# Field normal help text  #}
+    {% if field.help_text%}
     <p class="help">
-        {% if field.help_text%}{{field.help_text|safe}}{% endif %}
+        {{ field.help_text|safe }}
     </p>
+    {% endif %}
+    
+    {# Field error help text #}
     {% if field.errors %}
     {% for error in field.errors %}
-    <p class="help is-danger">{{ error }}</p>
+    <p class="help is-danger">
+        {{ error }}
+    </p>
     {% endfor %}
     {% endif %}
+
 </div>
 {% endfor %}

@@ -8,11 +8,11 @@
 
 <form method="post">
     {% csrf_token %}
+
     {% include "registration/form_input.html" %}
-    <div class="field is-grouped">
-        <div class="control">
-            <button type="submit" class="button is-link">Submit</button>
-        </div>
+
+    <div class="control">
+        <button type="submit" class="button is-link">Submit</button>
     </div>
 </form>
 
