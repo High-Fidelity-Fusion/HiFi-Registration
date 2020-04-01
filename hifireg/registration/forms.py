@@ -36,9 +36,6 @@ class UserCreationForm(UserCreationForm_):
         label=_("Password"),
         strip=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password', 'class': 'input'}),
-        # help_text='<br>'.join(password_validation.password_validators_help_texts()),
-        #TODO: figure out what to do with this password validation text
-        # perhaps stick it in the view somewhere? In a separate column or something? not sure
     )
     password2 = forms.CharField(
         label=_("Password confirmation"),
