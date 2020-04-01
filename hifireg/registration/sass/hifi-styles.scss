@@ -36,3 +36,14 @@ $fullhd-enabled: false;
 
 // TODO: only import modules that are  used
 @import "../../../node_modules/bulma/bulma.sass";
+
+
+// Sticky Footer
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+main {
+    flex: 1 0 auto;
+}

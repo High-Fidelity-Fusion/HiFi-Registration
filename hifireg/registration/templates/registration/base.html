@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <!-- Navbar -->
+    <!-- Nav -->
     <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="container">
             <div class="navbar-brand">
@@ -68,7 +68,6 @@
                     </div>
                 </div>
 
-
                 <div class="navbar-end">
                     <div class="navbar-item">
                         {% if user.is_authenticated %}
@@ -92,32 +91,34 @@
         </div>
     </nav>
 
-    <!-- Container -->
-    <div class="container">
-        <section class="section">
-        <h1 class="title">High Fidelity Registration</h1>
-            <!-- Content -->
-            {% block content %}
-            <div class="card">
-                <div class="card-content">
-                {% block card_content %}
-                {% endblock %}
+    <!-- Main -->
+    <main>
+        <div class="container">
+            <section class="section">
+            <h1 class="title">High Fidelity Registration</h1>
+                {% block content %}
+                <div class="card">
+                    <div class="card-content">
+                    {% block card_content %}
+                    {% endblock %}
+                    </div>
                 </div>
-            </div>
-            {% endblock %}
-        </section>
-    </div>
-</body>
+                {% endblock %}
+            </section>
+        </div>
+    </main>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="content has-text-centered">
-        <p>
-            <strong>High Fidelity Registration</strong> is <a
-                href="https://github.com/High-Fidelity-Fusion/HiFi-Registration">open source</a>.
-            <br>©2020
-        </p>
-    </div>
-</footer>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>High Fidelity Registration</strong> is <a
+                    href="https://github.com/High-Fidelity-Fusion/HiFi-Registration">open source</a>.
+                <br>©2020
+            </p>
+        </div>
+    </footer>
+
+</body>
 
 </html>
