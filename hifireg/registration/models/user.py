@@ -55,6 +55,3 @@ class User(AbstractUser):
 
     # set model manager
     objects = UserManager()
-
-    # TODO: I'm curious what the difference between User and AbstractUser is 
-    # User only implements a tiny Meta class in source... what does it do?
