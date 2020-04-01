@@ -79,7 +79,7 @@ local_database = {
     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 }
 
-remote_database = {
+database = {
     'ENGINE': 'django.db.backends.postgresql',
     'HOST': os.getenv('DBHOST'),
     'PORT': os.getenv('DBPORT'),
@@ -88,13 +88,15 @@ remote_database = {
     'NAME': os.getenv('DBNAME'),
 }
 
-# DEBUG: set the database name DBNAME_DEV from environment or use local SQLite database if empty
+# If debug mode, get database name from DBNAME_DEV in the environment.
+# Use the local SQLite database if DBNAME_DEV isn't set.
 if DEBUG:
-    remote_database['NAME'] = os.getenv('DBNAME_DEV')
-    database = remote_database if remote_database['NAME'] else local_database
+    database['NAME'] = os.getenv('DBNAME_DEV')
+    if database['NAME'] is None:
+        database = local_database
 
 DATABASES = {
-    'default': remote_database
+    'default': database
 }
 
 
