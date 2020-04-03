@@ -7,6 +7,7 @@ from django.db.models import Sum, F
 
 from .comp_code import CompCode
 
+
 class UserSession(models.Model):
     DjangoSession = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
 
@@ -20,6 +21,7 @@ class UserSession(models.Model):
     def get_current(cls):
         return UserSession.objects.first() #TODO update to get the actual current UserSession based on the current DjangoSession
 
+
 class ProductCategory(models.Model):
     DANCE = 'DANCE'
     CLASS = 'CLASS'
@@ -32,10 +34,12 @@ class ProductCategory(models.Model):
     name = models.CharField(max_length=100)
     section = models.CharField(max_length=5, choices=SECTION_CHOICES)
 
+
 class ProductCategorySlot(models.Model):
     name = models.CharField(max_length=100)
     category = models.ForeignKey(ProductCategory, on_delete=models.PROTECT)
     is_exclusionary = models.BooleanField(default=True)
+
 
 class Product(models.Model):
     category_slots = models.ManyToManyField(ProductCategorySlot)
@@ -53,12 +57,28 @@ class Product(models.Model):
     def available_quantity(self):
         return self.total_quantity - (self.orderitem_set.aggregate(Sum('quantity'))['quantity__sum'] or 0)
 
+
+class Volunteer(models.Model):
+    cellphone_number = models.CharField(verbose_name='Cell Phone Number', max_length=30, null=True, blank=True)
+    hours_max = models.IntegerField(verbose_name='How many hours are you willing to Contribute?', null=True, blank=True)
+    image = models.ImageField(upload_to='2020/volunteers/', verbose_name='Please upload an image of your face', help_text='We need to know what you look like so we know who to look for!', null=True, blank=True)
+    skills = models.TextField(verbose_name="How can we best utilize your skills?", help_text="Are you particularly talented at something? Do you have a strong preference toward helping in a particular way? We would like to know more!", null=True, blank=True)
+    cantwont = models.TextField(verbose_name="What can't/won't you do?", help_text="You can't lift heavy things? Garbage evokes nausea in you? You are afraid of spiders? These are things we want to know! We don't want to ask you to do anything that does not suit you.", null=True, blank=True)
+
+
 class Registration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-    comp_code = models.ForeignKey(CompCode, on_delete=models.PROTECT, null=True)
-    referral_code = models.CharField(max_length=15, null=True)
-    agree_to_coc = models.BooleanField(verbose_name='Do you agree to the Code of Conduct?', null=True, blank=False)
-    allergens_severe = models.TextField(verbose_name='Severe Allergies', help_text='List allergens that would be a threat to you if they were in the venue at all', max_length=1000, null=True, blank=False)
+    comp_code = models.ForeignKey(CompCode, on_delete=models.PROTECT, null=True, blank=True)
+    referral_code = models.CharField(max_length=15, null=True, blank=True)
+    agree_to_coc = models.BooleanField(verbose_name='Do you agree to the Code of Conduct?', null=True, blank=True)
+    opts_into_photo_review = models.BooleanField(verbose_name='Do you want to participate in the photo review process?', null=True, blank=True)
+    allergens_severe = models.TextField(verbose_name='Severe Allergies', help_text='List allergens that would be a threat to you if they were in the venue at all', max_length=1000, null=True, blank=True)
+    wants_to_volunteer = models.BooleanField(verbose_name='Do you want to volunteer?', null=True, blank=True)
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=True, blank=True)
+    mailing_list = models.BooleanField(verbose_name="Keep up-to-date with HiFi?", help_text="Would you like us to email you in the future with news about Hi-Fi (not more than once monthly)?", null=True, blank=True)
+    registration_feedback = models.TextField(verbose_name='Feedback', help_text='What do you think about our registration process? What can we do better for you next time?', null=True, blank=True)
+    housing_transport_acknowledgement = models.BooleanField(verbose_name='Will you attend to your own housing and transportation needs?', null=True, blank=True)
+    accommodations = models.TextField(verbose_name='How can we accommodate you?', help_text="Is there anything that you need from us to be able to attend the event (that isn't covered elsewhere in the form? Tell us here!", max_length=1000, null=True, blank=True)
 
     @property
     def is_submitted(self):
@@ -71,6 +91,7 @@ class Registration(models.Model):
     @property
     def is_comped(self):
         return self.comp_code is not None
+
 
 class Order(models.Model):
     session = models.OneToOneField(Session, on_delete=models.CASCADE, null=True)
@@ -148,6 +169,7 @@ class OrderItem(models.Model):
         self.save()
         if self.quantity < 1:
             self.delete()
+
 
 class APFund(models.Model):
     contribution = models.PositiveIntegerField(default=0)
