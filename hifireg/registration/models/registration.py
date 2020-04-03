@@ -70,7 +70,7 @@ class Registration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     comp_code = models.ForeignKey(CompCode, on_delete=models.PROTECT, null=True, blank=True)
     referral_code = models.CharField(max_length=15, null=True, blank=True)
-    agree_to_coc = models.BooleanField(verbose_name='Do you agree to the Code of Conduct?', null=True, blank=True)
+    agrees_to_policy = models.BooleanField(verbose_name='Do you agree to the Code of Conduct?', null=True, blank=True)
     opts_into_photo_review = models.BooleanField(verbose_name='Do you want to participate in the photo review process?', null=True, blank=True)
     allergens_severe = models.TextField(verbose_name='Severe Allergies', help_text='List allergens that would be a threat to you if they were in the venue at all', max_length=1000, null=True, blank=True)
     wants_to_volunteer = models.BooleanField(verbose_name='Do you want to volunteer?', null=True, blank=True)
