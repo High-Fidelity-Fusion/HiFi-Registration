@@ -11,6 +11,7 @@ pylint = "*"
 django = "*"
 psycopg2-binary = "*"
 pillow = "*"
+django-widget-tweaks = "*"
 
 [requires]
 python_version = "3.8"
