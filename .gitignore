@@ -106,3 +106,5 @@ ENV/
 node_modules/
 package-lock.json
 css/
+db.sqlite3
+migrations/
