@@ -1,25 +1,27 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as LoginView_
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.generic import UpdateView
 
 from .decorators import must_have_registration, must_have_order
-from .forms import AuthenticationForm
-from .forms import UserCreationForm
-from .forms import RegistrationForm
-from .forms import RegCompCodeForm
+from .forms import AuthenticationForm, UserCreationForm, RegCompCodeForm, UserUpdateForm
 from .models.registration import Registration, CompCode
+from .models.user import User
 
 
 def index(request):
     if not request.user.is_authenticated:
         return redirect('login')
     
-    context = { 'user': request.user }
+    context = {'user': request.user}
     return render(request, 'registration/index.html', context)
+
 
 def create_user(request):
     if request.method == 'POST':
@@ -40,6 +42,33 @@ def create_user(request):
 
 
 @login_required
+class UpdateUser(UpdateView):
+    model = User
+    form_class = UserUpdateForm
+    success_url = reverse_lazy('index')
+    template_name = 'registration/edit_user.html'
+
+    # prevents data from updating on post when cancel is pushed
+    def post(self, request, *args, **kwargs):
+        print(request.POST)
+        if 'cancel' in request.POST:
+            self.object = self.get_object()
+            return redirect('index')
+        response = super(UpdateUser, self).post(request, *args, **kwargs)
+        return response
+
+    # modify get_object method to return object (avoids slug or pk in urlconf)
+    def get_object(self):
+        return User.objects.get(email=self.request.user)
+
+    # use default view, but decorate it
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        response = super(UpdateUser, self).dispatch(request, *args, **kwargs)
+        return response
+
+
+@login_required
 def register_comp_code(request):
     try:
         registration = Registration.objects.get(user=request.user)
@@ -50,7 +79,7 @@ def register_comp_code(request):
     nextPage = 'index'
 
     # Skip condition
-    if (registration.comp_code is not None):
+    if registration.comp_code is not None:
         return redirect(nextPage)
 
     if request.method == 'POST':
@@ -69,26 +98,11 @@ def register_comp_code(request):
         form = RegCompCodeForm(initial={'code': registration.comp_code.code if registration.comp_code else ''})
     return render(request, 'registration/register_comp_code.html', {RegCompCodeForm.__name__: form})
 
+
 @login_required
 @must_have_registration
 def register_ticket_selection(request):
     return render(request, 'registration/register_ticket_selection.html', {RegCompCodeForm.__name__: form})
-
-
-def form(request):
-    f = RegistrationForm()
-    context = {'registration_form' : f}
-    return render(request,'registration/form_test.html', context)
-
-
-def submit(request):
-    f = RegistrationForm(request.POST or None)
-    if f.is_valid():
-        f.save()
-        return redirect('index')
-    else:
-        context = {'error_message': "Sucks to suck."}
-        return render(request, 'registration/form_test.html', context)
 
 
 class LoginView(LoginView_):

@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, UserManager as UserManager_
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 # This website was initially used as a reference for how to implement a user model without an explicit username:
 # https://www.fomfus.com/articles/how-to-use-email-as-username-for-django-authentication-removing-the-username
 # Much of the example code appears to have been copied from the Django source and modified accordingly.
@@ -39,7 +40,8 @@ class UserManager(UserManager_):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self._create_user(email, password, **extra_fields)
-    
+
+
 # Custom User model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
 class User(AbstractUser):
@@ -52,6 +54,7 @@ class User(AbstractUser):
     # other profile items
     personal_pronouns = models.CharField(help_text="Your preferred personal pronouns.", max_length=20, null=True, blank=True)
     city = models.CharField(help_text="Your home city.", max_length=50, null=True, blank=True)
+    severe_allergies = models.TextField(verbose_name="Severe Allergies", help_text="List allergens that would be a threat to you if they were present in the venue.", max_length=1000, null=True, blank=True)
 
     # set model manager
     objects = UserManager()
