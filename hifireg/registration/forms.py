@@ -5,8 +5,11 @@ from django.contrib.auth.forms import UsernameField
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Registration, CompCode
+from .models import User, Registration, CompCode, Volunteer
 from .models.comp_code import CompCodeHelper
+
+
+YESNO = [(True, 'Yes'), (False, 'No')]
 
 
 class PolicyForm(forms.ModelForm):
@@ -33,7 +36,7 @@ class PolicyForm(forms.ModelForm):
 class VolunteerForm(forms.ModelForm):
     class Meta:
         model = Registration
-        fields = ['applies_to_volunteer']
+        fields = ['wants_to_volunteer']
         widgets = {
             'is_volunteer': forms.RadioSelect(choices=YESNO),
         }
@@ -45,13 +48,13 @@ class VolunteerForm(forms.ModelForm):
 
 class VolunteerDetailsForm(forms.ModelForm):
     class Meta:
-        model = Registration
+        model = Volunteer
         fields = [
-            'volunteer_cellphone_number',
-            'volunteer_hours_max',
-            'volunteer_image',
-            'volunteer_skills',
-            'volunteer_cantwont',
+            'cellphone_number',
+            'hours_max',
+            'image',
+            'skills',
+            'cantwont',
         ]
         widgets = {
             'volunteer_hours_max': forms.NumberInput(attrs={'min': 1, 'max': 8, 'value': 3})
