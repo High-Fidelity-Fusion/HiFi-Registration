@@ -141,6 +141,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# SMTP/E-Mail
+# https://docs.djangoproject.com/en/3.0/topics/email/
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
 # Custom User Model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'registration.User'
