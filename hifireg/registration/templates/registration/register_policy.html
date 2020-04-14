@@ -1,0 +1,18 @@
+{% extends "registration/base.html" %}
+
+{% block content %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <h2>Policy</h2>
+    Code of Conduct:
+    Accountability Process:
+    Terms:
+    <br><br>
+    {{form}}
+    <br><br>
+    <input type="submit" name="previous" value="Previous">
+    <input type="submit" id="next" value="Next">
+</form>
+
+{% endblock %}

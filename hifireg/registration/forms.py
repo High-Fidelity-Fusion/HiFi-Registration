@@ -3,6 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm as AuthenticationForm_
 from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
 from django.contrib.auth.forms import UsernameField
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 
 from .models import User, Registration, CompCode, Volunteer
@@ -12,7 +13,7 @@ from .models.comp_code import CompCodeHelper
 YESNO = [(True, 'Yes'), (False, 'No')]
 
 
-class PolicyForm(forms.ModelForm):
+class RegPolicyForm(forms.ModelForm):
     class Meta:
         model = Registration
         fields = ['agrees_to_policy', 'opts_into_photo_review']
@@ -22,7 +23,7 @@ class PolicyForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(PolicyForm, self).__init__(*args, **kwargs)
+        super(RegPolicyForm, self).__init__(*args, **kwargs)
         self.fields['agrees_to_policy'].required = True
         self.fields['opts_into_photo_review'].required = True
 
@@ -33,20 +34,20 @@ class PolicyForm(forms.ModelForm):
         return data
 
 
-class VolunteerForm(forms.ModelForm):
+class RegVolunteerForm(forms.ModelForm):
     class Meta:
         model = Registration
         fields = ['wants_to_volunteer']
         widgets = {
-            'is_volunteer': forms.RadioSelect(choices=YESNO),
+            'wants_to_volunteer': forms.RadioSelect(choices=YESNO),
         }
 
     def __init__(self, *args, **kwargs):
-        super(VolunteerForm, self).__init__(*args, **kwargs)
-        self.fields['is_volunteer'].required = True
+        super(RegVolunteerForm, self).__init__(*args, **kwargs)
+        self.fields['wants_to_volunteer'].required = True
 
 
-class VolunteerDetailsForm(forms.ModelForm):
+class RegVolunteerDetailsForm(forms.ModelForm):
     class Meta:
         model = Volunteer
         fields = [
@@ -57,15 +58,42 @@ class VolunteerDetailsForm(forms.ModelForm):
             'cantwont',
         ]
         widgets = {
-            'volunteer_hours_max': forms.NumberInput(attrs={'min': 1, 'max': 8, 'value': 3})
+            'hours_max': forms.NumberInput(attrs={'min': 1, 'max': 8, 'value': 3})
         }
 
     def __init__(self, *args, **kwargs):
-        super(VolunteerDetailsForm, self).__init__(*args, **kwargs)
-        self.fields['volunteer_cellphone_number'].required = True
-        self.fields['volunteer_hours_max'].required = True
-        self.fields['volunteer_hours_max'].validators = [MinValueValidator(1), MaxValueValidator(8)]
-        self.fields['volunteer_image'].required = True
+        super(RegVolunteerDetailsForm, self).__init__(*args, **kwargs)
+        self.fields['cellphone_number'].required = True
+        self.fields['hours_max'].required = True
+        self.fields['hours_max'].validators = [MinValueValidator(1), MaxValueValidator(8)]
+        self.fields['image'].required = True
+
+
+class RegMiscForm(forms.ModelForm):
+    class Meta:
+        model = Registration
+        fields = [
+            'mailing_list',
+            'housing_transport_acknowledgement',
+            'accommodations',
+            'referral_code',
+            'registration_feedback',
+        ]
+        widgets = {
+            'mailing_list': forms.RadioSelect(choices=YESNO),
+            'housing_transport_acknowledgement': forms.RadioSelect(choices=YESNO),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(RegMiscForm, self).__init__(*args, **kwargs)
+        self.fields['mailing_list'].required = True
+        self.fields['housing_transport_acknowledgement'].required = True
+
+    def clean_housing_transport_acknowledgement(self):
+        data = self.cleaned_data.get('housing_transport_acknowledgement')
+        if data is not True:
+            raise forms.ValidationError('You must attend to your own housing and transportation needs.')
+        return data
 
 
 class RegCompCodeForm(forms.Form):
