@@ -21,7 +21,6 @@ urlpatterns = [
     path('form/miscellaneous/', views.register_misc, name='register-misc'),
     path('payment/', views.make_payment, name='payment'),
     path('payment/confirmation/', views.payment_confirmation, name='payment-confirmation'),
-    path('donate/', views.donate, name='donate'),
 
     path('account/create', views.create_user, name='create-user'),
     path('account/view', views.view_user, name='view-user'),
