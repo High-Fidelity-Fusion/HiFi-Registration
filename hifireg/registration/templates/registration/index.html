@@ -1,10 +1,14 @@
 {% extends "registration/base.html" %}
 
-{% block content %}
+{% block card_content %}
 
-<p>Hi, {{ user.get_full_name }}!</p>
+<p>Hi, {{ user.first_name }}!</p>
 <p>Thanks for logging in.</p>
-<p><a href="{% url 'register-comp-code' %}"><button>Register</button></a> <a href="{% url 'logout' %}"><button>Logout</button></a></p>
-<p><a href="{% url 'view-user' %}"><button>Account</button></a></p>
+{% include "registration/form_input.html" %}
+
+<div class="control">
+    <a href="{% url 'register-comp-code' %}"><button class="button is-link">Register</button></a>
+    <a href="{% url 'view-user' %}"><button class="button is-link">Account</button></a>
+</div>
 
 {% endblock %}
