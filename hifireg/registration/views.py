@@ -41,32 +41,36 @@ def create_user(request):
     return render(request, 'registration/create_user.html', context)
 
 
-@method_decorator(login_required, name='dispatch')
-class UpdateUser(UpdateView):
-    model = User
-    form_class = UserUpdateForm
-    success_url = reverse_lazy('index')
-    template_name = 'registration/edit_user.html'
-
-    # prevents data from updating on post when cancel is pushed
-    def post(self, request, *args, **kwargs):
+@login_required
+def update_user(request):
+    user = User.objects.get(email=request.user)
+    if request.method == 'POST':
         if 'cancel' in request.POST:
-            self.object = self.get_object()
-            return redirect('index')
-        response = super(UpdateUser, self).post(request, *args, **kwargs)
-        return response
-
-    # modify get_object method to return object (avoids slug or pk in urlconf)
-    def get_object(self):
-        return User.objects.get(email=self.request.user)
+            return redirect('view-user')
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('view-user')
+    else:
+        form = UserUpdateForm(instance=user)
+    return render(request, 'registration/edit_user.html', {'form': form})
 
 
 @login_required
 def view_user(request):
+    if request.method == 'POST':
+        if 'back' in request.POST:
+            return redirect('index')
+        else:
+            return redirect('edit-user')
+
     instance = User.objects.get(email=request.user)
     form = UserUpdateForm(instance=instance)
-    context = {'form': form}
-    return render(request, 'registration/view_user.html', context)
+    print(form.fields)
+    for field in form.fields.values():
+        print(field)
+        field.disabled = True
+    return render(request, 'registration/view_user.html', {'form': form})
 
 
 @login_required

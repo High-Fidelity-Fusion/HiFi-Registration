@@ -1,0 +1,20 @@
+{% extends "registration/base.html" %}
+
+{% block card_content %}
+
+<p class="title">
+    View Account
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% include "registration/form_input.html" %}
+
+    <div class="control">
+        <button type="submit" name="back" class="button is-link">Back</button>
+        <button type="submit" name="edit" class="button is-link">Edit</button>
+    </div>
+</form>
+
+{% endblock %}
