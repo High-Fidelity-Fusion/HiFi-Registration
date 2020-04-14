@@ -3,10 +3,10 @@
 {% block card_content %}
 
 <p class="title">
-    Miscellaneous
+    Donate
 </p>
 
-<form method="post" novalidate>
+<form method="post">
     {% csrf_token %}
 
     {% include "registration/form_input.html" %}
@@ -16,5 +16,4 @@
         <button type="submit" name = 'next' class="button is-link">Next</button>
     </div>
 </form>
-
 {% endblock %}

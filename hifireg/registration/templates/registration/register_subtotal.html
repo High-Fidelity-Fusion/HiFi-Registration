@@ -3,11 +3,12 @@
 {% block card_content %}
 
 <p class="title">
-    Miscellaneous
+    Subtotal
 </p>
 
-<form method="post" novalidate>
+<form method="post">
     {% csrf_token %}
+    <p>This is the AP triage page. We display subtotal and ask whether the registrant can pay that price or needs assistance.</p>
 
     {% include "registration/form_input.html" %}
 
@@ -16,5 +17,4 @@
         <button type="submit" name = 'next' class="button is-link">Next</button>
     </div>
 </form>
-
 {% endblock %}

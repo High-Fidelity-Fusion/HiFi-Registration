@@ -18,8 +18,8 @@ class RegPolicyForm(forms.ModelForm):
         model = Registration
         fields = ['agrees_to_policy', 'opts_into_photo_review']
         widgets = {
-            'agrees_to_policy': forms.RadioSelect(choices=YESNO),
-            'opts_into_photo_review': forms.RadioSelect(choices=YESNO),
+            'agrees_to_policy': forms.Select(choices=YESNO),
+            'opts_into_photo_review': forms.Select(choices=YESNO),
         }
 
     def __init__(self, *args, **kwargs):
@@ -39,7 +39,7 @@ class RegVolunteerForm(forms.ModelForm):
         model = Registration
         fields = ['wants_to_volunteer']
         widgets = {
-            'wants_to_volunteer': forms.RadioSelect(choices=YESNO),
+            'wants_to_volunteer': forms.Select(choices=YESNO),
         }
 
     def __init__(self, *args, **kwargs):
@@ -80,8 +80,8 @@ class RegMiscForm(forms.ModelForm):
             'registration_feedback',
         ]
         widgets = {
-            'mailing_list': forms.RadioSelect(choices=YESNO),
-            'housing_transport_acknowledgement': forms.RadioSelect(choices=YESNO),
+            'mailing_list': forms.Select(choices=YESNO),
+            'housing_transport_acknowledgement': forms.Select(choices=YESNO),
         }
 
     def __init__(self, *args, **kwargs):

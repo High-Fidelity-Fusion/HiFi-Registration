@@ -1,8 +1,21 @@
 {% extends "registration/base.html" %}
 
-{% block content %}
+{% block card_content %}
 
-<p>Choose your tickets!</p>
+<p class="title">
+    Dances
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% include "registration/form_input.html" %}
+
+    <div class="control">
+        <button type="submit" name = 'previous' class="button is-link">Previous</button>
+        <button type="submit" name = 'next' class="button is-link">Next</button>
+    </div>
 
 </form>
+
 {% endblock %}

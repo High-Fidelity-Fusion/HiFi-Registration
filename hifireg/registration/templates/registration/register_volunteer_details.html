@@ -1,14 +1,20 @@
 {% extends "registration/base.html" %}
 
-{% block content %}
+{% block card_content %}
+
+<p class="title">
+    Volunteer Details
+</p>
 
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
-    <h2>Volunteer Details</h2>
-    {{form}}
-    <br><br>
-    <input type="submit" name="previous" value="Previous">
-    <input type="submit" name="next" value="Next">
+
+    {% include "registration/form_input.html" %}
+
+    <div class="control">
+        <button type="submit" name = 'previous' class="button is-link">Previous</button>
+        <button type="submit" name = 'next' class="button is-link">Next</button>
+    </div>
 </form>
 
 {% endblock %}

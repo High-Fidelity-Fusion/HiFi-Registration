@@ -1,18 +1,25 @@
 {% extends "registration/base.html" %}
 
-{% block content %}
+{% block card_content %}
+
+<p class="title">
+    Policy
+</p>
+
 
 <form method="post" novalidate>
     {% csrf_token %}
-    <h2>Policy</h2>
-    Code of Conduct:
-    Accountability Process:
-    Terms:
-    <br><br>
-    {{form}}
-    <br><br>
-    <input type="submit" name="previous" value="Previous">
-    <input type="submit" id="next" value="Next">
+
+    <p>Code of Conduct:</p>
+    <p>Accountability Process:</p>
+    <p>Terms:</p>
+
+    {% include "registration/form_input.html" %}
+
+    <div class="control">
+        <button type="submit" name = 'previous' class="button is-link">Previous</button>
+        <button type="submit" name = 'next' class="button is-link">Next</button>
+    </div>
 </form>
 
 {% endblock %}
