@@ -6,7 +6,7 @@ clean_run: clean migrate run
 
 clean:
 	cd hifireg/registration/migrations && ls --ignore=__init__.py | xargs rm -f
-	rm -f db.sqlite3
+	rm -f hifireg/db.sqlite3
 
 migrate:
 	$(MANAGE) makemigrations

@@ -8,9 +8,10 @@ black = "*"
 pylint = "*"
 
 [packages]
-django = "*"
+django = {extras = ["argon2"],version = "*"}
 psycopg2-binary = "*"
 pillow = "*"
+django-widget-tweaks = "*"
 
 [requires]
 python_version = "3.8"
