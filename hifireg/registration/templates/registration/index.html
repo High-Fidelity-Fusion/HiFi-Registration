@@ -3,7 +3,8 @@
 {% block content %}
 
 <p>Hi, {{ user.get_full_name }}!</p>
-<p>Thanks for logging in. Wanna dance?</p>
-<p><a href={% url 'register-comp-code' %}>Yes</a> <a href={% url 'logout' %}>No</a></p>
+<p>Thanks for logging in.</p>
+<p><a href="{% url 'register-comp-code' %}"><button>Register</button></a> <a href="{% url 'logout' %}"><button>Logout</button></a></p>
+<p><a href="{% url 'view-user' %}"><button>Account</button></a></p>
 
 {% endblock %}

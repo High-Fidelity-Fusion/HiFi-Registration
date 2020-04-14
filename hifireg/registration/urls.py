@@ -16,7 +16,7 @@ urlpatterns = [
 
     path('account/create', views.create_user, name='create-user'),
     path('account/view', views.view_user, name='view-user'),
-    path('account/edit', views.UpdateUser.as_view(), name='edit-user'),
+    path('account/edit', views.update_user, name='edit-user'),
 
     # TODO: implement templates for more of these
     # auth views (some are overridden in views)
