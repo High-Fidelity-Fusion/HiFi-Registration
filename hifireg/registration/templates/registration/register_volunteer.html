@@ -1,0 +1,14 @@
+{% extends "registration/base.html" %}
+
+{% block content %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <h2>Volunteer</h2>
+    {{form}}
+    <br><br>
+    <input type="submit" name="previous" value="Previous">
+    <input type="submit" name="next" value="Next">
+</form>
+
+{% endblock %}

@@ -7,9 +7,16 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('make-account/', views.create_user, name='create-user'),
-    path('comp/', views.register_comp_code, name='register-comp-code'),
-    path('ticket/', views.register_ticket_selection, name='register-ticket-selection'),
+    path('form/comp/', views.register_comp_code, name='register-comp-code'),
+    path('form/ticket/', views.register_ticket_selection, name='register-ticket-selection'),
+    path('form/policy/', views.register_policy, name='register-policy'),
+    path('form/volunteer/', views.register_volunteer, name='register-volunteer'),
+    path('form/volunteer/details/', views.register_volunteer_details, name='register-volunteer-details'),
+    path('form/miscellaneous', views.register_misc, name='register-misc'),
+
+    path('account/create', views.create_user, name='create-user'),
+    path('account/view', views.view_user, name='view-user'),
+    path('account/edit', views.UpdateUser.as_view(), name='edit-user'),
 
     # TODO: implement templates for more of these
     # auth views (some are overridden in views)

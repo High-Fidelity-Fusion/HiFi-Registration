@@ -7,11 +7,11 @@ from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import UpdateView
+from django.views.generic import UpdateView, DetailView
 
 from .decorators import must_have_registration, must_have_order
-from .forms import AuthenticationForm, UserCreationForm, RegCompCodeForm, UserUpdateForm
-from .models.registration import Registration, CompCode
+from .forms import AuthenticationForm, UserCreationForm, UserUpdateForm, RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+from .models.registration import Registration, CompCode, Volunteer
 from .models.user import User
 
 
@@ -41,7 +41,7 @@ def create_user(request):
     return render(request, 'registration/create_user.html', context)
 
 
-@login_required
+@method_decorator(login_required, name='dispatch')
 class UpdateUser(UpdateView):
     model = User
     form_class = UserUpdateForm
@@ -50,7 +50,6 @@ class UpdateUser(UpdateView):
 
     # prevents data from updating on post when cancel is pushed
     def post(self, request, *args, **kwargs):
-        print(request.POST)
         if 'cancel' in request.POST:
             self.object = self.get_object()
             return redirect('index')
@@ -61,11 +60,13 @@ class UpdateUser(UpdateView):
     def get_object(self):
         return User.objects.get(email=self.request.user)
 
-    # use default view, but decorate it
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        response = super(UpdateUser, self).dispatch(request, *args, **kwargs)
-        return response
+
+@login_required
+def view_user(request):
+    instance = User.objects.get(email=request.user)
+    form = UserUpdateForm(instance=instance)
+    context = {'form': form}
+    return render(request, 'registration/view_user.html', context)
 
 
 @login_required
@@ -76,11 +77,11 @@ def register_comp_code(request):
         registration = Registration(user=request.user)
         registration.save()
 
-    nextPage = 'index'
+    next_page = 'register-policy'
 
     # Skip condition
     if registration.comp_code is not None:
-        return redirect(nextPage)
+        return redirect(next_page)
 
     if request.method == 'POST':
         form = RegCompCodeForm(request.POST)
@@ -92,18 +93,90 @@ def register_comp_code(request):
                     registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
                     registration.order_set.filter(session__isnull=False).delete()
                     registration.save()
-                return redirect(nextPage)
+                return redirect(next_page)
 
     else:
         form = RegCompCodeForm(initial={'code': registration.comp_code.code if registration.comp_code else ''})
     return render(request, 'registration/register_comp_code.html', {RegCompCodeForm.__name__: form})
 
 
-@login_required
+class LoginView(LoginView_):
+    authentication_form = AuthenticationForm
+
+
+@must_have_registration
+def register_policy(request):
+    if request.method == 'POST':
+        if 'previous' in request.POST:
+            return redirect('register-comp-code')
+        form = RegPolicyForm(request.POST, instance=Registration.objects.get(user=request.user))
+        if form.is_valid():
+            form.save()
+            return redirect('register-volunteer')
+    else:
+        form = RegPolicyForm(instance=Registration.objects.get(user=request.user))
+    return render(request, 'registration/register_policy.html', {'form': form})
+
+
 @must_have_registration
 def register_ticket_selection(request):
+    form = None
     return render(request, 'registration/register_ticket_selection.html', {RegCompCodeForm.__name__: form})
 
 
-class LoginView(LoginView_):
-    authentication_form = AuthenticationForm
+@must_have_registration
+def register_volunteer(request):
+    if request.method == 'POST':
+        if 'previous' in request.POST:
+            return redirect('register-policy')
+        form = RegVolunteerForm(request.POST, instance=Registration.objects.get(user=request.user))
+        if form.is_valid():
+            registration = form.save()
+            if registration.wants_to_volunteer:
+                return redirect('register-volunteer-details')
+            else:
+                return redirect('register-misc')
+    else:
+        form = RegVolunteerForm(instance=Registration.objects.get(user=request.user))
+    return render(request, 'registration/register_volunteer.html', {'form': form})
+
+
+@must_have_registration
+def register_volunteer_details(request):
+    registration = Registration.objects.get(user=request.user)
+    try:
+        volunteer = Volunteer.objects.all().get(id=registration.volunteer.id)
+    except AttributeError:
+        volunteer = Volunteer()
+        volunteer.save()
+        registration.volunteer = volunteer
+        registration.save()
+
+    if request.method == 'POST':
+        if 'previous' in request.POST:
+            return redirect('register-volunteer')
+        form = RegVolunteerDetailsForm(request.POST, request.FILES, instance=volunteer)
+        if form.is_valid():
+            form.save()
+            return redirect('register-misc')
+    else:
+        form = RegVolunteerDetailsForm(instance=volunteer)
+    return render(request, 'registration/register_volunteer_details.html', {'form': form})
+
+
+@must_have_registration
+def register_misc(request):
+    if request.method == 'POST':
+        registration = Registration.objects.get(user=request.user)
+        if 'previous' in request.POST:
+            if registration.wants_to_volunteer:
+                return redirect('register-volunteer-details')
+            else:
+                return redirect('register-volunteer')
+        form = RegMiscForm(request.POST, instance=registration)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = RegMiscForm(instance=Registration.objects.get(user=request.user))
+    return render(request, 'registration/register_misc.html', {'form': form})
