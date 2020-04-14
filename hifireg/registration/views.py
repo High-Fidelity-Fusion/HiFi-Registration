@@ -270,8 +270,3 @@ def make_payment(request):
 
 def payment_confirmation(request):
     return render(request, 'registration/payment_confirmation.html', {})
-
-
-# handles donations that are not part of registrations
-def donate(request):
-    return render(request, 'registration/donate.html', {})
