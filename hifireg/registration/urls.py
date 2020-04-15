@@ -25,7 +25,7 @@ urlpatterns = [
 
 
     # auth views (some are overridden in views)
-    path('account/create', user.create_user, name='create_user'),
+    path('account/create', user.CreateUser.as_view(), name='create_user'),
     path('account/view', user.view_user, name='view_user'),
     path('account/edit', user.update_user, name='edit_user'),
     path('account/login/', user.LoginView.as_view(), name='login'),
