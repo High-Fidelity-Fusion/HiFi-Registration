@@ -30,9 +30,9 @@
     <input type="hidden" name="next" value="{{ next }}">
 </form>
 
-<a href={% url 'create-user' %}>I don't have an account.</a>
-
 {# Assumes you setup the password_reset view in your URLconf #}
-<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+<p><a href="{% url 'password_reset' %}">Forgot password?</a></p>
+
+<a href="{% url 'create_user' %}">No account? Create one!</a>
 
 {% endblock %}

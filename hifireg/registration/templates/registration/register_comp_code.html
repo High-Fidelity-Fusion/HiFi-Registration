@@ -3,7 +3,7 @@
 {% block card_content %}
 
 <p>Let's get started!</p>
-<form action="{% url 'register-comp-code' %}" method="post">
+<form method="post">
   {% csrf_token %}
 
   {% include "registration/form_input.html" %}

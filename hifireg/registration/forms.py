@@ -10,7 +10,7 @@ from .models import User, Registration, CompCode, Volunteer
 from .models.comp_code import CompCodeHelper
 
 
-YESNO = [(True, 'Yes'), (False, 'No')]
+YESNO = [(False, 'No'), (True, 'Yes')]
 
 
 class RegPolicyForm(forms.ModelForm):
@@ -25,7 +25,9 @@ class RegPolicyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RegPolicyForm, self).__init__(*args, **kwargs)
         self.fields['agrees_to_policy'].required = True
+        self.fields['agrees_to_policy'].default = False
         self.fields['opts_into_photo_review'].required = True
+        self.fields['opts_into_photo_review'].default = False
 
     def clean_agrees_to_policy(self):
         data = self.cleaned_data.get('agrees_to_policy')
