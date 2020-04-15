@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.views.generic.edit import FormView
 
 from ..forms.user import AuthenticationForm, UserCreationForm, UserUpdateForm
 from ..models.user import User
@@ -14,22 +15,16 @@ class LoginView(auth_views.LoginView):
     authentication_form = AuthenticationForm
 
 
-def create_user(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, 'Account created successfully')
-            login(request, user)
-            # TODO: A lot of tutorials tend to authenticate the user before logging them in
-            #       but I've seen this succeed without doing that. Probably need to figure
-            #       out what the deal is there.
-            return redirect('index')
-    else:
-        form = UserCreationForm()
-
-    context = {'form': form}
-    return render(request, 'user/create_user.html', context)
+class CreateUser(FormView):
+    template_name = "user/create_user.html"
+    form_class = UserCreationForm
+    success_url = reverse_lazy('index')
+    
+    def form_valid(self, form):
+        user = form.save()
+        # https://docs.djangoproject.com/en/3.0/topics/auth/default/#how-to-log-a-user-in
+        login(self.request, user)
+        return super().form_valid(form)
 
 
 @login_required
