@@ -1,13 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView as LoginView_
+from django.contrib.auth import views as auth_views
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import UpdateView, DetailView
 
 from .decorators import must_have_registration, must_have_order
 from .forms import AuthenticationForm, UserCreationForm, UserUpdateForm, RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
@@ -20,7 +19,8 @@ def index(request):
     return render(request, 'registration/index.html', {'user': request.user})
 
 
-class LoginView(LoginView_):
+class LoginView(auth_views.LoginView):
+    template_name = 'user/login.html'
     authentication_form = AuthenticationForm
 
 
@@ -37,26 +37,18 @@ def create_user(request):
             return redirect('index')
     else:
         form = UserCreationForm()
-    
+
     context = {'form': form}
-    return render(request, 'registration/create_user.html', context)
+    return render(request, 'user/create_user.html', context)
 
 
 @login_required
 def view_user(request):
-    if request.method == 'POST':
-        if 'back' in request.POST:
-            return redirect('index')
-        else:
-            return redirect('edit-user')
-
     instance = User.objects.get(email=request.user)
     form = UserUpdateForm(instance=instance)
-    print(form.fields)
     for field in form.fields.values():
-        print(field)
         field.disabled = True
-    return render(request, 'registration/view_user.html', {'form': form})
+    return render(request, 'user/view_user.html', {'form': form})
 
 
 @login_required
@@ -64,14 +56,55 @@ def update_user(request):
     user = User.objects.get(email=request.user)
     if request.method == 'POST':
         if 'cancel' in request.POST:
-            return redirect('view-user')
+            return redirect('view_user')
         form = UserUpdateForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            return redirect('view-user')
+            return redirect('view_user')
     else:
         form = UserUpdateForm(instance=user)
-    return render(request, 'registration/edit_user.html', {'form': form})
+    return render(request, 'user/edit_user.html', {'form': form})
+
+
+class PasswordChangeView(auth_views.PasswordChangeView):
+    template_name = 'user/password_change.html'
+    success_url = reverse_lazy('password_change_done')
+
+    def post(self, request, *args, **kwargs):
+        if 'cancel' in request.POST:
+            return redirect('view_user')
+        return super(PasswordChangeView, self).post(request, *args, **kwargs)
+
+
+class PasswordChangeDoneView(auth_views.PasswordChangeDoneView):
+    template_name = 'user/password_change_done.html'
+
+
+# allows user to generate reset password link
+class PasswordResetView(auth_views.PasswordResetView):
+    template_name = 'user/password_reset.html'
+    success_url = reverse_lazy('password_reset_done')
+
+    def post(self, request, *args, **kwargs):
+        if 'cancel' in request.POST:
+            return redirect('login')
+        return super(PasswordResetView, self).post(request, *args, **kwargs)
+
+
+# confirms reset password link sent
+class PasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = 'user/password_reset_done.html'
+
+
+# accepts user's new password input
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = 'user/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+
+# confirms user's new password input
+class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    template_name = 'user/password_reset_complete.html'
 
 
 @login_required
@@ -82,7 +115,7 @@ def register_comp_code(request):
         registration = Registration(user=request.user)
         registration.save()
 
-    next_page = 'register-policy'
+    next_page = 'register_policy'
 
     # Skip condition
     if registration.comp_code is not None:
@@ -112,11 +145,11 @@ def register_comp_code(request):
 def register_policy(request):
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-comp-code')
+            return redirect('register_comp_code')
         form = RegPolicyForm(request.POST, instance=Registration.objects.get(user=request.user))
         if form.is_valid():
             form.save()
-            return redirect('register-ticket-selection')
+            return redirect('register_ticket_selection')
     else:
         form = RegPolicyForm(instance=Registration.objects.get(user=request.user))
     return render(request, 'registration/register_policy.html', {'form': form})
@@ -127,8 +160,8 @@ def register_ticket_selection(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-policy')
-        return redirect('register-class-selection')
+            return redirect('register_policy')
+        return redirect('register_class_selection')
     return render(request, 'registration/register_ticket_selection.html', {'form': form})
 
 
@@ -137,8 +170,8 @@ def register_class_selection(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-ticket-selection')
-        return redirect('register-showcase')
+            return redirect('register_ticket_selection')
+        return redirect('register_showcase')
     return render(request, 'registration/register_class_selection.html', {'form': form})
 
 
@@ -147,8 +180,8 @@ def register_showcase(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-class-selection')
-        return redirect('register-merchandise')
+            return redirect('register_class_selection')
+        return redirect('register_merchandise')
     return render(request, 'registration/register_showcase.html', {'form': form})
 
 
@@ -157,8 +190,8 @@ def register_merchandise(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-showcase')
-        return redirect('register-subtotal')
+            return redirect('register_showcase')
+        return redirect('register_subtotal')
     return render(request, 'registration/register_merchandise.html', {'form': form})
 
 
@@ -168,11 +201,11 @@ def register_subtotal(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-showcase')
+            return redirect('register_merchandise')
         if True: # redirect based on need for accessible pricing
-            return redirect('register-accessible-pricing')
+            return redirect('register_accessible_pricing')
         else:
-            return redirect('register-donate')
+            return redirect('register_donate')
     return render(request, 'registration/register_subtotal.html', {'form': form})
 
 
@@ -181,8 +214,8 @@ def register_accessible_pricing(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-subtotal')
-        return redirect('register-volunteer')
+            return redirect('register_subtotal')
+        return redirect('register_volunteer')
     return render(request, 'registration/register_accessible_pricing.html', {'form': form})
 
 
@@ -191,8 +224,8 @@ def register_donate(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-subtotal')
-        return redirect('register-volunteer')
+            return redirect('register_subtotal')
+        return redirect('register_volunteer')
     return render(request, 'registration/register_donate.html', {'form': form})
 
 
@@ -201,16 +234,16 @@ def register_volunteer(request):
     if request.method == 'POST':
         if 'previous' in request.POST:
             if True:  # redirect based need for accessible pricing
-                return redirect('register-donate')
+                return redirect('register_donate')
             else:
-                return redirect('register-accessible-pricing')
+                return redirect('register_accessible_pricing')
         form = RegVolunteerForm(request.POST, instance=Registration.objects.get(user=request.user))
         if form.is_valid():
             registration = form.save()
             if registration.wants_to_volunteer:
-                return redirect('register-volunteer-details')
+                return redirect('register_volunteer_details')
             else:
-                return redirect('register-misc')
+                return redirect('register_misc')
     else:
         form = RegVolunteerForm(instance=Registration.objects.get(user=request.user))
     return render(request, 'registration/register_volunteer.html', {'form': form})
@@ -229,11 +262,11 @@ def register_volunteer_details(request):
 
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-volunteer')
+            return redirect('register_volunteer')
         form = RegVolunteerDetailsForm(request.POST, request.FILES, instance=volunteer)
         if form.is_valid():
             form.save()
-            return redirect('register-misc')
+            return redirect('register_misc')
     else:
         form = RegVolunteerDetailsForm(instance=volunteer)
     return render(request, 'registration/register_volunteer_details.html', {'form': form})
@@ -245,9 +278,9 @@ def register_misc(request):
         registration = Registration.objects.get(user=request.user)
         if 'previous' in request.POST:
             if registration.wants_to_volunteer:
-                return redirect('register-volunteer-details')
+                return redirect('register_volunteer_details')
             else:
-                return redirect('register-volunteer')
+                return redirect('register_volunteer')
         form = RegMiscForm(request.POST, instance=registration)
         if form.is_valid():
             form.save()
@@ -262,8 +295,8 @@ def make_payment(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register-misc')
-        return redirect('payment-confirmation')
+            return redirect('register_misc')
+        return redirect('payment_confirmation')
     else:
         return render(request, 'registration/payment.html', {'form': form})
 
