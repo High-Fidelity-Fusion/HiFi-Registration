@@ -1,0 +1,24 @@
+{% extends "registration/base.html" %}
+
+{% block card_content %}
+
+<p class="title">
+    {{ title }}
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% include "registration/form_input.html" %}
+
+    <div class="field is-grouped">
+        {% for button in buttons %}
+        <div class="control">
+            <button type="submit" name="{{ button.1 }}" class="button is-link">{{button.0}}</button>
+        </div>
+        {% endfor %}
+    </div>
+
+</form>
+
+{% endblock %}

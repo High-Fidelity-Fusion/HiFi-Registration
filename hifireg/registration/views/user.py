@@ -30,10 +30,15 @@ class CreateUser(FormView):
 @login_required
 def view_user(request):
     instance = User.objects.get(email=request.user)
-    form = UserUpdateForm(instance=instance)
-    for field in form.fields.values():
+    context = {}
+    context['title'] = "View Account"
+    context['links'] = (('Back', 'index'), ('Edit', 'edit_user'), ('Change Password', 'password_change'))
+    context['form'] = UserUpdateForm(instance=instance)
+
+    for field in context['form'].fields.values():
         field.disabled = True
-    return render(request, 'user/view_user.html', {'form': form})
+
+    return render(request, 'user/link_form.html', context)
 
 
 @login_required
@@ -48,7 +53,13 @@ def update_user(request):
             return redirect('view_user')
     else:
         form = UserUpdateForm(instance=user)
-    return render(request, 'user/edit_user.html', {'form': form})
+
+    context = {}
+    context['title'] = "Edit Account"
+    context['buttons'] = (('Cancel', 'cancel'), ('Submit', 'submit'))
+    context['form'] = form
+
+    return render(request, 'user/edit_user.html', context)
 
 
 class PasswordChangeView(auth_views.PasswordChangeView):
