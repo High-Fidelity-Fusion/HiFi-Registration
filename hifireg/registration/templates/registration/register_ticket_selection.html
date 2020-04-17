@@ -1,21 +1,36 @@
 {% extends "registration/base.html" %}
 
-{% block card_content %}
 
-<p class="title">
-    Dances
-</p>
+{% block content %}
+<p>Choose your tickets!</p>
+{% for category in categories %}
+<h3 class="title">{{category.name}}</h3>
+  {% for slot in category.slots %}
+  <h4 class="title is-4">{{slot.name}}</h4>
+    {% for product in slot.products %}
+      {% include 'registration/product_card.html' %}
+    {% endfor %}
+  {% endfor %}
 
+  {% for product in category.products %}
+    {% include 'registration/product_card.html' %}
+  {% endfor %}
+{% endfor %}
 <form method="post">
-    {% csrf_token %}
+  {% csrf_token %}
 
-    {% include "registration/form_input.html" %}
-
-    <div class="control">
-        <button type="submit" name='previous' class="button is-link">Previous</button>
-        <button type="submit" name='next' class="button is-link">Next</button>
-    </div>
+  <div class="control">
+    <button type="submit" name='previous' class="button is-link">Previous</button>
+    <button type="submit" name='next' class="button is-link">Next</button>
+  </div>
 
 </form>
-
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script>
+  $(".product-checkbox").change(function() {
+    var product_id = this.id.split('-')[1];
+    var checkBoxes = $(".check-" + product_id).not(this);
+    checkBoxes.prop('checked', this.checked);
+  });
+</script>
 {% endblock %}

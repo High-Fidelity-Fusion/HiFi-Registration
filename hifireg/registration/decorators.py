@@ -4,7 +4,6 @@ from functools import wraps
 
 from .models.registration import Registration, Order, OrderItem
 
-
 def must_have_registration(function):
     @login_required
     @wraps(function)

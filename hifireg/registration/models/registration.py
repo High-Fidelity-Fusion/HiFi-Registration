@@ -21,43 +21,6 @@ class UserSession(models.Model):
     def get_current(cls):
         return UserSession.objects.first() #TODO update to get the actual current UserSession based on the current DjangoSession
 
-
-class ProductCategory(models.Model):
-    DANCE = 'DANCE'
-    CLASS = 'CLASS'
-    ADD_ON = 'ADDON'
-    SECTION_CHOICES = [
-        (DANCE, 'Dance Passes'),
-        (CLASS, 'Class Passes'),
-        (ADD_ON, 'Add-Ons')
-    ]
-    name = models.CharField(max_length=100)
-    section = models.CharField(max_length=5, choices=SECTION_CHOICES)
-
-
-class ProductCategorySlot(models.Model):
-    name = models.CharField(max_length=100)
-    category = models.ForeignKey(ProductCategory, on_delete=models.PROTECT)
-    is_exclusionary = models.BooleanField(default=True)
-
-
-class Product(models.Model):
-    category_slots = models.ManyToManyField(ProductCategorySlot)
-    total_quantity = models.PositiveIntegerField()
-    max_quantity_per_reg = models.PositiveIntegerField()
-    title = models.CharField(max_length=100)
-    subtitle = models.CharField(max_length=100)
-    description = models.CharField(max_length=1000)
-    price = models.PositiveIntegerField()
-    is_compable = models.BooleanField(default=False)
-    is_visible = models.BooleanField(default=True)
-    is_ap_eligible = models.BooleanField(default=True)
-
-    @property
-    def available_quantity(self):
-        return self.total_quantity - (self.orderitem_set.aggregate(Sum('quantity'))['quantity__sum'] or 0)
-
-
 class Registration(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
@@ -82,7 +45,6 @@ class Registration(models.Model):
     @property
     def is_comped(self):
         return self.comp_code is not None
-
 
 class Volunteer(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.CASCADE, null=True, blank=True)
@@ -114,8 +76,8 @@ class Order(models.Model):
     def add_item(self, product, quantity):
         if self.is_submitted:
             raise SuspiciousOperation('You cannot add items to a finalized order.')
-        for category_slot in product.category_slots.iterator():
-            if category_slot.is_exclusionary == True and self.orderitem_set.exclude(product=product).filter(product__category_slots=category_slot).exists():
+        for slot in product.slots.iterator():
+            if slot.is_exclusionary == True and self.orderitem_set.exclude(product=product).filter(product__slots=slot).exists():
                 raise SuspiciousOperation('You cannot have more than one product in an exclusionary slot.')
         if (self.orderitem_set.get(product=product).quantity if self.orderitem_set.filter(product=product).exists() else 0) + quantity > product.max_quantity_per_reg:
             raise SuspiciousOperation('You cannot exceed the max quantity per registration for that product.')
@@ -152,7 +114,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    product = models.ForeignKey('Product', on_delete=models.PROTECT)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     unit_price = models.PositiveIntegerField(null=True)
     total_price = models.PositiveIntegerField(null=True)

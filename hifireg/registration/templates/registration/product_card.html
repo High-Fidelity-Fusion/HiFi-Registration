@@ -1,0 +1,14 @@
+<div class="card">
+  <div class="card-content">
+    {% if product.max_quantity_per_reg == 1 %}
+      <input id="check-{{product.id}}-{{product.part}}" class="check-{{product.id}} product-checkbox" type="checkbox">
+    {% endif %}
+    {% if product.has_parts %}
+      <p>{{product.part}} of {{product.total_parts}}</p>
+    {% endif %}
+    <p>{{product.title}}</p>
+    <p>{{product.subtitle}}</p>
+    <p>{{product.description}}</p>
+    <p>{{product.price}}</p>
+  </div>
+</div>
