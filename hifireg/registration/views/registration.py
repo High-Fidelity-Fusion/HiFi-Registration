@@ -5,7 +5,10 @@ from django.shortcuts import render, redirect
 
 from ..decorators import must_have_registration, must_have_order
 from ..forms.registration import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from ..models.registration import Registration, CompCode, Volunteer
+from ..models.registration import Registration, CompCode, Volunteer, Order
+from ..models.product import ProductCategory
+from ..helpers import get_context_for_product_selection
+from django.contrib.sessions.models import Session
 
 
 @login_required
@@ -63,12 +66,16 @@ def register_policy(request):
 
 @must_have_registration
 def register_ticket_selection(request):
-    form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_policy')
         return redirect('register_class_selection')
-    return render(request, 'registration/register_ticket_selection.html', {'form': form})
+
+    order, created = Order.objects.update_or_create(registration=request.user.registration_set.get(), session__isnull=False, defaults={'session': Session.objects.get(pk=request.session.session_key)})
+
+    context = get_context_for_product_selection(ProductCategory.DANCE, request.user)
+
+    return render(request, 'registration/register_ticket_selection.html', context)
 
 
 @must_have_registration  # change to must_have_order when orders are working

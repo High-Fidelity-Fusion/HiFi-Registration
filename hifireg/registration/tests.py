@@ -6,11 +6,12 @@ from django.utils import timezone
 
 
 def setup_test_data():
-    category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE')
-    slot_1 = ProductCategorySlot.objects.create(name='11amFriday', category=category_1)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description')
-    product.category_slots.set([slot_1])
-    registration1 = Registration.objects.create()
+    category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3)
+    slot_1 = ProductSlot.objects.create(name='11amFriday', rank=3)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=category_1)
+    product.slots.set([slot_1])
+    user1 = User.objects.create_user(email='asdf@asdf.asdf')
+    registration1 = Registration.objects.create(user=user1)
     session1 = Session.objects.create(pk='a', expire_date=timezone.now())
     Order.objects.create(registration=registration1, session=session1)
     registration2 = Registration.objects.create()
@@ -18,6 +19,29 @@ def setup_test_data():
     Order.objects.create(registration=registration2, session=session2)
     APFund.objects.create(contribution=2000, notes='notes')
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
+
+def setup_products():
+    Product.slots.through.objects.all().delete()
+    Product.objects.all().delete()
+    ProductCategory.objects.all().delete()
+    ProductSlot.objects.all().delete()
+
+    frislot = ProductSlot.objects.create(name='Friday', rank=3)
+    satslot = ProductSlot.objects.create(name='Saturday', rank=3)
+
+    category = ProductCategory.objects.create(name='Full Weekend Dance Passes', section='DANCE', is_slot_based=False, rank=4)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Weekend Dance Pass', subtitle='subtitle', description='description', category=category)
+    product.slots.add(frislot)
+    product.slots.add(satslot)
+
+    category = ProductCategory.objects.create(name='A La Carte', section='DANCE', rank=3)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday Night Pass', subtitle='subtitle', description='description', category=category)
+    product.slots.add(frislot)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday Night Pass', subtitle='subtitle', description='description', category=category)
+    product.slots.add(satslot)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Fri/Sat Dance Pass', subtitle='subtitle', description='description', category=category)
+    product.slots.add(frislot)
+    product.slots.add(satslot)
 
 class OrderTestCase(TestCase):
     def setUp(self):
@@ -103,11 +127,11 @@ class OrderTestCase(TestCase):
         self.assertEqual(result, False)
 
     def test_add_item__slot_conflict(self):
-        slot = ProductCategorySlot.objects.first()
+        slot = ProductSlot.objects.first()
         order = Order.objects.first()
         product = Product.objects.first()
-        conflicting_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description')
-        conflicting_product.category_slots.set([slot])
+        conflicting_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        conflicting_product.slots.set([slot])
 
         order.add_item(product, 1)
         with self.assertRaises(SuspiciousOperation):
@@ -135,7 +159,7 @@ class OrderTestCase(TestCase):
         registration.save()
         order = Order.objects.create(registration=registration, session=Session.objects.create(pk='test_add_item__comped', expire_date=timezone.now()))
         non_compable_product = Product.objects.first()
-        compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description')
+        compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
 
         order.add_item(non_compable_product, 1)
         order.add_item(compable_product, 1)
@@ -203,7 +227,7 @@ class OrderTestCase(TestCase):
     def test_claim_accessible_pricing__partially_ineligible(self):
         order = Order.objects.first()
         product = Product.objects.first()
-        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description')
+        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         order.add_item(product, 1)
         order.add_item(ineligible_product, 1)
 
@@ -217,7 +241,7 @@ class OrderTestCase(TestCase):
 
     def test_claim_accessible_pricing__fully_ineligible(self):
         order = Order.objects.first()
-        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description')
+        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         order.add_item(ineligible_product, 1)
 
         result = order.claim_accessible_pricing()
@@ -227,3 +251,97 @@ class OrderTestCase(TestCase):
         self.assertEqual(order.original_price, 1000)
         self.assertEqual(order.accessible_price, 1000)
         self.assertEqual(order.is_accessible_pricing, False)
+
+class ProductTestCase(TestCase):
+    def setUp(self):
+        setup_test_data()
+
+    def test_get_product_info_for_user(self):
+        #Arrange
+        product = Product.objects.first()
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        registration = Registration.objects.first()
+        incomplete_order = registration.order_set.first()
+        complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
+
+        incomplete_order.add_item(product, 1)
+        complete_order.add_item(product, 1)
+        complete_order.session = None
+        complete_order.save()
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_result = product_info.get(pk=product.pk)
+        unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
+
+        #Assert
+        self.assertEqual(product_info.filter(pk=product.pk).count(), 1)
+        self.assertEqual(product_result.quantity_purchased, 1)
+        self.assertEqual(unclaimed_product_result.quantity_purchased, 0)
+        self.assertEqual(product_result.quantity_claimed, 1)
+        self.assertEqual(unclaimed_product_result.quantity_claimed, 0)
+        self.assertEqual(product_result.quantity_available, 3)
+        self.assertEqual(unclaimed_product_result.quantity_available, 5)
+
+    def test_get_product_info_for_user__product_does_not_conflict(self):
+        #Arrange
+        product = Product.objects.first()
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        registration = Registration.objects.first()
+        incomplete_order = registration.order_set.first()
+        complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
+
+        incomplete_order.add_item(product, 1)
+        complete_order.add_item(product, 1)
+        complete_order.session = None
+        complete_order.save()
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user)
+
+        #Assert
+        product_result = product_info.get(pk=product.pk)
+        unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, False)
+
+    def test_get_product_info_for_user__product_conflicts_with_cart(self):
+        #Arrange
+        product_in_cart = Product.objects.first()
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        registration = Registration.objects.first()
+        incomplete_order = registration.order_set.first()
+        unclaimed_product.slots.set([ProductSlot.objects.first()])
+        incomplete_order.add_item(product_in_cart, 1)
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user)
+
+        #Assert
+        product_result = product_info.get(pk=product_in_cart.pk)
+        unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, True)
+
+    def test_get_product_info_for_user__product_conflicts_with_purchase(self):
+        #Arrange
+        product_purchased = Product.objects.first()
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        registration = Registration.objects.first()
+        complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
+
+        complete_order.add_item(product_purchased, 1)
+        complete_order.session = None
+        complete_order.save()
+
+        #Arrange
+        unclaimed_product.slots.set([ProductSlot.objects.first()])
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user)
+
+        #Assert
+        product_result = product_info.get(pk=product_purchased.pk)
+        unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, True)
