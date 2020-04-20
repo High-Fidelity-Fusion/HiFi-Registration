@@ -1,15 +1,13 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
 
 from ..decorators import must_have_registration, must_have_order
-from ..forms.registration import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from ..models.registration import Registration, CompCode, Volunteer, Order
-from ..models.product import ProductCategory
+from ..forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+from ..models import CompCode, Order, ProductCategory, Registration, Volunteer
 from ..helpers import get_context_for_product_selection
-from django.contrib.sessions.models import Session
-
 
 @login_required
 def index(request):
