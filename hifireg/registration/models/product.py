@@ -1,6 +1,7 @@
 from django.db.models import Sum, F, Case, When, Value, OuterRef, Subquery, Exists
 from django.db.models.functions import Coalesce
 from django.db import models
+
 from .registration import OrderItem
 
 class ProductManager(models.Manager):

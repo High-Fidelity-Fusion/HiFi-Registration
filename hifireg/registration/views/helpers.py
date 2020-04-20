@@ -1,4 +1,4 @@
-from .models import Product, ProductCategory, ProductSlot
+from registration.models import Product, ProductCategory, ProductSlot
 
 class ProductStatuses:
     MAX_PURCHASED = 'max_purchased'

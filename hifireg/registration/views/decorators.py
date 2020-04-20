@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from functools import wraps
 
-from .models.registration import Registration, Order, OrderItem
+from registration.models import Registration, Order, OrderItem
 
 def must_have_registration(function):
     @login_required

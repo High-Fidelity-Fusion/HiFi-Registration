@@ -6,8 +6,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 
-from ..forms import AuthenticationForm, UserCreationForm, UserUpdateForm
-from ..models import User
+from registration.forms import AuthenticationForm, UserCreationForm, UserUpdateForm
+from registration.models import User
+
 from .utils import SubmitButton, LinkButton
 
 
