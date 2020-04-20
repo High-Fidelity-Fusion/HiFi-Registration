@@ -2,8 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from ..models import Registration, CompCode, Volunteer
-from ..models.comp_code import CompCodeHelper
+from ..models import Registration, CompCode, Volunteer, CompCodeHelper
 
 
 YESNO = [(False, 'No'), (True, 'Yes')]
