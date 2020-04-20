@@ -59,7 +59,7 @@ def update_user(request):
     context['buttons'] = (('Cancel', 'cancel'), ('Submit', 'submit'))
     context['form'] = form
 
-    return render(request, 'user/edit_user.html', context)
+    return render(request, 'user/post_form.html', context)
 
 
 class PasswordChangeView(auth_views.PasswordChangeView):
