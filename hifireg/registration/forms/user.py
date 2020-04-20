@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from ..models import User
 
+user_fields = ('first_name', 'last_name', 'personal_pronouns', 'city', 'severe_allergies')
 
 # Custom UserCreationForm for our custom User
 class UserCreationForm(UserCreationForm_):
@@ -19,13 +20,13 @@ class UserCreationForm(UserCreationForm_):
     # Modify/extend fields shown for the user
     class Meta:
         model = User
-        fields = ('email', 'password1', 'password2', 'first_name', 'last_name', 'personal_pronouns', 'city', 'severe_allergies')
+        fields = ('email', 'password1', 'password2') + user_fields
 
 
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'personal_pronouns', 'city', 'severe_allergies')
+        fields = ('email',) + user_fields
 
 
 # Override AuthenticationForm to use EmailInput widget for UsernameField
