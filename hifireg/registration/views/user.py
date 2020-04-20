@@ -1,13 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 
 from ..forms import AuthenticationForm, UserCreationForm, UserUpdateForm
 from ..models import User
+from .utils import SubmitButton, LinkButton
 
 
 class LoginView(auth_views.LoginView):
@@ -29,37 +30,32 @@ class CreateUser(FormView):
 
 @login_required
 def view_user(request):
-    instance = User.objects.get(email=request.user)
     context = {}
     context['title'] = "View Account"
-    context['links'] = (('Back', 'index'), ('Edit', 'edit_user'), ('Change Password', 'password_change'))
-    context['form'] = UserUpdateForm(instance=instance)
-
+    context['buttons'] = (LinkButton('Back', 'index'), 
+                          LinkButton('Edit', 'edit_user'), 
+                          LinkButton('Change Password', 'password_change'))
+    context['form'] = UserUpdateForm(instance=request.user)
     for field in context['form'].fields.values():
         field.disabled = True
-
-    return render(request, 'link_form.html', context)
+    return render(request, 'generic_form.html', context)
 
 
 @login_required
 def update_user(request):
-    user = User.objects.get(email=request.user)
     if request.method == 'POST':
-        if 'cancel' in request.POST:
-            return redirect('view_user')
-        form = UserUpdateForm(request.POST, instance=user)
+        form = UserUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             return redirect('view_user')
     else:
-        form = UserUpdateForm(instance=user)
+        form = UserUpdateForm(instance=request.user)
 
     context = {}
     context['title'] = "Edit Account"
-    context['buttons'] = (('Cancel', 'cancel'), ('Submit', 'submit'))
+    context['buttons'] = (LinkButton('Cancel', 'view_user'), SubmitButton('Submit', 'submit'))
     context['form'] = form
-
-    return render(request, 'post_form.html', context)
+    return render(request, 'generic_form.html', context)
 
 
 class PasswordChangeView(auth_views.PasswordChangeView):
