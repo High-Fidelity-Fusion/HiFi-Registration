@@ -10,7 +10,7 @@
     {% csrf_token %}
     <p>This is the AP triage page. We display subtotal and ask whether the registrant can pay that price or needs assistance.</p>
 
-    {% include "registration/form_input.html" %}
+    {% include "utils/form_fields.html" %}
 
     <div class="control">
         <button type="submit" name='previous' class="button is-link">Previous</button>

@@ -4,7 +4,7 @@
 
 <p>Hi, {{ user.first_name }}!</p>
 <p>Thanks for logging in.</p>
-{% include "registration/form_input.html" %}
+{% include "utils/form_fields.html" %}
 
 <div class="control">
     <a href="{% url 'register_comp_code' %}"><button class="button is-link">Register</button></a>

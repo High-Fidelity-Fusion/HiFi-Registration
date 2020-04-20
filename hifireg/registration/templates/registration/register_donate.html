@@ -9,7 +9,7 @@
 <form method="post">
     {% csrf_token %}
 
-    {% include "registration/form_input.html" %}
+    {% include "utils/form_fields.html" %}
 
     <div class="control">
         <button type="submit" name='previous' class="button is-link">Previous</button>
