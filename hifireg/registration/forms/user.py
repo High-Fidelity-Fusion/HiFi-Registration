@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm as UserCreationForm_
 from django.contrib.auth.forms import UsernameField
 from django.utils.translation import gettext_lazy as _
 
-from ..models import User
+from registration.models import User
 
 user_fields = ('first_name', 'last_name', 'personal_pronouns', 'city', 'severe_allergies')
 

@@ -4,10 +4,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
 
-from ..decorators import must_have_registration, must_have_order
-from ..forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from ..models import CompCode, Order, ProductCategory, Registration, Volunteer
-from ..helpers import get_context_for_product_selection
+from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer
+
+from .helpers import get_context_for_product_selection
+from .decorators import must_have_registration, must_have_order
+
 
 @login_required
 def index(request):
