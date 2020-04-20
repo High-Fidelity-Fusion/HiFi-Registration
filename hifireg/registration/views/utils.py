@@ -5,6 +5,9 @@ class LinkButton:
         self.link = link
 
 class SubmitButton:
-    def __init__(self, text, name):
+    def __init__(self, text, name=None):
         self.text = text
-        self.name = name
+        if name is None:
+            self.name = text.lower()
+        else:
+            self.name = name
