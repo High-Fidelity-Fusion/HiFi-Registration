@@ -38,7 +38,7 @@ def view_user(request):
     for field in context['form'].fields.values():
         field.disabled = True
 
-    return render(request, 'user/link_form.html', context)
+    return render(request, 'link_form.html', context)
 
 
 @login_required
@@ -59,7 +59,7 @@ def update_user(request):
     context['buttons'] = (('Cancel', 'cancel'), ('Submit', 'submit'))
     context['form'] = form
 
-    return render(request, 'user/post_form.html', context)
+    return render(request, 'post_form.html', context)
 
 
 class PasswordChangeView(auth_views.PasswordChangeView):
