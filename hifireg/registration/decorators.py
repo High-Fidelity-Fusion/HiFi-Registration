@@ -11,7 +11,7 @@ def must_have_registration(function):
         if Registration.objects.filter(user=request.user).exists():
             return function(request, *args, **kwargs)
         else:
-            return redirect('register-comp-code')
+            return redirect('register_comp_code')
     # wrap.__doc__ = function.__doc__       made obsolete by @wraps
     # wrap.__name__ = function.__name__     made obsolete by @wraps
     return wrap
@@ -24,7 +24,7 @@ def must_have_order(function):
         if OrderItem.objects.filter(order__registration__user=request.user, order__session__isnull=False).exists():
             return function(request, *args, **kwargs)
         else:
-            return redirect('register-ticket-selection')
+            return redirect('register_ticket_selection')
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__
     return wrap
