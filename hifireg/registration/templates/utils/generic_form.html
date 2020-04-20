@@ -1,0 +1,21 @@
+{% extends "registration/base.html" %}
+{% block card_content %}
+
+<p class="title">
+    {{ title }}
+</p>
+
+{% if subtitle %}
+<p class="subtitle">{{ subtitle }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    {% include "utils/form_fields.html" %}
+
+    {% include "utils/form_controls.html" %}
+
+</form>
+
+{% endblock %}
