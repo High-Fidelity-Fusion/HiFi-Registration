@@ -1,0 +1,9 @@
+{% load special_sauce %}
+
+<div class="control">
+    {% if button|is_submit %}   
+    <button type="submit" name="{{ button.name }}" class="button is-link" {{ button.attrs|default:"" }}>{{button.content}}</button>
+    {% elif button|is_link %}
+    <a href="{% url button.link %}" class="button is-link" {{ button.attrs|default:"" }}>{{ button.content }}</a>
+    {% endif %}
+</div>
