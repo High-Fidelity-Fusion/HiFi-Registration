@@ -4,6 +4,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 from registration.models import Registration, CompCode, Volunteer, CompCodeHelper
 
+from .validators import validate_answered
+
 
 YESNO = [(False, 'No'), (True, 'Yes')]
 
@@ -105,3 +107,33 @@ class RegCompCodeForm(forms.Form):
             if comp_code.max_uses <= comp_code.registration_set.count():
                 raise ValidationError('That code is already expended.')
         return self.cleaned_data
+
+
+class RegAccessiblePriceCalcForm(forms.Form):
+    prices = [1, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 275, 300]
+    price_choices = [
+        (None, ''),
+        (1, 'I could comfortably pay this price.'),
+        (2, 'This amount would be a stretch.'),
+        (3, 'I could not pay this price.')
+    ]
+    proceed_choices = [
+        (None, ''),
+        (1, 'I will pay this price.'),
+        (2, 'I wish to schedule a call with the Accessibility Coordinator')
+    ]
+
+    def __init__(self, *args, **kwargs):
+        subtotal = kwargs.pop('subtotal')
+        super(RegAccessiblePriceCalcForm, self).__init__(*args, **kwargs)
+        for i, price in enumerate(self.prices):
+            if price < subtotal:
+                field_name = 'price' + str(i)
+                self.fields[field_name] = forms.TypedChoiceField(
+                    label='$'+str(price), choices=self.price_choices, coerce=int, validators=[validate_answered]
+                )
+                self.fields[field_name].required = True
+        self.fields['accessible_price'] = forms.IntegerField(label='Accessible Price:', disabled=True)
+        self.fields['proceed'] = forms.TypedChoiceField(
+            label='How should we proceed?', choices=self.proceed_choices, coerce=int, validators=[validate_answered]
+        )
