@@ -21,6 +21,7 @@ class UserSession(models.Model):
     def get_current(cls):
         return UserSession.objects.first() #TODO update to get the actual current UserSession based on the current DjangoSession
 
+
 class Registration(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
@@ -46,6 +47,7 @@ class Registration(models.Model):
     def is_comped(self):
         return self.comp_code is not None
 
+
 class Volunteer(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.CASCADE, null=True, blank=True)
     cellphone_number = models.CharField(verbose_name='Cell Phone Number', max_length=30, null=True, blank=True)
@@ -60,6 +62,7 @@ class Order(models.Model):
     registration = models.ForeignKey(Registration, on_delete=models.CASCADE)
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
+    stretch_price = models.PositiveIntegerField(default=0)
 
     @property
     def is_submitted(self):

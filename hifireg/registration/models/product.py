@@ -4,6 +4,7 @@ from django.db import models
 
 from .registration import OrderItem
 
+
 class ProductManager(models.Manager):
     def get_product_info_for_user(self, user):
         pending_order_items = OrderItem.objects.filter(order__registration__user=user, order__session__isnull=False, product=OuterRef('pk'))
@@ -16,6 +17,7 @@ class ProductManager(models.Manager):
             annotate(quantity_claimed=Coalesce(Subquery(pending_order_items.values('quantity')[:1]), 0)).\
             annotate(quantity_available=F('total_quantity') - Coalesce(Subquery(all_order_items_for_product), 0)).\
             annotate(exclusionary_slot_exists_in_order=Exists(conflicts_with_order))
+
 
 class ProductCategory(models.Model):
     DANCE = 'DANCE'
@@ -31,10 +33,12 @@ class ProductCategory(models.Model):
     is_slot_based = models.BooleanField(default=True)
     rank = models.PositiveIntegerField()
 
+
 class ProductSlot(models.Model):
     name = models.CharField(max_length=100)
     is_exclusionary = models.BooleanField(default=True)
     rank = models.PositiveIntegerField()
+
 
 class Product(models.Model):
     slots = models.ManyToManyField(ProductSlot)

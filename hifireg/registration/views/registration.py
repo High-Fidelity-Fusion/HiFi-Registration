@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
 
-from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer
 
 from .helpers import get_context_for_product_selection
@@ -124,11 +124,16 @@ def register_subtotal(request):
 
 @must_have_registration  # change to must_have_order when orders are working
 def register_accessible_pricing(request):
-    form = None
+    subtotal = 200
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_subtotal')
-        return redirect('register_volunteer')
+        form = RegAccessiblePriceCalcForm(request.POST, subtotal=subtotal)
+        if form.is_valid():
+            return redirect('register_volunteer')
+
+    else:
+        form = RegAccessiblePriceCalcForm(subtotal=subtotal)
     return render(request, 'registration/register_accessible_pricing.html', {'form': form})
 
 

@@ -1,0 +1,157 @@
+{% load widget_tweaks %}
+
+{% for field in form %}
+<div class="field">
+    {# Field label and input #}
+    <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <div class="control" onclick="changeBackgrounds({{ field.id_for_label }})">
+        {% render_field field class+="input" %}
+    </div>
+
+    {# Field normal help text #}
+    {% if field.help_text%}
+    <p class="help">
+        {{ field.help_text|safe }}
+    </p>
+    {% endif %}
+
+    {# Field error help text #}
+    {% if field.errors %}
+    {% for error in field.errors %}
+    <p class="help is-danger">
+        {{ error }}
+    </p>
+    {% endfor %}
+    {% endif %}
+
+</div>
+{% endfor %}
+
+<script>
+    function changeBackgrounds(field) {
+        var fields = document.querySelectorAll('*[id^="id_price"]');
+        var latestChangeIndex = field.id.substring(8)
+        var i
+
+        // set green
+        if (field.value == 1) {
+            for (i = 0; i <= latestChangeIndex; i++) {
+                fields[i].value = 1
+                fields[i].style.backgroundColor = "#9aff8c"
+            }
+        }
+
+
+        // set yellow
+        var yellow = "#ffff9c"
+        if (field.value == 2) {
+            field.style.backgroundColor = yellow
+
+            // fill yellow to highest green
+            if (fields[fields.length - 1].value == 3) {
+                for (i = latestChangeIndex; ; i++) {
+                    if (fields[i].value == 3) {
+                        break
+                    } else {
+                        fields[i].value = 2
+                        fields[i].style.backgroundColor = yellow
+                        if (i == fields.length) {
+                            break
+                        }
+                    }
+                }
+            }
+
+            // fill yellow to lowest red
+            if (fields[0].value == 1) {
+                for (i = latestChangeIndex; ; i--) {
+                    if (fields[i].value == 1) {
+                        break
+                    } else {
+                        fields[i].value = 2
+                        fields[i].style.backgroundColor = yellow
+                        if (i == 0) {
+                            break
+                        }
+                    }
+                }
+            }
+
+            // replace any red at a lower value than the latest change with yellow
+            for (i = 0; i < latestChangeIndex; i++) {
+                if (fields[i].value == 3) {
+                    fields[i].value = 2
+                    fields[i].style.backgroundColor = yellow
+                }
+            }
+
+            // replace any green at a higher value than the latest yellow with red
+            for (i = latestChangeIndex; i < fields.length; i++) {
+                if (fields[i].value == 1) {
+                    fields[i].value = 2
+                    fields[i].style.backgroundColor = yellow
+                }
+            }
+
+            // fill yellow from min yellow to max yellow (in case two separated yellows are selected prior to any other color)
+            var minYellowIndex = -1
+            var maxYellowIndex = -1
+            for (i = 0; i < (fields.length - 1); i++) {
+                if (fields[i].value == 2) {
+                    if (minYellowIndex == -1) {
+                        minYellowIndex = i
+                    }
+                    if (minYellowIndex != -1) {
+                        maxYellowIndex = i - 1
+                    }
+                }
+            }
+            if (minYellowIndex != maxYellowIndex) {
+                for (i = minYellowIndex; i <= maxYellowIndex; i++) {
+                    fields[i].value = 2
+                    fields[i].style.backgroundColor = yellow
+                }
+            }
+        }
+
+
+        // set red
+        if (field.value == 3) {
+            for (i = latestChangeIndex; i < fields.length; i++) {
+                fields[i].value = 3
+                fields[i].style.backgroundColor = "#ff9999"
+            }
+        }
+
+        computeAccessiblePrice()
+    }
+
+    function labelFields() {
+        // get all labels and assign them to their fields
+        var labels = document.getElementsByTagName('LABEL');
+        for (var i = 0; i < labels.length; i++) {
+            if (labels[i].htmlFor != '') {
+                var elem = document.getElementById(labels[i].htmlFor);
+                if (elem) {
+                    elem.label = labels[i];
+                }
+            }
+        }
+    }
+
+    function computeAccessiblePrice() {
+        labelFields()
+        var fields = document.querySelectorAll('*[id^="id_price"]');
+        var accessiblePriceField = document.getElementById("id_accessible_price")
+        accessiblePriceField.value = ""
+        for (i = 0; i < fields.length; i++) {
+            if (fields[i].value < 1) {
+                accessiblePriceField.value = ""
+                return
+            }
+            if (fields[i].value == 1) {
+                accessiblePriceField.value = fields[i].label.innerHTML.substring(1)
+            }
+        }
+    }
+</script>

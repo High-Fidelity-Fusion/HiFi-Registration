@@ -6,10 +6,10 @@
     Accessible Pricing
 </p>
 
-<form method="post">
+<form method="post" id="form" novalidate>
     {% csrf_token %}
 
-    {% include "utils/form_fields.html" %}
+    {% include "utils/form_fields_js_extended.html" %}
 
     <div class="control">
         <button type="submit" name='previous' class="button is-link">Previous</button>
