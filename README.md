@@ -15,3 +15,9 @@ A dance registration system for anarchists.
 ## Generate Bulma custom css:
 - Run `npm run build-css` or `make style`
 - The css will be placed into `hifireg/registration/static/css`
+
+## Test Data
+Setup products test data by running:
+1. `make shell`
+1. `from registration.tests import setup_products`
+1. `setup_products()`

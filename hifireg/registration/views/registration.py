@@ -3,11 +3,12 @@ from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product
 
-from .helpers import get_context_for_product_selection
+from .helpers import get_context_for_product_selection, get_status_for_product
 from .decorators import must_have_registration, must_have_order
 
 
@@ -62,6 +63,34 @@ def register_policy(request):
     else:
         form = RegPolicyForm(instance=Registration.objects.get(user=request.user))
     return render(request, 'registration/register_policy.html', {'form': form})
+
+def add_item(request):
+    try:
+        product = Product.objects.get(pk=request.GET.get('product', None))
+        success = Order.for_user(request.user).add_item(product, int(request.GET.get('increment', None)))
+        product = Product.objects.get_product_info_for_user(request.user).get(pk=product.pk)
+
+        data = {
+            'success': success,
+        }
+    except Exception as e:
+        data = {
+            'error': "error: {0}".format(e)
+        }
+    return JsonResponse(data)
+
+def remove_item(request):
+    try:
+        product = Product.objects.get(pk=request.GET.get('product', None))
+        Order.for_user(request.user).remove_item(product, int(request.GET.get('decrement', None)))
+        product = Product.objects.get_product_info_for_user(request.user).get(pk=product.pk)
+
+        data = {}
+    except Exception as e:
+        data = {
+            'error': "{0}".format(e)
+        }
+    return JsonResponse(data)
 
 
 @must_have_registration

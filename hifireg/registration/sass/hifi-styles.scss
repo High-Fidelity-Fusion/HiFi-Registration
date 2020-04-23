@@ -47,3 +47,33 @@ body {
 main {
     flex: 1 0 auto;
 }
+
+
+
+.product-card {
+    &[class*="conflict-"] {
+        background: grey;
+
+        input {
+            pointer-events: none;
+        }
+    }
+
+    &.loading {
+        .loader {
+            display: block;
+        }
+        input {
+            display: none;
+        }
+    }
+
+    .loader {
+        display: none;
+    }
+
+    .call-in-progress {
+        pointer-events: none;
+    }
+}
+

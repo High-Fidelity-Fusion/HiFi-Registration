@@ -1,6 +1,6 @@
 MANAGE = python hifireg/manage.py
 
-all: migrate run
+all: style migrate run
 clean_migrate: clean migrate
 clean_run: clean migrate run
 

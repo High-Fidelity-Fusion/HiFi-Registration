@@ -1,6 +1,7 @@
 from django.db.models import Sum, F, Case, When, Value, OuterRef, Subquery, Exists
 from django.db.models.functions import Coalesce
 from django.db import models
+from django.contrib.postgres.aggregates import ArrayAgg
 
 from .registration import OrderItem
 
@@ -9,14 +10,16 @@ class ProductManager(models.Manager):
     def get_product_info_for_user(self, user):
         pending_order_items = OrderItem.objects.filter(order__registration__user=user, order__session__isnull=False, product=OuterRef('pk'))
         purchased_order_items = OrderItem.objects.filter(order__registration__user=user, order__session__isnull=True, product=OuterRef('pk'))
-        all_products_for_user = OrderItem.objects.filter(order__registration__user=user).values('product')
-        conflicts_with_order = ProductSlot.objects.filter(is_exclusionary=True, product=OuterRef('pk')).filter(product__in=Subquery(all_products_for_user))
+        all_other_products_for_user = OrderItem.objects.filter(order__registration__user=user).exclude(product=(OuterRef(OuterRef('pk')))).values('product')
+        conflicts_with_order = ProductSlot.objects.filter(is_exclusionary=True, product=OuterRef('pk')).filter(product__in=Subquery(all_other_products_for_user))
+        conflicts_with_order_agg = ProductSlot.objects.filter(is_exclusionary=True, product=OuterRef('pk')).filter(product__in=Subquery(all_other_products_for_user)).values('product').annotate(pks=ArrayAgg('pk')).values('pks')
         all_order_items_for_product = OrderItem.objects.filter(product=OuterRef('pk')).order_by().values('product').annotate(total=Sum('quantity')).values('total')
         return self.filter(is_visible=True).\
             annotate(quantity_purchased=Coalesce(Sum(Subquery(purchased_order_items.values('quantity'))), 0)).\
             annotate(quantity_claimed=Coalesce(Subquery(pending_order_items.values('quantity')[:1]), 0)).\
             annotate(quantity_available=F('total_quantity') - Coalesce(Subquery(all_order_items_for_product), 0)).\
-            annotate(exclusionary_slot_exists_in_order=Exists(conflicts_with_order))
+            annotate(exclusionary_slot_exists_in_order=Exists(conflicts_with_order)).\
+            annotate(slot_conflicts=Coalesce(Subquery(conflicts_with_order_agg), []))
 
 
 class ProductCategory(models.Model):

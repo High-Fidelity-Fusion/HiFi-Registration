@@ -16,6 +16,7 @@ def get_status_for_product(product):
     return 'available'
 
 def build_product(product, slot_id):
+    slots = list(map(str, product.slots.values_list('pk', flat=True)))
     return {
         'id': product.pk,
         'has_parts': slot_id and product.slots.count() > 1,
@@ -27,7 +28,10 @@ def build_product(product, slot_id):
         'price': '${:,.2f}'.format(product.price * 0.01),
         'max_quantity_per_reg': product.max_quantity_per_reg,
         'quantity_claimed': product.quantity_claimed,
-        'status': get_status_for_product(product)
+        'status': get_status_for_product(product),
+        'slots': ','.join(slots),
+        'slotClasses': ' '.join(map(lambda id: 'slot-' + id, slots)),
+        'conflictClasses': ' '.join(map(lambda id: 'conflict-' + str(id), product.slot_conflicts))
     }
 
 def get_context_for_product_selection(section, user):

@@ -18,6 +18,8 @@ urlpatterns = [
 
     # must have order:
     path('register/order/', RedirectView.as_view(url=reverse_lazy('register_ticket_selection')), name='order'), # redirects to order creation view
+    path('ajax/add_item/', views.add_item, name='add_item'),
+    path('ajax/remove_item/', views.remove_item, name='remove_item'),
     path('register/ticket/', views.register_ticket_selection, name='register_ticket_selection'),
     path('register/classes/', views.register_class_selection, name='register_class_selection'),
     path('register/showcase/', views.register_showcase, name='register_showcase'),
