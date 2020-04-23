@@ -26,11 +26,67 @@
 
 </form>
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<style>
+  .conflict {
+    background: grey;
+  }
+</style>
 <script>
   $(".product-checkbox").change(function() {
-    var product_id = this.id.split('-')[1];
-    var checkBoxes = $(".check-" + product_id).not(this);
-    checkBoxes.prop('checked', this.checked);
+    var thisCheckBox = this;
+    $('input').addClass('call-in-progress');
+    var productId = this.dataset.product;
+    var checkBoxes = $(`:input[data-product="${productId}"]`);
+    checkBoxes.not(this).prop('checked', this.checked);
+    $(thisCheckBox).parent().addClass("loading");
+
+    if (this.checked) {
+      $.ajax({
+        url: '/registration/ajax/add_item/',
+        data: {
+          'product': productId,
+          'increment': 1
+        },
+        dataType: 'json',
+        success: function (data) {
+          console.log(data);
+          if (data.success) {
+            var slots = thisCheckBox.dataset.slots.split(',');
+            slots.forEach(slot => {
+              var conflicts = $(`.slot-${slot}`).not(checkBoxes.parents());
+              conflicts.addClass(`conflict-${slot}`);
+            });
+
+          } else {
+            checkBoxes.prop('checked', !this.checked);
+          }
+          $('input').removeClass('call-in-progress');
+          $(thisCheckBox).parent().removeClass("loading");
+        }
+      });
+    } else {
+      $.ajax({
+        url: '/registration/ajax/remove_item/',
+        data: {
+          'product': productId,
+          'decrement': 1
+        },
+        dataType: 'json',
+        success: function (data) {
+          console.log(data);
+
+
+          var slots = thisCheckBox.dataset.slots.split(',');
+          slots.forEach(slot => {
+            var conflicts = $(`.conflict-${slot}`);
+            conflicts.removeClass(`conflict-${slot}`);
+          });
+
+          $('input').removeClass('call-in-progress');
+          $(thisCheckBox).parent().removeClass("loading");
+        }
+      });
+    }
   });
 </script>
 {% endblock %}

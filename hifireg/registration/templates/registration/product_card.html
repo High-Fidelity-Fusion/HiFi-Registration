@@ -1,7 +1,9 @@
+{% load special_sauce %}
 <div class="card">
-  <div class="card-content">
+  <div class="card-content product-card {{product.slotClasses}} {{product.conflictClasses}}">
     {% if product.max_quantity_per_reg == 1 %}
-      <input id="check-{{product.id}}-{{product.part}}" class="check-{{product.id}} product-checkbox" type="checkbox">
+      <div class="loader"></div>
+      <input data-product="{{product.id}}" data-slots="{{product.slots}}" class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' %}checked{% endif %}>
     {% endif %}
     {% if product.has_parts %}
       <p>{{product.part}} of {{product.total_parts}}</p>

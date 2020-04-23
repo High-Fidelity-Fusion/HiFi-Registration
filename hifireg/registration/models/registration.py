@@ -47,6 +47,9 @@ class Registration(models.Model):
     def is_comped(self):
         return self.comp_code is not None
 
+    @classmethod
+    def for_user(cls, user):
+        return cls.objects.get(user=user)
 
 class Volunteer(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.CASCADE, null=True, blank=True)
@@ -114,6 +117,10 @@ class Order(models.Model):
             self.save()
             return True
         return False
+
+    @classmethod
+    def for_user(cls, user):
+        return Registration.for_user(user).order_set.get(session__isnull=False)
 
 
 class OrderItem(models.Model):

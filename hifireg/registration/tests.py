@@ -283,8 +283,61 @@ class ProductTestCase(TestCase):
         self.assertEqual(product_result.quantity_available, 3)
         self.assertEqual(unclaimed_product_result.quantity_available, 5)
 
+    def test_get_product_info_for_user__empty_cart(self):
+        #Arrange
+        product = Product.objects.first()
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        registration = Registration.objects.first()
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_result = product_info.get(pk=product.pk)
+        unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
+
+        #Assert
+        self.assertEqual(product_info.filter(pk=product.pk).count(), 1)
+        self.assertEqual(product_result.quantity_purchased, 0)
+        self.assertEqual(unclaimed_product_result.quantity_purchased, 0)
+        self.assertEqual(product_result.quantity_claimed, 0)
+        self.assertEqual(unclaimed_product_result.quantity_claimed, 0)
+        self.assertEqual(product_result.quantity_available, 5)
+        self.assertEqual(unclaimed_product_result.quantity_available, 5)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.slot_conflicts, [])
+        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(unclaimed_product_result.slot_conflicts, [])
+
+    def test_get_product_info_for_user__multi_slot_products_with_conflict(self):
+        #Arrange
+        setup_products()
+        products = Product.objects.filter(slots=ProductSlot.objects.first()).filter(slots=ProductSlot.objects.last())
+        product1 = products.first()
+        product2 = products.last()
+        registration = Registration.objects.first()
+        incomplete_order = registration.order_set.first()
+        incomplete_order.add_item(product1, 1)
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_result = product_info.get(pk=product1.pk)
+        product_result2 = product_info.get(pk=product2.pk)
+
+        #Assert
+        self.assertEqual(product_info.filter(pk=product1.pk).count(), 1)
+        self.assertEqual(product_result.quantity_purchased, 0)
+        self.assertEqual(product_result.quantity_claimed, 1)
+        self.assertEqual(product_result.quantity_available, 4)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.slot_conflicts, [])
+        self.assertEqual(product_result2.quantity_purchased, 0)
+        self.assertEqual(product_result2.quantity_claimed, 0)
+        self.assertEqual(product_result2.quantity_available, 5)
+        self.assertEqual(product_result2.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(product_result2.slot_conflicts, [ProductSlot.objects.last().pk, ProductSlot.objects.first().pk])
+
     def test_get_product_info_for_user__product_does_not_conflict(self):
         #Arrange
+        product_slot = ProductSlot.objects.first()
         product = Product.objects.first()
         unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         registration = Registration.objects.first()
@@ -302,16 +355,19 @@ class ProductTestCase(TestCase):
         #Assert
         product_result = product_info.get(pk=product.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.slot_conflicts, [])
         self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(unclaimed_product_result.slot_conflicts, [])
 
     def test_get_product_info_for_user__product_conflicts_with_cart(self):
         #Arrange
+        product_slot = ProductSlot.objects.first()
         product_in_cart = Product.objects.first()
         unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
-        unclaimed_product.slots.set([ProductSlot.objects.first()])
+        unclaimed_product.slots.set([product_slot])
         incomplete_order.add_item(product_in_cart, 1)
 
         #Act
@@ -320,11 +376,14 @@ class ProductTestCase(TestCase):
         #Assert
         product_result = product_info.get(pk=product_in_cart.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.slot_conflicts, [])
         self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(unclaimed_product_result.slot_conflicts, [product_slot.pk])
 
     def test_get_product_info_for_user__product_conflicts_with_purchase(self):
         #Arrange
+        product_slot = ProductSlot.objects.first()
         product_purchased = Product.objects.first()
         unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         registration = Registration.objects.first()
@@ -334,7 +393,6 @@ class ProductTestCase(TestCase):
         complete_order.session = None
         complete_order.save()
 
-        #Arrange
         unclaimed_product.slots.set([ProductSlot.objects.first()])
 
         #Act
@@ -343,5 +401,7 @@ class ProductTestCase(TestCase):
         #Assert
         product_result = product_info.get(pk=product_purchased.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.slot_conflicts, [])
         self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(unclaimed_product_result.slot_conflicts, [product_slot.pk])
