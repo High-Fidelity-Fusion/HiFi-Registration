@@ -110,7 +110,7 @@ class RegCompCodeForm(forms.Form):
 
 
 class RegAccessiblePriceCalcForm(forms.Form):
-    prices = [1, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 275, 300]
+    prices = [1, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400]
     price_choices = [
         (None, ''),
         (1, 'I could comfortably pay this price.'),
@@ -119,21 +119,27 @@ class RegAccessiblePriceCalcForm(forms.Form):
     ]
     proceed_choices = [
         (None, ''),
-        (1, 'I will pay this price.'),
-        (2, 'I wish to schedule a call with the Accessibility Coordinator')
+        (4, 'I will pay this price.'),
+        (5, 'I wish to schedule a call with the Accessibility Coordinator')
     ]
 
-    def __init__(self, *args, **kwargs):
-        subtotal = kwargs.pop('subtotal')
+    def __init__(self, original_price, ap_eligible_amount, *args, **kwargs):
         super(RegAccessiblePriceCalcForm, self).__init__(*args, **kwargs)
+        j = 0
         for i, price in enumerate(self.prices):
-            if price < subtotal:
-                field_name = 'price' + str(i)
-                self.fields[field_name] = forms.TypedChoiceField(
-                    label='$'+str(price), choices=self.price_choices, coerce=int, validators=[validate_answered]
-                )
-                self.fields[field_name].required = True
-        self.fields['accessible_price'] = forms.IntegerField(label='Accessible Price:', disabled=True)
+            if price > (original_price - ap_eligible_amount):
+                if price < original_price:
+                    field_name = 'price' + str(i - j)
+                    self.fields[field_name] = forms.TypedChoiceField(
+                        label='$'+str(price), choices=self.price_choices, coerce=int, validators=[validate_answered]
+                    )
+            else:
+                j += 1
+        self.fields['accessible_price'] = forms.IntegerField(label='', widget=forms.HiddenInput(), required=False)
+        self.fields['stretch_price'] = forms.IntegerField(label='', widget=forms.HiddenInput(), required=False)
+        self.fields['accessible_price_display'] = forms.CharField(
+            max_length=6, label='Accessible Price:', disabled=True, required=False
+        )
         self.fields['proceed'] = forms.TypedChoiceField(
             label='How should we proceed?', choices=self.proceed_choices, coerce=int, validators=[validate_answered]
         )
