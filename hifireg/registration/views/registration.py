@@ -151,18 +151,36 @@ def register_subtotal(request):
     return render(request, 'registration/register_subtotal.html', {'form': form})
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_registration  #TODO change to must_have_order when orders are working
 def register_accessible_pricing(request):
-    subtotal = 200
+    # TODO make function dependent on order, uncomment order-dependent-code
+    # order = Order.objects.get(session=request.session)
+    original_price = 225
+    ap_eligible_amount = 200
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_subtotal')
-        form = RegAccessiblePriceCalcForm(request.POST, subtotal=subtotal)
+        form = RegAccessiblePriceCalcForm(original_price, ap_eligible_amount, request.POST,)
         if form.is_valid():
+            cd = form.cleaned_data
+            print(cd)
+            # order.accessible_price = form.cleaned_data[accessible_price]
+            # order.stretch_price = form.cleaned_data[stretch_price]
+            # order.save()
+
             return redirect('register_volunteer')
 
     else:
-        form = RegAccessiblePriceCalcForm(subtotal=subtotal)
+        form = RegAccessiblePriceCalcForm(original_price, ap_eligible_amount)
+        # if order.accessible_price != order.original_price:
+        # for field in form:
+        #     if '$' in field.label:
+        #         if int(field.label[1]) >= order.accessible_price:
+        #           field.value = 1
+        #         elif int(field.label[1]) >= order.stretch_price:
+        #           field.value = 2
+        #         else:
+        #           field.value = 3
     return render(request, 'registration/register_accessible_pricing.html', {'form': form})
 
 

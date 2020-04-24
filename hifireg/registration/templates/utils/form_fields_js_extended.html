@@ -28,22 +28,57 @@
 {% endfor %}
 
 <script>
+    window.onload = initializePage()
+
+    function initializePage() {
+        var fields = document.querySelectorAll('*[id^="id_price"]');
+        var i
+        var colors = defineColors()
+        var green = colors[0]
+        var yellow = colors[1]
+        var red = colors [2]
+
+        for (i = 0; i < fields.length; i++) {
+            if (fields[i].value == 1) {
+                fields[i].style.backgroundColor = green
+            }
+            if (fields[i].value == 2) {
+                fields[i].style.backgroundColor = yellow
+            }
+            if (fields[i].value == 3) {
+                fields[i].style.backgroundColor = red
+            }
+        }
+
+        computeAccessiblePrice()
+    }
+
+    function defineColors() {
+        var green = "#9aff8c"
+        var yellow = "#ffff9c"
+        var red = "#ff9999"
+        return [green, yellow, red]
+    }
+
     function changeBackgrounds(field) {
         var fields = document.querySelectorAll('*[id^="id_price"]');
         var latestChangeIndex = field.id.substring(8)
         var i
+        var colors = defineColors()
+        var green = colors[0]
+        var yellow = colors[1]
+        var red = colors [2]
 
         // set green
         if (field.value == 1) {
             for (i = 0; i <= latestChangeIndex; i++) {
                 fields[i].value = 1
-                fields[i].style.backgroundColor = "#9aff8c"
+                fields[i].style.backgroundColor = green
             }
         }
 
 
         // set yellow
-        var yellow = "#ffff9c"
         if (field.value == 2) {
             field.style.backgroundColor = yellow
 
@@ -119,7 +154,29 @@
         if (field.value == 3) {
             for (i = latestChangeIndex; i < fields.length; i++) {
                 fields[i].value = 3
-                fields[i].style.backgroundColor = "#ff9999"
+                fields[i].style.backgroundColor = red
+            }
+        }
+
+        // fill between green and red with yellow
+        var greenExists = 0
+        var redExists = 0
+        for (i = 0; i < fields.length; i++) {
+            if (fields[i].value == 1) {
+                greenExists = 1
+            }
+
+            if (fields[i].value == 3) {
+                redExists = 1
+            }
+        }
+
+        if (greenExists && redExists) {
+            for (i = 0; i < fields.length; i++) {
+                if (fields[i].value != 1 && fields[i].value != 3) {
+                    fields[i].value = 2
+                    fields[i].style.backgroundColor = yellow
+                }
             }
         }
 
@@ -142,16 +199,33 @@
     function computeAccessiblePrice() {
         labelFields()
         var fields = document.querySelectorAll('*[id^="id_price"]');
-        var accessiblePriceField = document.getElementById("id_accessible_price")
-        accessiblePriceField.value = ""
+
+        document.getElementById("id_accessible_price").value = 0
+        document.getElementById("id_accessible_price_display").value = ""
+        document.getElementById("id_stretch_price").value = 0
         for (i = 0; i < fields.length; i++) {
             if (fields[i].value < 1) {
-                accessiblePriceField.value = ""
+                document.getElementById("id_accessible_price").value = 0
+                document.getElementById("id_accessible_price_display").value = ""
+                document.getElementById("id_stretch_price").value = 0
                 return
             }
             if (fields[i].value == 1) {
-                accessiblePriceField.value = fields[i].label.innerHTML.substring(1)
+                document.getElementById("id_accessible_price").value = fields[i].label.innerHTML.substring(1)
+                document.getElementById("id_accessible_price_display").value = fields[i].label.innerHTML
+                document.getElementById("id_stretch_price").value = fields[i].label.innerHTML.substring(1)
             }
+            if (fields[i].value == 2) {
+                document.getElementById("id_stretch_price").value = fields[i].label.innerHTML.substring(1)
+            }
+        }
+
+        // handles edge case where all fields are red
+        if (fields[0].value == 3) {
+            // this needs original price and apEligiblePrice from the view before it will work.
+            // document.getElementById("id_accessible_price").value = originalPrice - apEligibileValue
+            // document.getElementById("id_accessible_price_display").value = originalPrice - apEligibileValue
+            // document.getElementById("id_stretch_price").value = originalPrice - apEligibileValue
         }
     }
 </script>
