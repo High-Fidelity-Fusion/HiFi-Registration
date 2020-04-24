@@ -1,5 +1,6 @@
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
 
 from registration.models import Registration, Order
 

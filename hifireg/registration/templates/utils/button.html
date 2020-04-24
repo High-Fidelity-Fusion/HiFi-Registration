@@ -1,0 +1,11 @@
+{% load special_sauce %}
+
+{% if button|is_submit %}
+<button type="submit" name="{{ button.name }}"
+{% elif button|is_link %}
+<button type="button" onclick="window.location.href = '{% url button.link %}';"
+{% endif %}
+
+class="button is-link" {{ attrs|default:button.attrs|default:"" }}>
+    {{ content|default:button.content }}
+</button>

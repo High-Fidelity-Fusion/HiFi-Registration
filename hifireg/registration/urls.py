@@ -25,7 +25,7 @@ urlpatterns = [
     path('register/showcase/', views.register_showcase, name='register_showcase'),
     path('register/merchandise/', views.register_merchandise, name='register_merchandise'),
 
-    path('register/subtotal/', views.register_subtotal, name='register_subtotal'),
+    path('register/subtotal/', views.RegisterSubtotal.as_view(), name='register_subtotal'),
     path('register/accessible-pricing/', views.register_accessible_pricing, name='register_accessible_pricing'),
     path('register/donate/', views.register_donate, name='register_donate'),
     path('register/volunteer/', views.register_volunteer, name='register_volunteer'),

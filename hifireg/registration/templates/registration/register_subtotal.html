@@ -1,4 +1,5 @@
 {% extends "registration/base.html" %}
+{% load special_sauce %}
 
 {% block card_content %}
 
@@ -6,15 +7,26 @@
     Subtotal
 </p>
 
+<p>Your order total is [${{ view.order.original_price }}]</p>
+{% comment %} <p>Accessible pricing application is: {{ view.session.ap_available|yesno:"Available,Unavailable"}}</p> {% endcomment %}
+<br>
+
 <form method="post">
     {% csrf_token %}
-    <p>This is the AP triage page. We display subtotal and ask whether the registrant can pay that price or needs assistance.</p>
 
-    {% include "utils/form_fields.html" %}
-
-    <div class="control">
-        <button type="submit" name='previous' class="button is-link">Previous</button>
-        <button type="submit" name='next' class="button is-link">Next</button>
+    <div class="buttons is-grouped">
+        {% if view.ap_available %}
+        {% include "utils/button.html" with button=view.ap_yes_button content="I would like to apply for AP" %}
+        {% else %}
+        {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP Pricing Currently Unavailable 😢" %}
+        {% endif %}
+        {% include "utils/button.html" with button=view.ap_no_button content="I don't need AP"%}
     </div>
+
+    <div class="buttons is-grouped">
+        {% include "utils/button.html" with button=view.previous_button %}
+        {% include "utils/button.html" with button=view.next_button %}
+    </div>
+
 </form>
 {% endblock %}

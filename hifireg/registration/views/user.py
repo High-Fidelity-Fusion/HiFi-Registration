@@ -21,7 +21,7 @@ class CreateUser(FormView):
     template_name = "utils/generic_form.html"
     form_class = UserCreationForm
     success_url = reverse_lazy('index')
-    extra_context = {'title': 'Create Account', 'buttons': (SubmitButton('Submit'),)}
+    extra_context = dict(title="Create Account", buttons=[SubmitButton("submit", "Submit")])
     
     def form_valid(self, form):
         user = form.save()
@@ -34,9 +34,9 @@ class CreateUser(FormView):
 def view_user(request):
     context = {}
     context['title'] = "View Account"
-    context['buttons'] = (LinkButton('Back', 'index'), 
-                          LinkButton('Edit', 'edit_user'), 
-                          LinkButton('Change Password', 'password_change'))
+    context['buttons'] = [LinkButton("index", "Back"), 
+                          LinkButton("edit_user", "Edit"), 
+                          LinkButton("password_chnage", "Change Password")]
     context['form'] = UserUpdateForm(instance=request.user)
     for field in context['form'].fields.values():
         field.disabled = True
@@ -54,7 +54,7 @@ def update_user(request):
         form = UserUpdateForm(instance=request.user)
     context = {}
     context['title'] = "Edit Account"
-    context['buttons'] = (LinkButton('Cancel', 'view_user'), SubmitButton('Submit'))
+    context['buttons'] = [LinkButton("view_user", "Cancel"), SubmitButton("submit", "Submit")]
     context['form'] = form
     return render(request, 'utils/generic_form.html', context)
 
@@ -63,22 +63,20 @@ class PasswordChangeView(auth_views.PasswordChangeView):
     form_class = PasswordChangeForm
     template_name = 'utils/generic_form.html'
     success_url = reverse_lazy('password_change_done')
-    extra_context = {}
-    extra_context['buttons'] = (LinkButton('Cancel', 'view_user'), SubmitButton('Submit'))
+    extra_context = dict(buttons=[LinkButton("view_user", "Cancel"), SubmitButton("submit", "Submit")])
 
 
 class PasswordChangeDoneView(auth_views.PasswordChangeDoneView):
     template_name = 'utils/generic_form.html'
     extra_context = {}
-    extra_context['buttons'] = (LinkButton('Account', 'view_user'), LinkButton('Home', 'index'))
+    extra_context['buttons'] = [LinkButton("view_user", "Account"), LinkButton("index", "Home")]
 
 
 # allows user to generate reset password link
 class PasswordResetView(auth_views.PasswordResetView):
     template_name = 'utils/generic_form.html'
     success_url = reverse_lazy('password_reset_done')
-    extra_context = {}
-    extra_context['buttons'] = (LinkButton('Cancel', 'login'), SubmitButton('Submit'))
+    extra_context = dict(buttons=[LinkButton("login", "Cancel"), SubmitButton("submit", "Submit")])
 
 
 # confirms reset password link sent
@@ -91,11 +89,11 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     form_class = SetPasswordForm
     template_name = 'utils/generic_form.html'
     success_url = reverse_lazy('password_reset_complete')
-    extra_context = {'buttons': (SubmitButton('Submit'),)}
+    extra_context = dict(buttons=[SubmitButton("submit", "Submit")])
 
 
 # confirms user's new password input
 class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     template_name = 'utils/generic_form.html'
-    extra_context = {'buttons': (LinkButton('Login', 'login'),)}
+    extra_context = dict(buttons=[LinkButton("login", "Login")])
 
