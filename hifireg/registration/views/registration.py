@@ -1,15 +1,20 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
-from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.views.generic.base import TemplateView
+from django.views import View
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product
 
-from .helpers import get_context_for_product_selection, get_status_for_product
 from .decorators import must_have_registration, must_have_order
+from .helpers import get_context_for_product_selection, get_status_for_product
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin
+from .utils import SubmitButton, LinkButton
 
 
 @login_required
@@ -137,18 +142,25 @@ def register_merchandise(request):
     return render(request, 'registration/register_merchandise.html', {'form': form})
 
 
-# branch to accessible pricing or volunteering
-@must_have_registration  # change to must_have_order when orders are working
-def register_subtotal(request):
-    form = None
-    if request.method == 'POST':
-        if 'previous' in request.POST:
-            return redirect('register_merchandise')
-        if True: # redirect based on need for accessible pricing
-            return redirect('register_accessible_pricing')
-        else:
-            return redirect('register_donate')
-    return render(request, 'registration/register_subtotal.html', {'form': form})
+class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMixin, TemplateView):
+    template_name = "registration/register_subtotal.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.previous_button = LinkButton("register_merchandise", "Previous")
+        self.next_button = LinkButton("register_donate", "Next")
+        self.ap_yes_button = SubmitButton("claim_ap")
+        self.ap_no_button = LinkButton("register_donate")
+        self.ap_available = True
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request):
+        if "claim_ap" in request.POST:
+            # if self.order.claim_accessible_pricing():
+            if False: # override claim_acccessible_pricing() as example
+                return redirect("register_accessible_pricing")
+            else:
+                self.ap_available = False
+                return self.get(request)
 
 
 @must_have_registration  #TODO change to must_have_order when orders are working

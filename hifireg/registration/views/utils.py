@@ -1,15 +1,12 @@
 
 class LinkButton:
-    def __init__(self, content, link, attrs=None):
-        self.content = content
+    def __init__(self, link, content=None, attrs=None):
         self.link = link
-        self.attrs = None
+        self.content = content if content is not None else link
+        self.attrs = attrs
 
 class SubmitButton:
-    def __init__(self, content, name=None, attrs=None):
-        self.content = content
-        self.attrs = None
-        if name is None:
-            self.name = content.lower()
-        else:
-            self.name = name
+    def __init__(self, name, content=None, attrs=None):
+        self.name = name
+        self.content = content if content is not None else name
+        self.attrs = attrs

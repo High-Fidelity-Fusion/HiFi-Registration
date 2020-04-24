@@ -15,7 +15,12 @@ def is_link(value):
 def is_submit(value):
     return isinstance(value, SubmitButton)
 
+
 @register.inclusion_tag('utils/form_control.html')
 def form_control(value):
     return {'button': value}
 
+
+@register.inclusion_tag('utils/button.html')
+def button(value):
+    return {'button': value}
