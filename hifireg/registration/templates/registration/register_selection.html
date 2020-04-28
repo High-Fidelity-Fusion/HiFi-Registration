@@ -1,0 +1,193 @@
+{% extends "registration/base.html" %}
+
+
+{% block content %}
+<p>Choose your {{section}}!</p>
+{% for category in categories %}
+<h3 class="title">{{category.name}}</h3>
+  {% for slot in category.slots %}
+  <h4 class="title is-4">{{slot.name}}</h4>
+<div class="">
+    {% for product in slot.products %}
+        {% include 'registration/product_card.html' %}
+      {% endfor %}
+    {% endfor %}
+  {% for product in category.products %}
+    {% include 'registration/product_card.html' %}
+  {% endfor %}
+  </div>
+{% endfor %}
+<form method="post">
+  {% csrf_token %}
+
+  <div class="control">
+    <button type="submit" name='previous' class="button is-link">Previous</button>
+    <button type="submit" name='next' class="button is-link">Next</button>
+  </div>
+
+</form>
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<style>
+  .conflict {
+    background: grey;
+  }
+</style>
+<script>
+  $(".product-checkbox").change(function() {
+    var thisCheckBox = this;
+    var parent = $(thisCheckBox).parent();
+    $('input').addClass('call-in-progress');
+    var productId = parent[0].dataset.product;
+    var checkBoxes = $(`.product-card[data-product="${productId}"]`).find('input');
+    checkBoxes.not(thisCheckBox).prop('checked', thisCheckBox.checked);
+    parent.addClass('loading');
+
+    if (this.checked) {
+      $.ajax({
+        url: '/registration/ajax/add_item/',
+        data: {
+          'product': productId,
+          'increment': 1
+        },
+        dataType: 'json',
+        success: function (data) {
+          console.log(data);
+          if (data.error) {
+            location.reload();
+          } else if (data.success) {
+            var slots = parent[0].dataset.slots.split(',');
+            slots.forEach(slot => {
+              var conflicts = $(`.slot-${slot}`).not(checkBoxes.parents());
+              conflicts.addClass(`conflict-${slot}`);
+            });
+
+          } else {
+            checkBoxes.prop('checked', false);
+            parent.find('.error').text('That is not available!')
+          }
+
+          $('input').removeClass('call-in-progress');
+          parent.removeClass('loading');
+        },
+        error: function (xhr, status, error) {
+          location.reload();
+        }
+      });
+    } else {
+      $.ajax({
+        url: '/registration/ajax/remove_item/',
+        data: {
+          'product': productId,
+          'decrement': 1
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.error) {
+            location.reload();
+          } else {
+            console.log(data);
+            var slots = parent[0].dataset.slots.split(',');
+            slots.forEach(slot => {
+              var conflicts = $(`.conflict-${slot}`);
+              conflicts.removeClass(`conflict-${slot}`);
+            });
+
+            $('input').removeClass('call-in-progress');
+            parent.removeClass('loading');
+          }
+        },
+        error: function (xhr, status, error) {
+          console.log('Error - ' + xhr.status + ': ' + xhr.statusText);
+          location.reload();
+        }
+      });
+    }
+  });
+
+  $(".product-increment").click(function() {
+    var thisButton = this;
+    var parent = $(thisButton).parent();
+    var productId = parent[0].dataset.product;
+    $('input, button').addClass('call-in-progress');
+    parent.addClass('loading');
+
+    $.ajax({
+      url: '/registration/ajax/add_item/',
+      data: {
+        'product': productId,
+        'increment': 1
+      },
+      dataType: 'json',
+      success: function (data) {
+        console.log(data);
+        if (data.error) {
+          location.reload();
+
+        } else if (data.success) {
+          var slots = parent[0].dataset.slots.split(',');
+          slots.forEach(slot => {
+            var conflicts = $(`.slot-${slot}`).not(parent);
+            conflicts.addClass(`conflict-${slot}`);
+          });
+          var input = parent.find('input');
+          input.val(parseInt(input.val()) + 1);
+          parent.removeClass('minimum maximum');
+          if (input.val() == parent[0].dataset.max) {
+            parent.addClass('maximum')
+          }
+
+        } else {
+          parent.find('.error').text('That is not available!')
+        }
+
+        $('input, button').removeClass('call-in-progress');
+        parent.removeClass('loading');
+      },
+      error: function (xhr, status, error) {
+        location.reload();
+      }
+    });
+  });
+
+  $(".product-decrement").click(function() {
+    var thisButton = this;
+    var parent = $(thisButton).parent();
+    var productId = parent[0].dataset.product;
+    $('input, button').addClass('call-in-progress');
+    parent.addClass('loading').removeClass('minimum maximum');
+
+    $.ajax({
+      url: '/registration/ajax/remove_item/',
+      data: {
+        'product': productId,
+        'decrement': 1
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.error) {
+          location.reload();
+        } else {
+          console.log(data);
+          var slots = parent[0].dataset.slots.split(',');
+          slots.forEach(slot => {
+            var conflicts = $(`.conflict-${slot}`);
+            conflicts.removeClass(`conflict-${slot}`);
+          });
+          var input = parent.find('input');
+          input.val(parseInt(input.val()) - 1);
+          parent.removeClass('minimum maximum');
+          if (input.val() == '0') {
+            parent.addClass('minimum');
+          }
+
+          $('input, button').removeClass('call-in-progress');
+          parent.removeClass('loading');
+        }
+      },
+      error: function (xhr, status, error) {
+        location.reload();
+      }
+    });
+  });
+</script>
+{% endblock %}

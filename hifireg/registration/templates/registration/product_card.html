@@ -1,9 +1,17 @@
-{% load special_sauce %}
-<div class="card">
-  <div class="card-content product-card {{product.slotClasses}} {{product.conflictClasses}}">
+<div class="column">
+<div class="box">
+  <div data-product="{{product.id}}" data-slots="{{product.slots}}" data-max="{{product.max_quantity_per_reg}}" class="product-card {{product.slotClasses}} {{product.conflictClasses}}">
+    <div class="error is-red is-danger is-$red"></div>
     {% if product.max_quantity_per_reg == 1 %}
       <div class="loader"></div>
-      <input data-product="{{product.id}}" data-slots="{{product.slots}}" class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' %}checked{% endif %}>
+      <input class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' %}checked{% endif %}>
+    {% else %}
+    <button class="button is-rounded product-decrement">-</button>
+     <div class="control">
+       <input class="input is-static" type="text" value="{{product.quantity_claimed}}" readonly>
+     </div>
+    <div class="loader"></div>
+    <button class="button is-rounded product-increment">+</button>
     {% endif %}
     {% if product.has_parts %}
       <p>{{product.part}} of {{product.total_parts}}</p>
@@ -13,4 +21,5 @@
     <p>{{product.description}}</p>
     <p>{{product.price}}</p>
   </div>
+</div>
 </div>

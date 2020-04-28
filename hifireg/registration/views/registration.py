@@ -11,10 +11,10 @@ from django.views import View
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
 
-from .decorators import must_have_registration, must_have_order
-from .helpers import get_context_for_product_selection, get_status_for_product
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin
 from .utils import SubmitButton, LinkButton
+from .helpers import get_context_for_product_selection
+from .decorators import must_have_registration, must_have_active_order, must_have_active_order_and_dance_pass
 
 
 @login_required
@@ -109,37 +109,45 @@ def register_ticket_selection(request):
 
     context = get_context_for_product_selection(ProductCategory.DANCE, request.user)
 
-    return render(request, 'registration/register_ticket_selection.html', context)
+    return render(request, 'registration/register_selection.html', context)
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_active_order_and_dance_pass
 def register_class_selection(request):
-    form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_ticket_selection')
         return redirect('register_showcase')
-    return render(request, 'registration/register_class_selection.html', {'form': form})
+
+    context = get_context_for_product_selection(ProductCategory.CLASS, request.user)
+
+    return render(request, 'registration/register_selection.html', context)
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_active_order_and_dance_pass
 def register_showcase(request):
-    form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_class_selection')
         return redirect('register_merchandise')
-    return render(request, 'registration/register_showcase.html', {'form': form})
+
+    order, created = Order.objects.update_or_create(registration=request.user.registration_set.get(), session__isnull=False, defaults={'session': Session.objects.get(pk=request.session.session_key)})
+
+    context = get_context_for_product_selection(ProductCategory.SHOWCASE, request.user)
+
+    return render(request, 'registration/register_selection.html', context)
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_active_order_and_dance_pass
 def register_merchandise(request):
-    form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_showcase')
         return redirect('register_subtotal')
-    return render(request, 'registration/register_merchandise.html', {'form': form})
+
+    context = get_context_for_product_selection(ProductCategory.MERCH, request.user)
+
+    return render(request, 'registration/register_selection.html', context)
 
 
 class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMixin, TemplateView):

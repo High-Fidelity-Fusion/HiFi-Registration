@@ -36,6 +36,7 @@ def build_product(product, slot_id):
 
 def get_context_for_product_selection(section, user):
     return {
+        'section': [v[1] for v in ProductCategory.SECTION_CHOICES if v[0] == section][0],
         'categories': [{
             'name': category.name,
             'slots': [{

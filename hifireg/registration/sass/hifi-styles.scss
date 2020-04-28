@@ -50,6 +50,7 @@ main {
 
 
 
+// Used for the heavy client-side logic on the product selection screens
 .product-card {
     &[class*="conflict-"] {
         background: grey;
@@ -63,7 +64,7 @@ main {
         .loader {
             display: block;
         }
-        input {
+        .product-checkbox {
             display: none;
         }
     }
@@ -74,6 +75,18 @@ main {
 
     .call-in-progress {
         pointer-events: none;
+    }
+
+    &.minimum {
+        .product-decrement {
+            display: none;
+        }
+    }
+
+    &.maximum {
+        .product-increment {
+            display: none;
+        }
     }
 }
 
