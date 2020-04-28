@@ -9,7 +9,7 @@ from django.views.generic.base import TemplateView
 from django.views import View
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
 
 from .decorators import must_have_registration, must_have_order
 from .helpers import get_context_for_product_selection, get_status_for_product
@@ -144,23 +144,22 @@ def register_merchandise(request):
 
 class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMixin, TemplateView):
     template_name = "registration/register_subtotal.html"
+    previous_button = LinkButton("register_merchandise", "Previous")
+    ap_yes_button = SubmitButton("claim_ap")
+    ap_no_button = LinkButton("register_donate")
 
-    def dispatch(self, request, *args, **kwargs):
-        self.previous_button = LinkButton("register_merchandise", "Previous")
-        self.next_button = LinkButton("register_donate", "Next")
-        self.ap_yes_button = SubmitButton("claim_ap")
-        self.ap_no_button = LinkButton("register_donate")
-        self.ap_available = True
-        return super().dispatch(request, *args, **kwargs)
+    def get(self, request):
+        self.ap_available = self.order.ap_eligible_amount <= APFund.get_available_funds()
+        return super().get(request)
 
     def post(self, request):
         if "claim_ap" in request.POST:
             # if self.order.claim_accessible_pricing():
-            if False: # override claim_acccessible_pricing() as example
+            if False: # override claim_accessible_pricing() as example
                 return redirect("register_accessible_pricing")
             else:
                 self.ap_available = False
-                return self.get(request)
+                return super().get(request)
 
 
 @must_have_registration  #TODO change to must_have_order when orders are working
