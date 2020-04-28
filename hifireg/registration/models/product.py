@@ -25,11 +25,13 @@ class ProductManager(models.Manager):
 class ProductCategory(models.Model):
     DANCE = 'DANCE'
     CLASS = 'CLASS'
-    ADD_ON = 'ADDON'
+    SHOWCASE = 'SHWCS'
+    MERCH = 'MERCH'
     SECTION_CHOICES = [
         (DANCE, 'Dance Passes'),
         (CLASS, 'Class Passes'),
-        (ADD_ON, 'Add-Ons')
+        (SHOWCASE, 'Showcase Admission'),
+        (MERCH, 'Merchandise')
     ]
     name = models.CharField(max_length=100)
     section = models.CharField(max_length=5, choices=SECTION_CHOICES)

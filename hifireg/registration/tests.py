@@ -37,11 +37,17 @@ def setup_products():
     category = ProductCategory.objects.create(name='A La Carte', section='DANCE', rank=3)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday Night Pass', subtitle='subtitle', description='description', category=category)
     product.slots.add(frislot)
+    product = Product.objects.create(total_quantity=0, max_quantity_per_reg = 1, price=2000, title='Friday Out of Stock', subtitle='subtitle', description='description', category=category)
+    product.slots.add(frislot)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday Night Pass', subtitle='subtitle', description='description', category=category)
     product.slots.add(satslot)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Fri/Sat Dance Pass', subtitle='subtitle', description='description', category=category)
     product.slots.add(frislot)
     product.slots.add(satslot)
+
+    category = ProductCategory.objects.create(name='Clothing', section='MERCH', is_slot_based=False, rank=2)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 3, price=1500, title='t-shirt', subtitle='subtitle', description='description', category=category)
+
 
 class OrderTestCase(TestCase):
     def setUp(self):
