@@ -169,6 +169,18 @@ class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequi
                 return super().get(request)
 
 
+class RegisterAP(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMixin, TemplateView):
+    template_name = "registration/register_accessible_pricing2.html"
+    previous_button = LinkButton("register_subtotal", "Previous")
+    next_button = LinkButton("register_volunteer", "Next")
+
+    def post(self, request):
+        price = request.POST.get('price_submit', self.order.original_price)
+        self.order.accessible_price = price
+        self.order.save()
+        return redirect('register_volunteer')
+
+
 @must_have_registration  #TODO change to must_have_order when orders are working
 def register_accessible_pricing(request):
     # TODO make function dependent on order, uncomment order-dependent-code

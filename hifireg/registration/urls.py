@@ -27,6 +27,7 @@ urlpatterns = [
 
     path('register/subtotal/', views.RegisterSubtotal.as_view(), name='register_subtotal'),
     path('register/accessible-pricing/', views.register_accessible_pricing, name='register_accessible_pricing'),
+    path('register/accessible-pricing2/', views.RegisterAP.as_view(), name='register_accessible_pricing2'),
     path('register/donate/', views.register_donate, name='register_donate'),
     path('register/volunteer/', views.register_volunteer, name='register_volunteer'),
     path('register/volunteer/details/', views.register_volunteer_details, name='register_volunteer_details'),
