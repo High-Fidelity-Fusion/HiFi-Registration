@@ -104,7 +104,7 @@
   // CURRENTLY NOT SUPPORTED: Multi-quantity products with multiple parts across slots
   $(".product-increment").click(function() {
     var thisButton = this;
-    var parent = $(thisButton).parent();
+    var parent = $(thisButton).parent().parent();
     var productId = parent[0].dataset.product;
     $('input, button').addClass('call-in-progress');
     parent.addClass('loading');
@@ -127,11 +127,11 @@
             var conflicts = $(`.slot-${slot}`).not(parent);
             conflicts.addClass(`conflict-${slot}`);
           });
-          var input = parent.find('input');
-          input.val(parseInt(input.val()) + 1);
+          var quantity = parent.find('.quantity-claimed');
+          quantity.text(parseInt(quantity.text()) + 1);
           parent.removeClass('minimum maximum');
           parent.addClass('claimed');
-          if (input.val() == parent[0].dataset.max) {
+          if (quantity.text() == parent[0].dataset.max) {
             parent.addClass('maximum')
           }
 
@@ -150,7 +150,7 @@
 
   $(".product-decrement").click(function() {
     var thisButton = this;
-    var parent = $(thisButton).parent();
+    var parent = $(thisButton).parent().parent();
     var productId = parent[0].dataset.product;
     $('input, button').addClass('call-in-progress');
     parent.addClass('loading');
@@ -172,10 +172,10 @@
             var conflicts = $(`.conflict-${slot}`);
             conflicts.removeClass(`conflict-${slot}`);
           });
-          var input = parent.find('input');
-          input.val(parseInt(input.val()) - 1);
+          var quantity = parent.find('.quantity-claimed');
+          quantity.text(parseInt(quantity.text()) - 1);
           parent.removeClass('minimum maximum');
-          if (input.val() == '0') {
+          if (quantity.text() == '0') {
             parent.addClass('minimum').removeClass('claimed');
           }
 
