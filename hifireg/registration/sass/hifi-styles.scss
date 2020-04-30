@@ -90,19 +90,27 @@ main {
         background: #00d1b2;
     }
 
+    .quantity-selector {
+        input {
+            width: auto;
+        }
+
+        * {
+            display: inline-flex;
+        }
+    }
+
+    .loader {
+        display: none;
+    }
+
     &.loading {
         .loader {
-            display: block;
+            display: inline-flex;
         }
         .product-checkbox {
             display: none;
         }
-    }
-
-
-
-    .loader {
-        display: none;
     }
 
     .call-in-progress {
@@ -111,13 +119,17 @@ main {
 
     &.minimum {
         .product-decrement {
-            display: none;
+            border-color: gray;
+            background: gray;
+            pointer-events: none;
         }
     }
 
     &.maximum {
         .product-increment {
-            display: none;
+            border-color: gray;
+            background: gray;
+            pointer-events: none;
         }
     }
 }

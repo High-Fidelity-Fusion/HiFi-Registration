@@ -14,19 +14,22 @@
       <div class="loader"></div>
       <input class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' or product.quantity_claimed > 0 %}checked{% endif %}>
     {% else %}
-    <button class="button is-rounded product-decrement">-</button>
-     <div class="control">
-       <input class="input is-static" type="text" value="{{product.quantity_claimed}}" readonly>
-     </div>
-    <div class="loader"></div>
-    <button class="button is-rounded product-increment">+</button>
+    <p>{{product.quantity_purchased}} already purchased.</p>
+    <div class="quantity-selector">
+      <button class="button is-rounded product-decrement">-</button>
+      <p class="quantity-claimed">{{product.quantity_claimed}}</p>
+      <button class="button is-rounded product-increment">+</button>
+      <div class="loader"></div>
+    </div>
     {% endif %}
     {% if product.has_parts %}
       <p>{{product.part}} of {{product.total_parts}}</p>
     {% endif %}
     <p>{{product.title}}</p>
     <p>{{product.subtitle}}</p>
-    <p>{{product.description}}</p>
+    <details>
+      <p>{{product.description}}</p>
+    </details>
     <p>{{product.price}}</p>
   </div>
 </div>

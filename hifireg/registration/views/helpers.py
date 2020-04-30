@@ -28,6 +28,7 @@ def build_product(product, slot_id):
         'price': '${:,.2f}'.format(product.price * 0.01),
         'max_quantity': product.max_quantity_per_reg - product.quantity_purchased,
         'quantity_claimed': product.quantity_claimed,
+        'quantity_purchased': product.quantity_purchased,
         'status': get_status_for_product(product),
         'slots': ','.join(slots),
         'slotClasses': ' '.join(map(lambda id: 'slot-' + id, slots)),
