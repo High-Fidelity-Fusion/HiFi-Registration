@@ -36,7 +36,7 @@ def view_user(request):
     context['title'] = "View Account"
     context['buttons'] = [LinkButton("index", "Back"), 
                           LinkButton("edit_user", "Edit"), 
-                          LinkButton("password_chnage", "Change Password")]
+                          LinkButton("password_change", "Change Password")]
     context['form'] = UserUpdateForm(instance=request.user)
     for field in context['form'].fields.values():
         field.disabled = True
