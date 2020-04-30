@@ -27,11 +27,6 @@
 
 </form>
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-<style>
-  .conflict {
-    background: grey;
-  }
-</style>
 <script>
   $(".product-checkbox").change(function() {
     var thisCheckBox = this;
@@ -39,8 +34,9 @@
     $('input').addClass('call-in-progress');
     var productId = parent[0].dataset.product;
     var checkBoxes = $(`.product-card[data-product="${productId}"]`).find('input');
+    var parents = checkBoxes.parents();
     checkBoxes.not(thisCheckBox).prop('checked', thisCheckBox.checked);
-    parent.addClass('loading');
+    parents.addClass('loading');
 
     if (this.checked) {
       $.ajax({
@@ -57,17 +53,18 @@
           } else if (data.success) {
             var slots = parent[0].dataset.slots.split(',');
             slots.forEach(slot => {
-              var conflicts = $(`.slot-${slot}`).not(checkBoxes.parents());
+              var conflicts = $(`.slot-${slot}`).not(parents);
               conflicts.addClass(`conflict-${slot}`);
             });
+            parents.addClass('claimed');
 
           } else {
             checkBoxes.prop('checked', false);
-            parent.find('.error').text('That is not available!')
+            parents.addClass('unavailable')
           }
 
           $('input').removeClass('call-in-progress');
-          parent.removeClass('loading');
+          parents.removeClass('loading');
         },
         error: function (xhr, status, error) {
           location.reload();
@@ -93,7 +90,7 @@
             });
 
             $('input').removeClass('call-in-progress');
-            parent.removeClass('loading');
+            parents.removeClass('loading claimed');
           }
         },
         error: function (xhr, status, error) {
@@ -104,6 +101,7 @@
     }
   });
 
+  // CURRENTLY NOT SUPPORTED: Multi-quantity products with multiple parts across slots
   $(".product-increment").click(function() {
     var thisButton = this;
     var parent = $(thisButton).parent();
@@ -132,12 +130,13 @@
           var input = parent.find('input');
           input.val(parseInt(input.val()) + 1);
           parent.removeClass('minimum maximum');
+          parent.addClass('claimed');
           if (input.val() == parent[0].dataset.max) {
             parent.addClass('maximum')
           }
 
         } else {
-          parent.find('.error').text('That is not available!')
+          parent.addClass('unavailable')
         }
 
         $('input, button').removeClass('call-in-progress');
@@ -154,7 +153,7 @@
     var parent = $(thisButton).parent();
     var productId = parent[0].dataset.product;
     $('input, button').addClass('call-in-progress');
-    parent.addClass('loading').removeClass('minimum maximum');
+    parent.addClass('loading');
 
     $.ajax({
       url: '/registration/ajax/remove_item/',
@@ -177,7 +176,7 @@
           input.val(parseInt(input.val()) - 1);
           parent.removeClass('minimum maximum');
           if (input.val() == '0') {
-            parent.addClass('minimum');
+            parent.addClass('minimum').removeClass('claimed');
           }
 
           $('input, button').removeClass('call-in-progress');

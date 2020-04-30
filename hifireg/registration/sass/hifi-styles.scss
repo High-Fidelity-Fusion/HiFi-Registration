@@ -52,12 +52,42 @@ main {
 
 // Used for the heavy client-side logic on the product selection screens
 .product-card {
-    &[class*="conflict-"] {
-        background: grey;
 
-        input {
+    &[class*="conflict-"] {
+        background: lightgrey;
+
+        input, button {
             pointer-events: none;
         }
+
+        .error:after {
+            content: "This conflicts with something you've selected or purchased.";
+            color: red;
+        }
+    }
+
+    &.unavailable {
+        background: lightgrey;
+
+        input, button {
+            pointer-events: none;
+        }
+
+        .error:after {
+            content: "This item is out of stock.";
+            color: red;
+        }
+    }
+
+    &.maximum-purchased {
+        .error:after {
+            content: "You have already purchased the maximum amount.";
+            color: red;
+        }
+    }
+
+    &.claimed {
+        background: #00d1b2;
     }
 
     &.loading {
@@ -68,6 +98,8 @@ main {
             display: none;
         }
     }
+
+
 
     .loader {
         display: none;

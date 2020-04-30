@@ -7,7 +7,7 @@ class ProductStatuses:
     AVAILABLE = 'available'
 
 def get_status_for_product(product):
-    if (product.quantity_purchased + product.quantity_claimed >= product.max_quantity_per_reg):
+    if (product.quantity_purchased >= product.max_quantity_per_reg):
         return 'max_purchased'
     if (product.available_quantity <= 0):
         return 'unavailable'
@@ -26,7 +26,7 @@ def build_product(product, slot_id):
         'subtitle': product.subtitle,
         'description': product.description,
         'price': '${:,.2f}'.format(product.price * 0.01),
-        'max_quantity_per_reg': product.max_quantity_per_reg,
+        'max_quantity': product.max_quantity_per_reg - product.quantity_purchased,
         'quantity_claimed': product.quantity_claimed,
         'status': get_status_for_product(product),
         'slots': ','.join(slots),
