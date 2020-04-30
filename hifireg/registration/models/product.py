@@ -38,27 +38,36 @@ class ProductCategory(models.Model):
     is_slot_based = models.BooleanField(default=True)
     rank = models.PositiveIntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class ProductSlot(models.Model):
     name = models.CharField(max_length=100)
     is_exclusionary = models.BooleanField(default=True)
     rank = models.PositiveIntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class Product(models.Model):
     slots = models.ManyToManyField(ProductSlot)
     category = models.ForeignKey(ProductCategory, on_delete=models.PROTECT)
     total_quantity = models.PositiveIntegerField()
-    max_quantity_per_reg = models.PositiveIntegerField()
+    max_quantity_per_reg = models.PositiveIntegerField(default=1)
     title = models.CharField(max_length=100)
-    subtitle = models.CharField(max_length=100)
-    description = models.CharField(max_length=1000)
+    subtitle = models.CharField(max_length=100, blank=True)
+    description = models.CharField(max_length=1000, blank=True)
     price = models.PositiveIntegerField()
     is_compable = models.BooleanField(default=False)
     is_visible = models.BooleanField(default=True)
     is_ap_eligible = models.BooleanField(default=True)
 
     objects = ProductManager()
+
+    def __str__(self):
+        return self.title
 
     @property
     def available_quantity(self):

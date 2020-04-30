@@ -2,8 +2,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as UserAdmin_
 from django.utils.translation import gettext_lazy as _
 
-from .models import Registration
+from .models import CompCode, Product, ProductCategory, ProductSlot, Registration
 from .models import User
+
 
 class UserAdmin(UserAdmin_):
     """Define admin model for custom User model with no email field."""
@@ -31,6 +32,10 @@ class UserAdmin(UserAdmin_):
 admin.site.register(User, UserAdmin)
 
 # Register your models here.
+admin.site.register(CompCode)
+admin.site.register(Product)
+admin.site.register(ProductCategory)
+admin.site.register(ProductSlot)
 admin.site.register(Registration)
 
 

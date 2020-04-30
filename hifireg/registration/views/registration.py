@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.views.generic.base import TemplateView
 from django.views import View
 
-from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
+from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
 
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, FunctionBasedView
@@ -69,6 +69,7 @@ def register_policy(request):
         form = RegPolicyForm(instance=Registration.objects.get(user=request.user))
     return render(request, 'registration/register_policy.html', {'form': form})
 
+
 def add_item(request):
     try:
         product = Product.objects.get(pk=request.GET.get('product', None))
@@ -83,6 +84,7 @@ def add_item(request):
             'error': "error: {0}".format(e)
         }
     return JsonResponse(data)
+
 
 def remove_item(request):
     try:
@@ -216,7 +218,7 @@ def register_accessible_pricing(request):
 
 @must_have_registration  # change to must_have_order when orders are working
 def register_donate(request):
-    form = None
+    form = RegDonateForm
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_subtotal')

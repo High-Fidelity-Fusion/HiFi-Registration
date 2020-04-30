@@ -143,3 +143,12 @@ class RegAccessiblePriceCalcForm(forms.Form):
         self.fields['proceed'] = forms.TypedChoiceField(
             label='How should we proceed?', choices=self.proceed_choices, coerce=int, validators=[validate_answered]
         )
+
+
+class RegDonateForm(forms.Form):
+    donation_to_AP_fund = forms.DecimalField(
+        label='I would like to contribute this dollar amount to the accessible pricing fund:', initial=0, decimal_places=2
+    )
+    donation_to_hifi = forms.DecimalField(
+        label='I would like to provide this dollar amount of additional support to HiFi:', initial=0, decimal_places=2
+    )
