@@ -1,5 +1,4 @@
 from django import template
-from django.template.defaultfilters import stringfilter
 from registration.views.utils import LinkButton, SubmitButton
 
 
@@ -14,6 +13,11 @@ def is_link(value):
 @register.filter
 def is_submit(value):
     return isinstance(value, SubmitButton)
+
+
+@register.filter
+def eq(value, arg):
+    return value == arg
 
 
 @register.inclusion_tag('utils/form_control.html')

@@ -1,10 +1,18 @@
+{% load special_sauce %}
 <div class="column">
-<div class="box">
-  <div data-product="{{product.id}}" data-slots="{{product.slots}}" data-max="{{product.max_quantity_per_reg}}" class="product-card {{product.slotClasses}} {{product.conflictClasses}}">
-    <div class="error is-red is-danger is-$red"></div>
-    {% if product.max_quantity_per_reg == 1 %}
+<div class="">
+  <div data-product="{{product.id}}" data-slots="{{product.slots}}" data-max="{{product.max_quantity}}"
+       class="box product-card {{product.slotClasses}} {{product.conflictClasses}}
+       {{product.status|eq:'unavailable'|yesno:'unavailable,'}}
+       {{product.status|eq:'max_purchased'|yesno:'max-purchased,'}}
+       {% if product.quantity_claimed == 0 %}minimum{% endif %}
+       {% if product.quantity_claimed > 0 %}claimed{% endif %}
+       {% if product.quantity_claimed == product.max_quantity %}maximum{% endif %}">
+    <div class="error is-red is-danger is-$red">
+    </div>
+    {% if product.max_quantity == 1 %}
       <div class="loader"></div>
-      <input class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' %}checked{% endif %}>
+      <input class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' or product.quantity_claimed > 0 %}checked{% endif %}>
     {% else %}
     <button class="button is-rounded product-decrement">-</button>
      <div class="control">
