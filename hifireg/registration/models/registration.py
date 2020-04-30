@@ -51,6 +51,7 @@ class Registration(models.Model):
     def for_user(cls, user):
         return cls.objects.get(user=user)
 
+
 class Volunteer(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.CASCADE, null=True, blank=True)
     cellphone_number = models.CharField(verbose_name='Cell Phone Number', max_length=30, null=True, blank=True)
@@ -66,6 +67,7 @@ class Order(models.Model):
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
     stretch_price = models.PositiveIntegerField(default=0)
+    donation = models.PositiveIntegerField(default=0)
 
     @property
     def is_submitted(self):
