@@ -9,7 +9,7 @@ from . import views
 
 urlpatterns = [
     # index:
-    path('', views.index, name='index'),
+    path('', views.Index.as_view(), name='index'),
 
     # must have registration:
     path('register/', RedirectView.as_view(url=reverse_lazy('register_comp_code')), name='registration'), # redirects to registration creation view

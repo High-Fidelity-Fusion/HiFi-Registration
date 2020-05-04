@@ -23,3 +23,17 @@ class OrderRequiredMixin:
         except ObjectDoesNotExist:
             return redirect('order')
         return super().dispatch(request, *args, **kwargs)
+
+
+# Use a CBV as an FBV: Overrides dispatch method of CBV with fbv() method.
+# Implement the fbv() method as you would a normal FBV.
+# This class should be added just before the CBV class in the inheritance sequence.
+# You get the benefit of dispatch() mixins, class/instance variables, and inheritance, 
+# with the simplicity of FBVs.
+# Recommended: Use with the TemplateView and manually call super().get(request)
+# instead of render(). This provides useful context for free and let's you set
+# template as a class variable.
+class FunctionBasedView:
+    def dispatch(self, request, *args, **kwargs):
+        return self.fbv(request)
+        

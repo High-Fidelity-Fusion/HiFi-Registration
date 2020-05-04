@@ -11,15 +11,15 @@ from django.views import View
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
 
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 from .decorators import must_have_registration, must_have_active_order, must_have_active_order_and_dance_pass
 
 
-@login_required
-def index(request):
-    return render(request, 'registration/index.html', {'user': request.user})
+class Index(LoginRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        return render(request, 'registration/index.html', {'user': request.user})
 
 
 @login_required
