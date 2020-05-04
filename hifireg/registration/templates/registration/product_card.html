@@ -3,11 +3,11 @@
 <div class="">
   <div data-product="{{product.id}}" data-slots="{{product.slots}}" data-max="{{product.max_quantity}}"
        class="box product-card {{product.slotClasses}} {{product.conflictClasses}}
-       {{product.status|eq:'unavailable'|yesno:'unavailable,'}}
        {{product.status|eq:'max_purchased'|yesno:'max-purchased,'}}
        {% if product.quantity_claimed == 0 %}minimum{% endif %}
        {% if product.quantity_claimed > 0 %}claimed{% endif %}
-       {% if product.quantity_claimed == product.max_quantity %}maximum{% endif %}">
+       {% if product.quantity_claimed == product.max_quantity %}maximum
+       {% elif product.status == 'unavailable' %}unavailable{% endif %}">
     <div class="error is-red is-danger is-$red">
     </div>
     {% if product.max_quantity == 1 %}

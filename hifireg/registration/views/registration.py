@@ -112,7 +112,7 @@ def register_ticket_selection(request):
     return render(request, 'registration/register_selection.html', context)
 
 
-@must_have_active_order_and_dance_pass
+@must_have_active_order
 def register_class_selection(request):
     if request.method == 'POST':
         if 'previous' in request.POST:
@@ -124,7 +124,7 @@ def register_class_selection(request):
     return render(request, 'registration/register_selection.html', context)
 
 
-@must_have_active_order_and_dance_pass
+@must_have_active_order
 def register_showcase(request):
     if request.method == 'POST':
         if 'previous' in request.POST:
@@ -138,7 +138,7 @@ def register_showcase(request):
     return render(request, 'registration/register_selection.html', context)
 
 
-@must_have_active_order_and_dance_pass
+@must_have_active_order
 def register_merchandise(request):
     if request.method == 'POST':
         if 'previous' in request.POST:

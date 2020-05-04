@@ -26,7 +26,7 @@ def build_product(product, slot_id):
         'subtitle': product.subtitle,
         'description': product.description,
         'price': '${:,.2f}'.format(product.price * 0.01),
-        'max_quantity': product.max_quantity_per_reg - product.quantity_purchased,
+        'max_quantity': min(product.max_quantity_per_reg - product.quantity_purchased, product.quantity_available + product.quantity_claimed),
         'quantity_claimed': product.quantity_claimed,
         'quantity_purchased': product.quantity_purchased,
         'status': get_status_for_product(product),
