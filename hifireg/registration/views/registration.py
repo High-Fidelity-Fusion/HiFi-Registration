@@ -162,8 +162,7 @@ class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequi
 
     def post(self, request):
         if "claim_ap" in request.POST:
-            # if self.order.claim_accessible_pricing():
-            if False: # override claim_accessible_pricing() as example
+            if self.order.claim_accessible_pricing():
                 return redirect("register_accessible_pricing")
             else:
                 self.ap_available = False
