@@ -26,28 +26,32 @@ def setup_products():
     ProductCategory.objects.all().delete()
     ProductSlot.objects.all().delete()
 
-    frislot = ProductSlot.objects.create(name='Friday', rank=3)
-    satslot = ProductSlot.objects.create(name='Saturday', rank=3)
+    slot1 = ProductSlot.objects.create(name='1pm', rank=3)
+    slot2 = ProductSlot.objects.create(name='11am', rank=2)
 
-    category = ProductCategory.objects.create(name='Full Weekend Dance Passes', section='DANCE', is_slot_based=False, rank=4)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Weekend Dance Pass', subtitle='subtitle', description='description', category=category)
-    product.slots.add(frislot)
-    product.slots.add(satslot)
+    category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
+    product.slots.add(slot1)
+    product.slots.add(slot2)
 
-    category = ProductCategory.objects.create(name='A La Carte', section='DANCE', rank=3)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday Night Pass', subtitle='subtitle', description='description', category=category)
-    product.slots.add(frislot)
-    product = Product.objects.create(total_quantity=0, max_quantity_per_reg = 1, price=2000, title='Friday Out of Stock', subtitle='subtitle', description='description', category=category)
-    product.slots.add(frislot)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday Night Pass', subtitle='subtitle', description='description', category=category)
-    product.slots.add(satslot)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Fri/Sat Dance Pass', subtitle='subtitle', description='description', category=category)
-    product.slots.add(frislot)
-    product.slots.add(satslot)
+    category = ProductCategory.objects.create(name='Friday', section='CLASS', rank=3)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Dance like a Baby Giraffe', subtitle='featuring a real baby giraffe!', description='description', category=category)
+    product.slots.add(slot1)
+    product = Product.objects.create(total_quantity=0, max_quantity_per_reg = 1, price=2000, title='Dance like you are Out of Stock', subtitle='subtitle', description='description', category=category)
+    product.slots.add(slot1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Ants in your Pants', subtitle='teacher: Ant Man', description='We are going to put literal ants in your literal pants.', category=category)
+    product.slots.add(slot2)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category)
+    product.slots.add(slot1)
+    product.slots.add(slot2)
 
     category = ProductCategory.objects.create(name='Clothing', section='MERCH', is_slot_based=False, rank=2)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 3, price=1500, title='t-shirt', subtitle='subtitle', description='description', category=category)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 10, price=1500, title='hoodie', subtitle='subtitle', description='description', category=category)
 
+    category = ProductCategory.objects.create(name='Dance Passes', section='DANCE', is_slot_based=False, rank=3)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: rebecca black', description='description', category=category)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category)
 
 class OrderTestCase(TestCase):
     def setUp(self):
