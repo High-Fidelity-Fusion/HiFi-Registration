@@ -95,7 +95,9 @@
     <main>
         <section class="section">
             <div class="container">
-                {% block countdown %}{% endblock %}
+                {% if show_session_timer %}
+                <p id="session-expiry-timer"></p>
+                {% endif %}
                 <h1 class="title">High Fidelity Registration</h1>
                 {% block content %}
                 <div class="card">
@@ -121,6 +123,8 @@
     </footer>
 
 </body>
+
+{% if show_session_timer %}
 <script>
 // NOTE: Only supports up to an hour
 var countDownDate;
@@ -155,6 +159,7 @@ if (document.getElementById("session-expiry-timer")) {
     }
 }, 1000);
     }
-    </script>
+</script>
+{% endif %}
 
 </html>
