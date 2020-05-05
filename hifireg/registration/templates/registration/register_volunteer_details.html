@@ -1,7 +1,7 @@
 {% extends "registration/base.html" %}
 
 {% block countdown %}
-<p id="session-expiry-timer"></p>
+{% include 'registration/countdown_widget.html' %}
 {% endblock %}
 
 {% block card_content %}
