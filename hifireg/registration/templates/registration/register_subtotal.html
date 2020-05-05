@@ -1,6 +1,10 @@
 {% extends "registration/base.html" %}
 {% load special_sauce %}
 
+{% block countdown %}
+<p id="session-expiry-timer"></p>
+{% endblock %}
+
 {% block card_content %}
 
 <p class="title">

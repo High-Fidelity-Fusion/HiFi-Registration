@@ -1,5 +1,8 @@
 {% extends "registration/base.html" %}
 
+{% block countdown %}
+<p id="session-expiry-timer"></p>
+{% endblock %}
 
 {% block content %}
 <p>Choose your {{section}}!</p>
@@ -51,6 +54,7 @@
           if (data.error) {
             location.reload();
           } else if (data.success) {
+            resetCountDown();
             var slots = parent[0].dataset.slots.split(',');
             slots.forEach(slot => {
               var conflicts = $(`.slot-${slot}`).not(parents);
@@ -59,6 +63,7 @@
             parents.addClass('claimed');
 
           } else {
+            resetCountDown();
             checkBoxes.prop('checked', false);
             parents.addClass('unavailable')
           }
@@ -82,7 +87,7 @@
           if (data.error) {
             location.reload();
           } else {
-            console.log(data);
+            resetCountDown();
             var slots = parent[0].dataset.slots.split(',');
             slots.forEach(slot => {
               var conflicts = $(`.conflict-${slot}`);
@@ -122,6 +127,7 @@
           location.reload();
 
         } else if (data.success) {
+          resetCountDown();
           var slots = parent[0].dataset.slots.split(',');
           slots.forEach(slot => {
             var conflicts = $(`.slot-${slot}`).not(parent);
@@ -166,7 +172,7 @@
         if (data.error) {
           location.reload();
         } else {
-          console.log(data);
+          resetCountDown();
           var slots = parent[0].dataset.slots.split(',');
           slots.forEach(slot => {
             var conflicts = $(`.conflict-${slot}`);
@@ -189,4 +195,5 @@
     });
   });
 </script>
+
 {% endblock %}
