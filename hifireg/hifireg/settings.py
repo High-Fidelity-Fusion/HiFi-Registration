@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'registration.middleware.RefreshSessions',
 ]
 
 ROOT_URLCONF = 'hifireg.urls'
@@ -169,3 +170,5 @@ AUTH_USER_MODEL = 'registration.User'
 LOGIN_REDIRECT_URL = '/registration/'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'login'
+
+SESSION_COOKIE_AGE = int(os.getenv('SESSION_AGE', '3600'))
