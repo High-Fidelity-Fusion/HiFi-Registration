@@ -216,14 +216,29 @@ def register_accessible_pricing(request):
     return render(request, 'registration/register_accessible_pricing.html', {'form': form})
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_order
 def register_donate(request):
-    form = RegDonateForm
+    order = Order.for_user(request.user)
+
     if request.method == 'POST':
         if 'previous' in request.POST:
             return redirect('register_subtotal')
-        return redirect('register_volunteer')
-    return render(request, 'registration/register_donate.html', {'form': form})
+        form = RegDonateForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            order.accessible_price = order.original_price + int(100*cd['donation'])
+            order.save()
+            return redirect('register_volunteer')
+    else:
+        subtotal = '${:,.2f}'.format(order.original_price * .01)
+        if order.accessible_price > order.original_price:
+            donation = order.accessible_price - order.original_price
+        else:
+            donation = 0
+        form = RegDonateForm()
+        form.fields['donation'].initial = float(donation) * .01
+        context = {'form': form, 'subtotal': subtotal, 'donation': donation}
+    return render(request, 'registration/register_donate.html', context)
 
 
 @must_have_registration  # change to must_have_order when orders are working

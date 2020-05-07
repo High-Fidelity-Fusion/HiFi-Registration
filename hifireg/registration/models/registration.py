@@ -67,7 +67,6 @@ class Order(models.Model):
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
     stretch_price = models.PositiveIntegerField(default=0)
-    donation = models.PositiveIntegerField(default=0)
 
     @property
     def is_submitted(self):
