@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as UserAdmin_
+from django.contrib.auth.admin import UserAdmin as UserAdmin_, Group
 from django.utils.translation import gettext_lazy as _
 
 from .models import CompCode, Product, ProductCategory, ProductSlot, Registration
@@ -28,14 +28,16 @@ class UserAdmin(UserAdmin_):
     ordering = ('email',)
     readonly_fields = ('email', 'last_login', 'date_joined')
 
+
 # Register custom User and UserAdmin
-admin.site.register(User, UserAdmin)
+# admin.site.register(User, UserAdmin)
 
 # Register your models here.
 admin.site.register(CompCode)
 admin.site.register(Product)
 admin.site.register(ProductCategory)
 admin.site.register(ProductSlot)
-admin.site.register(Registration)
 
+#
+admin.site.unregister(Group)
 

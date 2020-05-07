@@ -1,4 +1,5 @@
 {% extends "registration/base.html" %}
+{% load static %}
 
 {% block countdown %}
 {% include 'registration/countdown_widget.html' %}
@@ -13,11 +14,21 @@
 <form method="post">
     {% csrf_token %}
 
-    {% include "utils/form_fields.html" %}
+    <p>Cart Subtotal: <output id="id_subtotal">{{ subtotal }}</output></p>
+
+    {% include "utils/form_fields_donate.html" %}
+
+    <p>Total: <output id="id_total"></output></p>
 
     <div class="control">
         <button type="submit" name='previous' class="button is-link">Previous</button>
         <button type="submit" name='next' class="button is-link">Next</button>
     </div>
 </form>
+
+<script src="{% static 'scripts/donate-page-outputs.js' %}"></script>
+<script>
+    window.onload = calculateOutputs()
+</script>
+
 {% endblock %}

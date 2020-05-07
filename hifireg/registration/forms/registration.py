@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from registration.models import Registration, CompCode, Volunteer, CompCodeHelper
+from registration.models import CompCode, Order, Registration, Volunteer, CompCodeHelper
 
 from .validators import validate_answered
 
@@ -146,9 +146,6 @@ class RegAccessiblePriceCalcForm(forms.Form):
 
 
 class RegDonateForm(forms.Form):
-    donation_to_AP_fund = forms.DecimalField(
-        label='I would like to contribute this dollar amount to the accessible pricing fund:', initial=0, decimal_places=2
-    )
-    donation_to_hifi = forms.DecimalField(
-        label='I would like to provide this dollar amount of additional support to HiFi:', initial=0, decimal_places=2
+    donation = forms.DecimalField(
+        label='I would like to contribute this dollar amount:', initial=0.00, decimal_places=2
     )
