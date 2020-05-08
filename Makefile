@@ -27,9 +27,14 @@ shell:
 style:
 	npm run css-build
 
+style-watch:
+	npm run css-watch
+
 format:
 	black -S -l150 hifireg/registration
 
 lint:
 	pylint hifireg/registration
 
+demo:
+	$(MANAGE) shell -c "from registration.tests import setup_products; setup_products()"
