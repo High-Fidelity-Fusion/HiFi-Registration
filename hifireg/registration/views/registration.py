@@ -72,9 +72,8 @@ def register_policy(request):
 
 def add_item(request):
     try:
-        product = Product.objects.get(pk=request.GET.get('product', None))
-        success = Order.for_user(request.user).add_item(product, int(request.GET.get('increment', None)))
-        product = Product.objects.get_product_info_for_user(request.user).get(pk=product.pk)
+        product_id = request.GET.get('product', None)
+        success = Order.for_user(request.user).add_item(product_id, int(request.GET.get('increment', None)))
 
         data = {
             'success': success,
@@ -88,9 +87,8 @@ def add_item(request):
 
 def remove_item(request):
     try:
-        product = Product.objects.get(pk=request.GET.get('product', None))
-        Order.for_user(request.user).remove_item(product, int(request.GET.get('decrement', None)))
-        product = Product.objects.get_product_info_for_user(request.user).get(pk=product.pk)
+        product_id = request.GET.get('product', None)
+        Order.for_user(request.user).remove_item(product_id, int(request.GET.get('decrement', None)))
 
         data = {}
     except Exception as e:
@@ -159,7 +157,7 @@ class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequi
     ap_no_button = LinkButton("register_donate")
 
     def get(self, request):
-        self.ap_available = self.order.ap_eligible_amount <= APFund.get_available_funds()
+        self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds()
         return super().get(request)
 
     def post(self, request):
@@ -183,7 +181,7 @@ class RegisterAP(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMix
         return redirect('register_volunteer')
 
 
-@must_have_registration  #TODO change to must_have_order when orders are working
+@must_have_registration
 def register_accessible_pricing(request):
     # TODO make function dependent on order, uncomment order-dependent-code
     # order = Order.objects.get(session=request.session)
@@ -216,7 +214,7 @@ def register_accessible_pricing(request):
     return render(request, 'registration/register_accessible_pricing.html', {'form': form})
 
 
-@must_have_order
+@must_have_active_order
 def register_donate(request):
     order = Order.for_user(request.user)
 
@@ -241,7 +239,7 @@ def register_donate(request):
     return render(request, 'registration/register_donate.html', context)
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_registration
 def register_volunteer(request):
     if request.method == 'POST':
         if 'previous' in request.POST:
@@ -261,7 +259,7 @@ def register_volunteer(request):
     return render(request, 'registration/register_volunteer.html', {'form': form})
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_registration
 def register_volunteer_details(request):
     registration = Registration.objects.get(user=request.user)
     try:
@@ -284,7 +282,7 @@ def register_volunteer_details(request):
     return render(request, 'registration/register_volunteer_details.html', {'form': form})
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_registration
 def register_misc(request):
     if request.method == 'POST':
         registration = Registration.objects.get(user=request.user)
@@ -302,7 +300,7 @@ def register_misc(request):
     return render(request, 'registration/register_misc.html', {'form': form})
 
 
-@must_have_registration  # change to must_have_order when orders are working
+@must_have_registration
 def make_payment(request):
     form = None
     if request.method == 'POST':

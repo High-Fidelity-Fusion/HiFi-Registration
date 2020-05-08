@@ -4,6 +4,16 @@ from django.core.exceptions import SuspiciousOperation
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 
+def clean_db():
+    Product.slots.through.objects.all().delete()
+    Product.objects.all().delete()
+    ProductCategory.objects.all().delete()
+    ProductSlot.objects.all().delete()
+    Order.objects.all().delete()
+    Registration.objects.all().delete()
+    APFund.objects.all().delete()
+    Session.objects.all().delete()
+    CompCode.objects.all().delete()
 
 def setup_test_data():
     category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3)
@@ -21,6 +31,7 @@ def setup_test_data():
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
 
 def setup_products():
+    Order.objects.all().delete()
     Product.slots.through.objects.all().delete()
     Product.objects.all().delete()
     ProductCategory.objects.all().delete()
@@ -55,6 +66,7 @@ def setup_products():
 
 class OrderTestCase(TestCase):
     def setUp(self):
+        clean_db()
         setup_test_data()
 
     def test_add_item__simple_case(self):
@@ -62,7 +74,7 @@ class OrderTestCase(TestCase):
         product = Product.objects.first()
         registration = Registration.objects.first()
 
-        result = order.add_item(product, 1)
+        result = order.add_item(product.pk, 1)
 
         self.assertEqual(result, True)
         self.assertEqual(OrderItem.objects.count(), 1)
@@ -78,11 +90,30 @@ class OrderTestCase(TestCase):
         self.assertEqual(registration.is_accessible_pricing, False)
         self.assertEqual(registration.is_submitted, False)
 
+    def test_delete_order(self):
+        order = Order.objects.first()
+        product = Product.objects.first()
+        registration = Registration.objects.first()
+
+        self.assertEqual(product.available_quantity, 5)
+
+        result = order.add_item(product.pk, 1)
+        order.refresh_from_db()
+        product.refresh_from_db()
+
+        self.assertEqual(product.available_quantity, 4)
+
+        order.delete()
+        product.refresh_from_db()
+
+        self.assertEqual(product.available_quantity, 5)
+
+
     def test_add_item__two_quantity(self):
         order = Order.objects.first()
         product = Product.objects.first()
 
-        result = order.add_item(product, 2)
+        result = order.add_item(product.pk, 2)
 
         self.assertEqual(result, True)
         self.assertEqual(OrderItem.objects.count(), 1)
@@ -99,8 +130,8 @@ class OrderTestCase(TestCase):
         order = Order.objects.first()
         product = Product.objects.first()
 
-        order.add_item(product, 1)
-        result = order.add_item(product, 1)
+        order.add_item(product.pk, 1)
+        result = order.add_item(product.pk, 1)
 
         self.assertEqual(result, True)
         self.assertEqual(OrderItem.objects.count(), 1)
@@ -118,10 +149,10 @@ class OrderTestCase(TestCase):
         product = Product.objects.first()
 
         with self.assertRaises(SuspiciousOperation):
-            order.add_item(product, 3)
-        order.add_item(product, 2)
+            order.add_item(product.pk, 3)
+        order.add_item(product.pk, 2)
         with self.assertRaises(SuspiciousOperation):
-            order.add_item(product, 1)
+            order.add_item(product.pk, 1)
 
     def test_add_item__out_of_stock(self):
         order = Order.objects.first()
@@ -129,11 +160,11 @@ class OrderTestCase(TestCase):
         product.max_quantity_per_reg = 100
         product.save()
 
-        result = order.add_item(product, 6)
+        result = order.add_item(product.pk, 6)
         self.assertEqual(result, False)
-        result = order.add_item(product, 5)
+        result = order.add_item(product.pk, 5)
         self.assertEqual(result, True)
-        result = order.add_item(product, 1)
+        result = order.add_item(product.pk, 1)
         self.assertEqual(result, False)
 
     def test_add_item__slot_conflict(self):
@@ -143,13 +174,13 @@ class OrderTestCase(TestCase):
         conflicting_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         conflicting_product.slots.set([slot])
 
-        order.add_item(product, 1)
+        order.add_item(product.pk, 1)
         with self.assertRaises(SuspiciousOperation):
-            order.add_item(conflicting_product, 1)
+            order.add_item(conflicting_product.pk, 1)
 
         slot.is_exclusionary = False
         slot.save()
-        order.add_item(conflicting_product, 1)
+        order.add_item(conflicting_product.pk, 1)
 
     def test_add_item__is_submitted(self):
         order = Order.objects.first()
@@ -160,7 +191,7 @@ class OrderTestCase(TestCase):
         self.assertEqual(order.is_submitted, True)
         self.assertEqual(Registration.objects.first().is_submitted, True)
         with self.assertRaises(SuspiciousOperation):
-            order.add_item(product, 1)
+            order.add_item(product.pk, 1)
 
     def test_add_item__comped(self):
         comp_code = CompCode.objects.first()
@@ -171,8 +202,8 @@ class OrderTestCase(TestCase):
         non_compable_product = Product.objects.first()
         compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
 
-        order.add_item(non_compable_product, 1)
-        order.add_item(compable_product, 1)
+        order.add_item(non_compable_product.pk, 1)
+        order.add_item(compable_product.pk, 1)
 
         self.assertEqual(order.original_price, 2000)
         self.assertEqual(order.accessible_price, 2000)
@@ -181,9 +212,9 @@ class OrderTestCase(TestCase):
     def test_remove_item__full_quantity(self):
         order = Order.objects.first()
         product = Product.objects.first()
-        order.add_item(product, 1)
+        order.add_item(product.pk, 1)
 
-        order.remove_item(product, 1)
+        order.remove_item(product.pk, 1)
 
         self.assertEqual(OrderItem.objects.count(), 0)
         order.refresh_from_db()
@@ -193,9 +224,9 @@ class OrderTestCase(TestCase):
     def test_remove_item__partial_quantity(self):
         order = Order.objects.first()
         product = Product.objects.first()
-        order.add_item(product, 2)
+        order.add_item(product.pk, 2)
 
-        order.remove_item(product, 1)
+        order.remove_item(product.pk, 1)
 
         self.assertEqual(OrderItem.objects.count(), 1)
         order_item = OrderItem.objects.first()
@@ -209,7 +240,7 @@ class OrderTestCase(TestCase):
     def test_claim_accessible_pricing(self):
         order = Order.objects.first()
         product = Product.objects.first()
-        order.add_item(product, 1)
+        order.add_item(product.pk, 1)
 
         result = order.claim_accessible_pricing()
 
@@ -223,10 +254,10 @@ class OrderTestCase(TestCase):
     def test_claim_accessible_pricing__fund_insufficient(self):
         product = Product.objects.first()
         order = Order.objects.first()
-        order.add_item(product, 1)
+        order.add_item(product.pk, 1)
         order.claim_accessible_pricing()
         order2 = Order.objects.last()
-        order2.add_item(product, 1)
+        order2.add_item(product.pk, 1)
 
         result = order2.claim_accessible_pricing()
 
@@ -238,8 +269,8 @@ class OrderTestCase(TestCase):
         order = Order.objects.first()
         product = Product.objects.first()
         ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
-        order.add_item(product, 1)
-        order.add_item(ineligible_product, 1)
+        order.add_item(product.pk, 1)
+        order.add_item(ineligible_product.pk, 1)
 
         result = order.claim_accessible_pricing()
 
@@ -252,7 +283,7 @@ class OrderTestCase(TestCase):
     def test_claim_accessible_pricing__fully_ineligible(self):
         order = Order.objects.first()
         ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
-        order.add_item(ineligible_product, 1)
+        order.add_item(ineligible_product.pk, 1)
 
         result = order.claim_accessible_pricing()
 
@@ -264,6 +295,7 @@ class OrderTestCase(TestCase):
 
 class ProductTestCase(TestCase):
     def setUp(self):
+        clean_db()
         setup_test_data()
 
     def test_get_product_info_for_user(self):
@@ -274,8 +306,8 @@ class ProductTestCase(TestCase):
         incomplete_order = registration.order_set.first()
         complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
 
-        incomplete_order.add_item(product, 1)
-        complete_order.add_item(product, 1)
+        incomplete_order.add_item(product.pk, 1)
+        complete_order.add_item(product.pk, 1)
         complete_order.session = None
         complete_order.save()
 
@@ -290,8 +322,8 @@ class ProductTestCase(TestCase):
         self.assertEqual(unclaimed_product_result.quantity_purchased, 0)
         self.assertEqual(product_result.quantity_claimed, 1)
         self.assertEqual(unclaimed_product_result.quantity_claimed, 0)
-        self.assertEqual(product_result.quantity_available, 3)
-        self.assertEqual(unclaimed_product_result.quantity_available, 5)
+        self.assertEqual(product_result.available_quantity, 3)
+        self.assertEqual(unclaimed_product_result.available_quantity, 5)
 
     def test_get_product_info_for_user__empty_cart(self):
         #Arrange
@@ -310,11 +342,9 @@ class ProductTestCase(TestCase):
         self.assertEqual(unclaimed_product_result.quantity_purchased, 0)
         self.assertEqual(product_result.quantity_claimed, 0)
         self.assertEqual(unclaimed_product_result.quantity_claimed, 0)
-        self.assertEqual(product_result.quantity_available, 5)
-        self.assertEqual(unclaimed_product_result.quantity_available, 5)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.available_quantity, 5)
+        self.assertEqual(unclaimed_product_result.available_quantity, 5)
         self.assertEqual(product_result.slot_conflicts, [])
-        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, False)
         self.assertEqual(unclaimed_product_result.slot_conflicts, [])
 
     def test_get_product_info_for_user__multi_slot_products_with_conflict(self):
@@ -325,7 +355,7 @@ class ProductTestCase(TestCase):
         product2 = products.last()
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
-        incomplete_order.add_item(product1, 1)
+        incomplete_order.add_item(product1.pk, 1)
 
         #Act
         product_info = Product.objects.get_product_info_for_user(registration.user)
@@ -336,13 +366,11 @@ class ProductTestCase(TestCase):
         self.assertEqual(product_info.filter(pk=product1.pk).count(), 1)
         self.assertEqual(product_result.quantity_purchased, 0)
         self.assertEqual(product_result.quantity_claimed, 1)
-        self.assertEqual(product_result.quantity_available, 4)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
+        self.assertEqual(product_result.available_quantity, 4)
         self.assertEqual(product_result.slot_conflicts, [])
         self.assertEqual(product_result2.quantity_purchased, 0)
         self.assertEqual(product_result2.quantity_claimed, 0)
-        self.assertEqual(product_result2.quantity_available, 5)
-        self.assertEqual(product_result2.exclusionary_slot_exists_in_order, True)
+        self.assertEqual(product_result2.available_quantity, 5)
         self.assertEqual(product_result2.slot_conflicts, [ProductSlot.objects.last().pk, ProductSlot.objects.first().pk])
 
     def test_get_product_info_for_user__product_does_not_conflict(self):
@@ -354,8 +382,8 @@ class ProductTestCase(TestCase):
         incomplete_order = registration.order_set.first()
         complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
 
-        incomplete_order.add_item(product, 1)
-        complete_order.add_item(product, 1)
+        incomplete_order.add_item(product.pk, 1)
+        complete_order.add_item(product.pk, 1)
         complete_order.session = None
         complete_order.save()
 
@@ -365,9 +393,7 @@ class ProductTestCase(TestCase):
         #Assert
         product_result = product_info.get(pk=product.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
         self.assertEqual(product_result.slot_conflicts, [])
-        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, False)
         self.assertEqual(unclaimed_product_result.slot_conflicts, [])
 
     def test_get_product_info_for_user__product_conflicts_with_cart(self):
@@ -378,7 +404,7 @@ class ProductTestCase(TestCase):
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
         unclaimed_product.slots.set([product_slot])
-        incomplete_order.add_item(product_in_cart, 1)
+        incomplete_order.add_item(product_in_cart.pk, 1)
 
         #Act
         product_info = Product.objects.get_product_info_for_user(registration.user)
@@ -386,9 +412,7 @@ class ProductTestCase(TestCase):
         #Assert
         product_result = product_info.get(pk=product_in_cart.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
         self.assertEqual(product_result.slot_conflicts, [])
-        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, True)
         self.assertEqual(unclaimed_product_result.slot_conflicts, [product_slot.pk])
 
     def test_get_product_info_for_user__product_conflicts_with_purchase(self):
@@ -399,7 +423,7 @@ class ProductTestCase(TestCase):
         registration = Registration.objects.first()
         complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
 
-        complete_order.add_item(product_purchased, 1)
+        complete_order.add_item(product_purchased.pk, 1)
         complete_order.session = None
         complete_order.save()
 
@@ -411,7 +435,5 @@ class ProductTestCase(TestCase):
         #Assert
         product_result = product_info.get(pk=product_purchased.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
-        self.assertEqual(product_result.exclusionary_slot_exists_in_order, False)
         self.assertEqual(product_result.slot_conflicts, [])
-        self.assertEqual(unclaimed_product_result.exclusionary_slot_exists_in_order, True)
         self.assertEqual(unclaimed_product_result.slot_conflicts, [product_slot.pk])

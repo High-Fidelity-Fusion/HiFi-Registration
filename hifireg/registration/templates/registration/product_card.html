@@ -3,14 +3,14 @@
 <div class="">
   <div data-product="{{product.id}}" data-slots="{{product.slots}}" data-max="{{product.max_quantity}}"
        class="box product-card {{product.slotClasses}} {{product.conflictClasses}}
-       {{product.status|eq:'max_purchased'|yesno:'max-purchased,'}}
+       {% if product.status == 'max_purchased' %}max-purchased{% endif %}
        {% if product.quantity_claimed == 0 %}minimum{% endif %}
        {% if product.quantity_claimed > 0 %}claimed{% endif %}
-       {% if product.quantity_claimed == product.max_quantity %}maximum
+       {% if product.quantity_claimed == product.max_quantity and product.max_quantity > 0 %}maximum
        {% elif product.status == 'unavailable' %}unavailable{% endif %}">
     <div class="error is-red is-danger is-$red">
     </div>
-    {% if product.max_quantity == 1 %}
+    {% if product.max_quantity_per_reg == 1 %}
       <div class="loader"></div>
       <input class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' or product.quantity_claimed > 0 %}checked{% endif %}>
     {% else %}
