@@ -11,7 +11,7 @@ def get_status_for_product(product):
         return 'max_purchased'
     if (product.available_quantity <= 0):
         return 'unavailable'
-    if (product.exclusionary_slot_exists_in_order and product.quantity_claimed + product.quantity_purchased <= 0):
+    if (len(product.slot_conflicts) and product.quantity_claimed + product.quantity_purchased <= 0):
         return 'conflict'
     return 'available'
 
@@ -26,7 +26,8 @@ def build_product(product, slot_id):
         'subtitle': product.subtitle,
         'description': product.description,
         'price': '${:,.2f}'.format(product.price * 0.01),
-        'max_quantity': min(product.max_quantity_per_reg - product.quantity_purchased, product.quantity_available + product.quantity_claimed),
+        'max_quantity': min(product.max_quantity_per_reg - product.quantity_purchased, product.available_quantity + product.quantity_claimed),
+        'max_quantity_per_reg': product.max_quantity_per_reg,
         'quantity_claimed': product.quantity_claimed,
         'quantity_purchased': product.quantity_purchased,
         'status': get_status_for_product(product),
