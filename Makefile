@@ -36,5 +36,5 @@ format:
 lint:
 	pylint hifireg/registration
 
-demo:
+test-data:
 	$(MANAGE) shell -c "from registration.tests import setup_products; setup_products()"
