@@ -12,10 +12,6 @@ migrate:
 	$(MANAGE) makemigrations
 	$(MANAGE) migrate
 
-explicit_migrate:
-	$(MANAGE) makemigrations registration
-	$(MANAGE) migrate
-
 run: 
 	$(MANAGE) runserver
 
