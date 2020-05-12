@@ -18,13 +18,3 @@ def is_submit(value):
 @register.filter
 def eq(value, arg):
     return value == arg
-
-
-@register.inclusion_tag('utils/form_control.html')
-def form_control(value):
-    return {'button': value}
-
-
-@register.inclusion_tag('utils/button.html')
-def button(value):
-    return {'button': value}
