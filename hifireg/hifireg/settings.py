@@ -97,7 +97,8 @@ database = {
 if DEBUG:
     database['NAME'] = os.getenv('DBNAME_DEV')
     if database['NAME'] is None:
-        database = local_database
+        raise RuntimeError('Was not able to read the DBNAME_DEV environment variable.')
+        #database = local_database
 
 DATABASES = {
     'default': database
