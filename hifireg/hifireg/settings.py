@@ -96,9 +96,11 @@ database = {
 # Use the local SQLite database if DBNAME_DEV isn't set.
 if DEBUG:
     database['NAME'] = os.getenv('DBNAME_DEV')
-    if database['NAME'] is None:
+    use_sqlite = os.getenv('USE_SQLITE', 'False').lower() == 'true'
+    if use_sqlite:
+        database = local_database
+    elif database['NAME'] is None:
         raise RuntimeError('Was not able to read the DBNAME_DEV environment variable.')
-        #database = local_database
 
 DATABASES = {
     'default': database
