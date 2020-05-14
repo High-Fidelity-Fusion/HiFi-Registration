@@ -30,7 +30,9 @@
     <details>
       <p>{{product.description}}</p>
     </details>
-    <p>{{product.price}}</p>
+    <p {% if product.is_comped %}class="comped"{% endif %}>{{product.price}}</p>
+    {% if product.is_comped %}<p>Included with Comp</p>{% endif %}
+
   </div>
 </div>
 </div>
