@@ -1,3 +1,28 @@
+//product-card clicks can togggle checkbox
+$('.product-card').on('click', function(e) {
+  //if this is not a checkbox card, move on
+  var checkBox = $(this).find('.product-checkbox');
+  if (checkBox.length === 0) {
+    return;
+  }
+
+  //if checkbox clicked: ignore and let change handler handle it 
+  // prevents error that when checked the card is immeidately auto-unchecked
+  if (e.target === checkBox[0]) {
+    return;
+  }
+  
+  //Making no action for checkbox when user clicks "Details" carrot icon
+  if (e.target.tagName.toLowerCase() === 'details') {
+    return;
+  }
+  
+  //if you click on the card outside the checkbox, 
+  //toggle the checkbox and trigger change event
+  checkBox.click();
+});
+
+//When a checkbox toggles off or on, run this code
 $(".product-checkbox").change(function() {
   var thisCheckBox = this;
   var parent = $(thisCheckBox).parent();
