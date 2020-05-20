@@ -150,7 +150,7 @@ def register_merchandise(request):
     return render(request, 'registration/register_selection.html', context)
 
 
-class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMixin, TemplateView):
+class RegisterSubtotal(OrderRequiredMixin, TemplateView):
     template_name = "registration/register_subtotal.html"
     previous_button = LinkButton("register_merchandise", "Previous")
     ap_yes_button = SubmitButton("claim_ap")
@@ -169,7 +169,7 @@ class RegisterSubtotal(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequi
                 return super().get(request)
 
 
-class RegisterAP(LoginRequiredMixin, RegistrationRequiredMixin, OrderRequiredMixin, TemplateView):
+class RegisterAP(OrderRequiredMixin, TemplateView):
     template_name = "registration/register_accessible_pricing2.html"
     previous_button = LinkButton("register_subtotal", "Previous")
     next_button = LinkButton("register_volunteer", "Next")
