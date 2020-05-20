@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
@@ -5,8 +6,7 @@ from django.shortcuts import redirect
 from registration.models import Registration, Order
 
 
-# Set self.registration; redirect if registration does not exist.
-class RegistrationRequiredMixin:
+class RegistrationRequiredMixin_:
     def dispatch(self, request, *args, **kwargs):
         try:
             self.registration = Registration.objects.get(user=request.user)
@@ -14,15 +14,20 @@ class RegistrationRequiredMixin:
             return redirect('registration')
         return super().dispatch(request, *args, **kwargs)
 
+class RegistrationRequiredMixin(LoginRequiredMixin, RegistrationRequiredMixin_):
+    pass
 
-# Set self.order; redirect if order does not exist.
-class OrderRequiredMixin:
+
+class OrderRequiredMixin_:
     def dispatch(self, request, *args, **kwargs):
         try:
             self.order = Order.objects.get(session = Session.objects.get(pk=request.session.session_key))
         except ObjectDoesNotExist:
             return redirect('order')
         return super().dispatch(request, *args, **kwargs)
+
+class OrderRequiredMixin(RegistrationRequiredMixin, OrderRequiredMixin_):
+    pass
 
 
 # Use a CBV as an FBV: Overrides dispatch method of CBV with fbv() method.
