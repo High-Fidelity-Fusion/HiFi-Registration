@@ -170,7 +170,7 @@ class RegisterSubtotal(OrderRequiredMixin, TemplateView):
 
 
 class RegisterAP(OrderRequiredMixin, TemplateView):
-    template_name = "registration/register_accessible_pricing2.html"
+    template_name = "registration/register_accessible_pricing.html"
     previous_button = LinkButton("register_subtotal", "Previous")
     next_button = LinkButton("register_volunteer", "Next")
 
@@ -179,39 +179,6 @@ class RegisterAP(OrderRequiredMixin, TemplateView):
         self.order.accessible_price = price
         self.order.save()
         return redirect('register_volunteer')
-
-
-@must_have_registration
-def register_accessible_pricing(request):
-    # TODO make function dependent on order, uncomment order-dependent-code
-    # order = Order.objects.get(session=request.session)
-    original_price = 225
-    ap_eligible_amount = 200
-    if request.method == 'POST':
-        if 'previous' in request.POST:
-            return redirect('register_subtotal')
-        form = RegAccessiblePriceCalcForm(original_price, ap_eligible_amount, request.POST,)
-        if form.is_valid():
-            cd = form.cleaned_data
-            print(cd)
-            # order.accessible_price = form.cleaned_data[accessible_price]
-            # order.stretch_price = form.cleaned_data[stretch_price]
-            # order.save()
-
-            return redirect('register_volunteer')
-
-    else:
-        form = RegAccessiblePriceCalcForm(original_price, ap_eligible_amount)
-        # if order.accessible_price != order.original_price:
-        # for field in form:
-        #     if '$' in field.label:
-        #         if int(field.label[1]) >= order.accessible_price:
-        #           field.value = 1
-        #         elif int(field.label[1]) >= order.stretch_price:
-        #           field.value = 2
-        #         else:
-        #           field.value = 3
-    return render(request, 'registration/register_accessible_pricing.html', {'form': form})
 
 
 @must_have_active_order
