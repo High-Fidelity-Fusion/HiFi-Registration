@@ -340,3 +340,12 @@ class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):
 class PaymentConfirmationView(FunctionBasedView, View):
     def fbv(self, request):
         return render(request, 'registration/payment_confirmation.html', {})
+
+
+class VolunteerEdit(LoginRequiredMixin, RegistrationRequiredMixin, TemplateView):
+    template_name = "registration/volunteer_edit.html"
+
+    def get(self, request):
+        return super().get(request)
+
+    # def post(self, request):
