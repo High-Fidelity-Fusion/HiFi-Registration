@@ -3,6 +3,7 @@ from registration.models import *
 from django.core.exceptions import SuspiciousOperation
 from django.contrib.sessions.models import Session
 from django.utils import timezone
+from datetime import datetime
 
 def clean_db():
     Product.slots.through.objects.all().delete()
@@ -437,3 +438,32 @@ class ProductTestCase(TestCase):
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
         self.assertEqual(product_result.slot_conflicts, [])
         self.assertEqual(unclaimed_product_result.slot_conflicts, [product_slot.pk])
+
+class RegistrationTestCase(TestCase):
+    def setUp(self):
+        clean_db()
+        setup_test_data()
+
+    def test_with_outstanding_balances__positive_balance_without_payments(self):
+        # Arrange
+        registration = Registration.objects.first()
+        Invoice.objects.create(amount=1000, registration=registration, due_date=datetime.now())
+
+        # Act
+        registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
+
+        # Assert
+        self.assertEqual(registration.outstanding_balance, 1000)
+
+    def test_with_outstanding_balances__positive_balance(self):
+        pass
+        #TODO
+
+    def test_with_outstanding_balances__zero_balance(self):
+        pass
+        #TODO
+
+    def test_with_outstanding_balances__negative_balance(self):
+        pass
+        #TODO
+
