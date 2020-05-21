@@ -50,26 +50,24 @@ The Human Economic Negotiating Adjuster
 </form>
 
 <script>
+    "use strict";
 
+    /* High level parameters */
     var step_size = 5;
-    
-    var max_price = Math.floor(({{ view.order.original_price }}) / 100 / step_size) * step_size;
-    var ap_eligible_amount = Math.floor(({{ view.order.ap_eligible_amount }}) / 100 / step_size) * step_size;
+    var max_price = {{ view.order.original_price }} / 100;
+    var ap_eligible_amount = {{ view.order.ap_eligible_amount }} / 100;
+    //var max_price = 102;
+    //var ap_eligible_amount = 66;
     var min_price = max_price - ap_eligible_amount;
 
-    var search_min = min_price;
-    var search_max = max_price;
-    var search_mid = null;
-    var price_found = false;
-
-    var display_mid = 0;
-
+    /* Get DOM elements */
     var price_element = document.getElementById("test_price");
     var min_element = document.getElementById("search_min");
     var max_element = document.getElementById("search_max");
     var pay_element = document.getElementById("ready_to_pay");
     var price_submit_element = document.getElementById("price_submit");
 
+    /* Initialize DOM elements */
     window.onload = function() {
         document.getElementById("max_price").textContent = max_price;
         document.getElementById("min_price").textContent = min_price;
@@ -80,34 +78,54 @@ The Human Economic Negotiating Adjuster
         max_element.textContent = "$" + max_price;
     }
 
+    /* Button callbacks */
     function PriceDecrease() {
         search_max = search_mid;
         SeekPrice(-1);
-        LoadQuote();
+        //LoadQuote();
     }
 
     function PriceIncrease() {
         search_min = search_mid;
         SeekPrice(1);
-        LoadQuote();
+        //LoadQuote();
     }
 
+    /* Search algorithm setup and helper functions */
+    var price_list = make_price_list();
+    var search_min = 0;
+    var search_max = price_list.length - 1;
+    var search_mid = null;
+    var price_found = false;
+    
+    function round_step(num, round_method=Math.round) {
+        return round_method(num / step_size) * step_size;
+    }
+
+    function make_price_list() {
+        let nested_price_beg = round_step(min_price + step_size, Math.floor);
+        let nested_price_end = round_step(max_price - step_size, Math.ceil);
+        let nested_price_len = (nested_price_end - nested_price_beg) / step_size + 1;
+        let nested_price_list = [...Array(nested_price_len).keys()].map(index => nested_price_beg + index * step_size);
+        return [].concat([min_price], nested_price_list, [max_price]);
+    }
+    
     function SeekPrice(step_sign) {
         if (!price_found) {
-            search_mid = Math.floor((search_min + search_max) / 2 / step_size) * step_size;
-            if(search_mid == search_min && search_mid == search_max - step_size) {
+            search_mid = Math.floor((search_min + search_max) / 2);
+            if(search_mid == search_min && search_mid == search_max - 1) {
                 SetPriceFound();
             }
         } else {
-            search_mid += step_sign * step_size;
-            search_mid = Math.min(search_mid, max_price);
-            search_mid = Math.max(search_mid, min_price);
-            search_min = search_mid;
-            search_max = search_mid;
+            search_mid += step_sign;
+            search_mid = Math.min(search_mid, price_list.length - 1);
+            search_mid = Math.max(search_mid, 0);
+            search_min = 0;
+            search_max = price_list.length - 1;
         }
-        min_element.textContent = "$" + search_min;
-        max_element.textContent = "$" + search_max;
-        price_submit_element.setAttribute("value", "" + search_mid * 100);
+        min_element.textContent = "$" + price_list[search_min];
+        max_element.textContent = "$" + price_list[search_max];
+        price_submit_element.setAttribute("value", "" + price_list[search_mid] * 100);
         AnimatePrice();
     }
 
@@ -117,16 +135,16 @@ The Human Economic Negotiating Adjuster
         pay_element.setAttribute("title", "You can continue to fine tune your price.");
     }
 
+    var display_mid = 0;
     async function AnimatePrice() {
-        while(display_mid != search_mid) {
-            display_mid += Math.sign(search_mid - display_mid);
+        while(display_mid != price_list[search_mid]) {
+            display_mid += Math.sign(price_list[search_mid] - display_mid);
             price_element.textContent = "$" + display_mid;
             await new Promise(r => setTimeout(r, 10));
         }
     }
 
-
-    // Code for updating quote box
+    /* Quote Box (currently disabled) */
     var quote_element = document.getElementById("quote_box");
     var quote_index = 0;
     var quote_list = ["Looking forward to seeing you!",
