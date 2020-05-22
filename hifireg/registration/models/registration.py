@@ -1,8 +1,27 @@
 from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.db import models
-from django.db.models import F
 from .comp_code import CompCode
+from django.db.models import F, Sum, OuterRef, Subquery
+from django.db.models.functions import Coalesce
+from .payment import Payment
+from .invoice import Invoice
+
+class RegistrationQuerySet(models.QuerySet):
+    def with_outstanding_balances(self):
+        payments = Payment.objects.filter(registration=OuterRef('pk'))
+        invoices = Invoice.objects.filter(order__registration=OuterRef('pk'))
+        return self.annotate(sum_of_payments=Coalesce(Sum(Subquery(payments.values('amount'))), 0)). \
+            annotate(sum_of_invoices=Coalesce(Sum(Subquery(invoices.values('amount'))), 0)). \
+            annotate(outstanding_balance=F('sum_of_invoices') - F('sum_of_payments'))
+
+
+
+class RegistrationManager(models.Manager):
+   def get_queryset(self):
+       return RegistrationQuerySet(self.model, using=self._db)
+  
+
 
 class Registration(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -16,6 +35,8 @@ class Registration(models.Model):
     registration_feedback = models.TextField(verbose_name='Feedback', help_text='What do you think about our registration process? What can we do better for you next time?', null=True, blank=True)
     housing_transport_acknowledgement = models.BooleanField(verbose_name='Will you attend to your own housing and transportation needs?', null=True, blank=True)
     accommodations = models.TextField(verbose_name='How can we accommodate you?', help_text="Is there anything that you need from us to be able to attend the event (that isn't covered elsewhere in the form? Tell us here!", max_length=1000, null=True, blank=True)
+
+    objects = RegistrationManager()
 
     @property
     def is_submitted(self):
@@ -34,6 +55,7 @@ class Registration(models.Model):
         return cls.objects.get(user=user)
 
 
+
 class Volunteer(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.CASCADE, null=True, blank=True)
     cellphone_number = models.CharField(verbose_name='Cell Phone Number', max_length=30, null=True, blank=True)
@@ -41,4 +63,3 @@ class Volunteer(models.Model):
     image = models.ImageField(upload_to='2020/volunteers/', verbose_name='Please upload an image of your face', help_text='We need to know what you look like so we know who to look for!', null=True, blank=True)
     skills = models.TextField(verbose_name="How can we best utilize your skills?", help_text="Are you particularly talented at something? Do you have a strong preference toward helping in a particular way? We would like to know more!", null=True, blank=True)
     cantwont = models.TextField(verbose_name="What can't/won't you do?", help_text="You can't lift heavy things? Garbage evokes nausea in you? You are afraid of spiders? These are things we want to know! We don't want to ask you to do anything that does not suit you.", null=True, blank=True)
-
