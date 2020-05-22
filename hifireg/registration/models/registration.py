@@ -4,6 +4,25 @@ from django.db import models
 from django.db.models import F
 from .comp_code import CompCode
 
+class RegistrationQuerySet(models.QuerySet):
+    def with_outstanding_balances(self):
+        return self.annotate(test = F('user__pk'))
+
+        # replace test with (sum of invoices - sum of payments)
+        # SELECT *, r.user.pk AS test
+        #   FROM registration AS r;
+
+        # make shell
+        # from registration.models import *
+        # Registration.objects.all().with_outstanding_balances().first().test
+
+
+class RegistrationManager(models.Manager):
+   def get_queryset(self):
+       return RegistrationQuerySet(self.model, using=self._db)
+  
+
+
 class Registration(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
@@ -17,21 +36,21 @@ class Registration(models.Model):
     housing_transport_acknowledgement = models.BooleanField(verbose_name='Will you attend to your own housing and transportation needs?', null=True, blank=True)
     accommodations = models.TextField(verbose_name='How can we accommodate you?', help_text="Is there anything that you need from us to be able to attend the event (that isn't covered elsewhere in the form? Tell us here!", max_length=1000, null=True, blank=True)
 
-    @property
+    objects = RegistrationManager()
+
     def is_submitted(self):
         return self.order_set.filter(session=None).exists()
 
-    @property
     def is_accessible_pricing(self):
         return self.order_set.filter(original_price__gt=F('accessible_price')).exists()
 
-    @property
     def is_comped(self):
         return self.comp_code is not None
 
     @classmethod
     def for_user(cls, user):
         return cls.objects.get(user=user)
+
 
 
 class Volunteer(models.Model):
@@ -41,4 +60,3 @@ class Volunteer(models.Model):
     image = models.ImageField(upload_to='2020/volunteers/', verbose_name='Please upload an image of your face', help_text='We need to know what you look like so we know who to look for!', null=True, blank=True)
     skills = models.TextField(verbose_name="How can we best utilize your skills?", help_text="Are you particularly talented at something? Do you have a strong preference toward helping in a particular way? We would like to know more!", null=True, blank=True)
     cantwont = models.TextField(verbose_name="What can't/won't you do?", help_text="You can't lift heavy things? Garbage evokes nausea in you? You are afraid of spiders? These are things we want to know! We don't want to ask you to do anything that does not suit you.", null=True, blank=True)
-
