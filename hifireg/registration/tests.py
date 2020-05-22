@@ -449,7 +449,8 @@ class RegistrationTestCase(TestCase):
     def test_with_outstanding_balances__positive_balance_without_payments(self):
         # Arrange
         registration = Registration.objects.first()
-        Invoice.objects.create(amount=1000, registration=registration, due_date=datetime.now())
+        order = registration.order_set.first()
+        Invoice.objects.create(amount=1000, order=order)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -457,15 +458,46 @@ class RegistrationTestCase(TestCase):
         # Assert
         self.assertEqual(registration.outstanding_balance, 1000)
 
+
+
     def test_with_outstanding_balances__positive_balance(self):
-        pass
-        #TODO
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        Invoice.objects.create(amount=1000, order=order)
+        Payment.objects.create(amount=250, registration=registration)
+
+        # Act
+        registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
+
+        # Assert
+        self.assertEqual(registration.outstanding_balance, 750)
+
+
 
     def test_with_outstanding_balances__zero_balance(self):
-        pass
-        #TODO
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        Invoice.objects.create(amount=1000, order=order)
+        Payment.objects.create(amount=1000, registration=registration)
+
+        # Act
+        registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
+
+        # Assert
+        self.assertEqual(registration.outstanding_balance, 0)
 
     def test_with_outstanding_balances__negative_balance(self):
-        pass
-        #TODO
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        Invoice.objects.create(amount=1000, order=order)
+        Payment.objects.create(amount=1500, registration=registration)
+
+        # Act
+        registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
+
+        # Assert
+        self.assertEqual(registration.outstanding_balance, -500)
 
