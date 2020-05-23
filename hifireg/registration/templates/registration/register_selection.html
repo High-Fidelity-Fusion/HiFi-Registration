@@ -7,19 +7,26 @@
 {% block content %}
 <p>Choose your {{section}}!</p>
 {% for category in categories %}
-<h3 class="title">{{category.name}}</h3>
+  <h3 class="title">{{category.name}}</h3>
+  <!-- Starting slots For category {{category.name}}  -->
   {% for slot in category.slots %}
-  <h4 class="title is-4">{{slot.name}}</h4>
-<div class="">
-    {% for product in slot.products %}
-        {% include 'registration/product_card.html' %}
-      {% endfor %}
+    <h4 class="title is-4">{{slot.name}}</h4>
+    <div class="columns is-multiline">
+      <!-- Starting products For category {{category.name}} slot {{slot.name}} -->
+      {% for product in slot.products %}
+      {% include 'registration/product_card.html' %}
     {% endfor %}
+    </div>
+  {% endfor %}
+  
+  <!-- Starting products For category {{category.name}}  -->
+  <div class="columns is-multiline">
   {% for product in category.products %}
     {% include 'registration/product_card.html' %}
   {% endfor %}
   </div>
 {% endfor %}
+
 <form method="post">
   {% csrf_token %}
 
