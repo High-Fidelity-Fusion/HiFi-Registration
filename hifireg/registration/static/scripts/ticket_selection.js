@@ -26,7 +26,7 @@ $('.product-card').on('click', function(e) {
 $(".product-checkbox").change(function() {
   var thisCheckBox = this;
   var parent = $(thisCheckBox).parent();
-  $('input').addClass('call-in-progress');
+  $('.product-card').addClass('call-in-progress');
   var productId = parent[0].dataset.product;
   var checkBoxes = $(`.product-card[data-product="${productId}"]`).find('input');
   var parents = checkBoxes.parents();
@@ -60,7 +60,7 @@ $(".product-checkbox").change(function() {
           parents.addClass('unavailable')
         }
 
-        $('input').removeClass('call-in-progress');
+        $('.product-card').removeClass('call-in-progress');
         parents.removeClass('loading');
       },
       error: function (xhr, status, error) {
@@ -86,7 +86,7 @@ $(".product-checkbox").change(function() {
             conflicts.removeClass(`conflict-${slot}`);
           });
 
-          $('input').removeClass('call-in-progress');
+          $('.product-card').removeClass('call-in-progress');
           parents.removeClass('loading claimed');
         }
       },
@@ -104,7 +104,7 @@ $(".product-increment").click(function() {
   var thisButton = this;
   var parent = $(thisButton).parent().parent();
   var productId = parent[0].dataset.product;
-  $('input, button').addClass('call-in-progress');
+  $('.product-card').addClass('call-in-progress');
   parent.addClass('loading');
 
   $.ajax({
@@ -138,7 +138,7 @@ $(".product-increment").click(function() {
         parent.addClass('unavailable')
       }
 
-      $('input, button').removeClass('call-in-progress');
+      $('.product-card').removeClass('call-in-progress');
       parent.removeClass('loading');
     },
     error: function (xhr, status, error) {
@@ -151,7 +151,7 @@ $(".product-decrement").click(function() {
   var thisButton = this;
   var parent = $(thisButton).parent().parent();
   var productId = parent[0].dataset.product;
-  $('input, button').addClass('call-in-progress');
+  $('.product-card').addClass('call-in-progress');
   parent.addClass('loading');
 
   $.ajax({
@@ -178,7 +178,7 @@ $(".product-decrement").click(function() {
           parent.addClass('minimum').removeClass('claimed');
         }
 
-        $('input, button').removeClass('call-in-progress');
+        $('.product-card').removeClass('call-in-progress');
         parent.removeClass('loading');
       }
     },
