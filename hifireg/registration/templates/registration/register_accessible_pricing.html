@@ -103,6 +103,11 @@ The Human Economic Negotiating Adjuster
     }
 
     function make_price_list() {
+        if(ap_eligible_amount == 0) {
+            SetPriceFound();
+            return [max_price];
+        }
+
         let nested_price_beg = round_step(min_price + step_size, Math.floor);
         let nested_price_end = round_step(max_price - step_size, Math.ceil);
         let nested_price_len = (nested_price_end - nested_price_beg) / step_size + 1;
