@@ -18,3 +18,8 @@ def is_submit(value):
 @register.filter
 def eq(value, arg):
     return value == arg
+
+
+@register.filter
+def dollars(value):
+    return f"${value * 0.01:,.2f}"
