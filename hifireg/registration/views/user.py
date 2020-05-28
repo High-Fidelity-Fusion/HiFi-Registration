@@ -22,7 +22,7 @@ class CreateUser(FormView):
     form_class = UserCreationForm
     success_url = reverse_lazy('index')
     extra_context = dict(title="Create Account", buttons=[SubmitButton("submit", "Submit")])
-    
+
     def form_valid(self, form):
         user = form.save()
         # https://docs.djangoproject.com/en/3.0/topics/auth/default/#how-to-log-a-user-in
@@ -96,4 +96,3 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
 class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     template_name = 'utils/generic_form.html'
     extra_context = dict(buttons=[LinkButton("login", "Login")])
-

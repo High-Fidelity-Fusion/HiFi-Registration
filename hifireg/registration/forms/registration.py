@@ -4,8 +4,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 from registration.models import CompCode, Order, Registration, Volunteer, CompCodeHelper
 
-from .validators import validate_answered
-
 
 YESNO = [(False, 'No'), (True, 'Yes')]
 
