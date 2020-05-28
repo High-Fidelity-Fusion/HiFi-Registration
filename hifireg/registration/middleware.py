@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class RefreshSessions:
     def __init__(self, get_response):
         self.get_response = get_response
