@@ -173,18 +173,17 @@ class RegisterSubtotal(OrderRequiredMixin, DispatchMixin, TemplateView):
                 return super().get(request)
 
 
-class RegisterAP(OrderRequiredMixin, TemplateView):
+class RegisterAP(OrderRequiredMixin, DispatchMixin, TemplateView):
     template_name = "registration/register_accessible_pricing.html"
     previous_button = LinkButton("register_subtotal", "Previous")
     next_button = LinkButton("register_volunteer", "Next")
 
-    def get(self, request):
+    def dispatch_mixin(self, request):
         if not self.order.is_accessible_pricing:
-            redirect('register_subtotal')
-        return super().get(request)
+            return redirect('register_subtotal')
 
     def post(self, request):
-        price = request.POST.get('price_submit', self.order.original_price)
+        price = int(request.POST.get('price_submit', self.order.original_price))
         if price <  self.order.original_price - self.order.ap_eligible_amount:
             raise SuspiciousOperation('Your price cannot be reduced by more than the AP eligible amount.')
             #TODO: should this validation be in Order model?
