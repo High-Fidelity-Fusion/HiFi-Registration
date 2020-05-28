@@ -19,7 +19,7 @@ super:
 	$(MANAGE) createsuperuser
 
 test:
-	$(MANAGE) test
+	$(MANAGE) test registration.tests
 
 shell:
 	$(MANAGE) shell
