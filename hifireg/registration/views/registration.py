@@ -11,7 +11,7 @@ from django.views import View
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
 
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, FunctionBasedView
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 from .decorators import must_have_registration, must_have_active_order, must_have_active_order_and_dance_pass
@@ -150,11 +150,15 @@ def register_merchandise(request):
     return render(request, 'registration/register_selection.html', context)
 
 
-class RegisterSubtotal(OrderRequiredMixin, TemplateView):
+class RegisterSubtotal(OrderRequiredMixin, DispatchMixin, TemplateView):
     template_name = "registration/register_subtotal.html"
     previous_button = LinkButton("register_merchandise", "Previous")
     ap_yes_button = SubmitButton("claim_ap")
     ap_no_button = LinkButton("register_donate")
+
+    def dispatch_mixin(self, request):
+        if self.order.original_price == 0:
+            return redirect('register_merchandise')
 
     def get(self, request):
         self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds()

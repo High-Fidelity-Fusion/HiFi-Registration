@@ -30,6 +30,18 @@ class OrderRequiredMixin(RegistrationRequiredMixin, OrderRequiredMixin_):
     pass
 
 
+# This Mixin injects arbitrary dispatch code wherever it exists in the MRO. It
+# can be used as an alternative to the FunctionBasedView mixin. Just implement
+# the dispatch_mixin() method in your class and it will be executed as if it was
+# defined as a dispatch  Mixin. The only difference is that super().dispatch()
+# should not be called at the end of dispatch_mixin() as this is handled by
+# DispatchMixin.
+class DispatchMixin:
+    def dispatch(self, request, *args, **kwargs):
+        r = self.dispatch_mixin(request, *args, **kwargs)
+        return r if r is not None else super().dispatch(request, *args, **kwargs)
+
+
 # Use a CBV as an FBV: Overrides dispatch method of CBV with fbv() method.
 # Implement the fbv() method as you would a normal FBV.
 # This class should be added just before the CBV class in the inheritance sequence.
@@ -41,4 +53,3 @@ class OrderRequiredMixin(RegistrationRequiredMixin, OrderRequiredMixin_):
 class FunctionBasedView:
     def dispatch(self, request, *args, **kwargs):
         return self.fbv(request)
-        
