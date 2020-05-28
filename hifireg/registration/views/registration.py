@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.views.generic.base import TemplateView
 from django.views import View
 
-from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm, RegAccessiblePriceCalcForm
+from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
 
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, FunctionBasedView
@@ -174,7 +174,7 @@ class RegisterAP(OrderRequiredMixin, TemplateView):
     previous_button = LinkButton("register_subtotal", "Previous")
     next_button = LinkButton("register_volunteer", "Next")
 
-    def get(self, request): 
+    def get(self, request):
         if not self.order.is_accessible_pricing:
             redirect('register_subtotal')
         return super().get(request)
