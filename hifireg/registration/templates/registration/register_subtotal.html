@@ -11,8 +11,7 @@
     Subtotal
 </p>
 
-<p>Your order total is [${{ view.order.original_price }}]</p>
-{% comment %} <p>Accessible pricing application is: {{ view.session.ap_available|yesno:"Available,Unavailable"}}</p> {% endcomment %}
+<p>Your order total is {{ view.order.original_price|dollars }}</p>
 <br>
 
 <form method="post">
