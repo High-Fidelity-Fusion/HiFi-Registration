@@ -35,6 +35,14 @@ class OrderRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+@chain_with(OrderRequiredMixin)
+class NonZeroOrderRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.order.original_price == 0:
+            return redirect('register_merchandise')
+        return super().dispatch(request, *args, **kwargs)
+
+
 # This Mixin injects arbitrary dispatch code wherever it exists in the MRO. It
 # can be used as an alternative to the FunctionBasedView mixin. Just implement
 # the dispatch_mixin() method in your class and it will be executed as if it was
