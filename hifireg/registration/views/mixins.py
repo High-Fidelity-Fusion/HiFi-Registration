@@ -6,7 +6,17 @@ from django.shortcuts import redirect
 from registration.models import Registration, Order
 
 
-class RegistrationRequiredMixin_:
+# A magical decorator that provides syntactic cleanliness for chaining dispatch
+# mixins. It replaces "this_class" with an empty class that inherits first from
+# "base_class" and then from "this_class".
+def chain_with(base_class):
+    def chainer(this_class):
+        return type(this_class.__name__, (base_class, this_class), {})
+    return chainer
+
+
+@chain_with(LoginRequiredMixin)
+class RegistrationRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
             self.registration = Registration.objects.get(user=request.user)
@@ -15,21 +25,14 @@ class RegistrationRequiredMixin_:
         return super().dispatch(request, *args, **kwargs)
 
 
-class RegistrationRequiredMixin(LoginRequiredMixin, RegistrationRequiredMixin_):
-    pass
-
-
-class OrderRequiredMixin_:
+@chain_with(RegistrationRequiredMixin)
+class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
             self.order = Order.objects.get(session=Session.objects.get(pk=request.session.session_key))
         except ObjectDoesNotExist:
             return redirect('order')
         return super().dispatch(request, *args, **kwargs)
-
-
-class OrderRequiredMixin(RegistrationRequiredMixin, OrderRequiredMixin_):
-    pass
 
 
 # This Mixin injects arbitrary dispatch code wherever it exists in the MRO. It
