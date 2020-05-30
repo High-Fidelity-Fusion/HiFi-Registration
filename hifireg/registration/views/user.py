@@ -1,14 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic.edit import FormView
 
 from registration.forms import AuthenticationForm, UserCreationForm, UserUpdateForm, PasswordChangeForm, SetPasswordForm
 from registration.models import User
 
+from .mixins import FunctionBasedView
 from .utils import SubmitButton, LinkButton
 
 
@@ -17,7 +19,7 @@ class LoginView(auth_views.LoginView):
     authentication_form = AuthenticationForm
 
 
-class CreateUser(FormView):
+class CreateUserView(FormView):
     template_name = "utils/generic_form.html"
     form_class = UserCreationForm
     success_url = reverse_lazy('index')
@@ -30,33 +32,33 @@ class CreateUser(FormView):
         return super().form_valid(form)
 
 
-@login_required
-def view_user(request):
-    context = {}
-    context['title'] = "View Account"
-    context['buttons'] = [LinkButton("index", "Back"), 
-                          LinkButton("edit_user", "Edit"), 
-                          LinkButton("password_change", "Change Password")]
-    context['form'] = UserUpdateForm(instance=request.user)
-    for field in context['form'].fields.values():
-        field.disabled = True
-    return render(request, 'utils/generic_form.html', context)
+class ViewUserView(LoginRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        context = {}
+        context['title'] = "View Account"
+        context['buttons'] = [LinkButton("index", "Back"), 
+                            LinkButton("edit_user", "Edit"), 
+                            LinkButton("password_change", "Change Password")]
+        context['form'] = UserUpdateForm(instance=request.user)
+        for field in context['form'].fields.values():
+            field.disabled = True
+        return render(request, 'utils/generic_form.html', context)
 
 
-@login_required
-def update_user(request):
-    if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('view_user')
-    else:
-        form = UserUpdateForm(instance=request.user)
-    context = {}
-    context['title'] = "Edit Account"
-    context['buttons'] = [LinkButton("view_user", "Cancel"), SubmitButton("submit", "Submit")]
-    context['form'] = form
-    return render(request, 'utils/generic_form.html', context)
+class UpdateUserView(LoginRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        if request.method == 'POST':
+            form = UserUpdateForm(request.POST, instance=request.user)
+            if form.is_valid():
+                form.save()
+                return redirect('view_user')
+        else:
+            form = UserUpdateForm(instance=request.user)
+        context = {}
+        context['title'] = "Edit Account"
+        context['buttons'] = [LinkButton("view_user", "Cancel"), SubmitButton("submit", "Submit")]
+        context['form'] = form
+        return render(request, 'utils/generic_form.html', context)
 
 
 class PasswordChangeView(auth_views.PasswordChangeView):
