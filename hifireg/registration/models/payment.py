@@ -1,6 +1,6 @@
 from django.db import models
  
-class Payments(models.Model):
+class Payment(models.Model):
    amount = models.PositiveIntegerField()
-   date = models.DateTimeField()
+   date = models.DateTimeField(auto_now_add=True)
    registration = models.ForeignKey('Registration', on_delete=models.SET_NULL, null=True)
