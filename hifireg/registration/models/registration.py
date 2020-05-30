@@ -1,20 +1,20 @@
 from django.contrib.sessions.models import Session
 from django.conf import settings
 from django.db import models
-from django.db.models import F
 from .comp_code import CompCode
+from django.db.models import F, Sum, OuterRef, Subquery
+from django.db.models.functions import Coalesce
+from .payment import Payment
+from .invoice import Invoice
 
 class RegistrationQuerySet(models.QuerySet):
     def with_outstanding_balances(self):
-        return self.annotate(test = F('user__pk'))
+        payments = Payment.objects.filter(registration=OuterRef('pk'))
+        invoices = Invoice.objects.filter(order__registration=OuterRef('pk'))
+        return self.annotate(sum_of_payments=Coalesce(Sum(Subquery(payments.values('amount'))), 0)). \
+            annotate(sum_of_invoices=Coalesce(Sum(Subquery(invoices.values('amount'))), 0)). \
+            annotate(outstanding_balance=F('sum_of_invoices') - F('sum_of_payments'))
 
-        # replace test with (sum of invoices - sum of payments)
-        # SELECT *, r.user.pk AS test
-        #   FROM registration AS r;
-
-        # make shell
-        # from registration.models import *
-        # Registration.objects.all().with_outstanding_balances().first().test
 
 
 class RegistrationManager(models.Manager):
@@ -38,19 +38,21 @@ class Registration(models.Model):
 
     objects = RegistrationManager()
 
+    @property
     def is_submitted(self):
         return self.order_set.filter(session=None).exists()
 
+    @property
     def is_accessible_pricing(self):
         return self.order_set.filter(original_price__gt=F('accessible_price')).exists()
 
+    @property
     def is_comped(self):
         return self.comp_code is not None
 
     @classmethod
     def for_user(cls, user):
         return cls.objects.get(user=user)
-
 
 
 class Volunteer(models.Model):
