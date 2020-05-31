@@ -33,6 +33,7 @@ urlpatterns = [
     path('register/miscellaneous/', views.register_misc, name='register_misc'),
 
     # payment:
+    path('payment/hello-world', views.registration.hello_world, name='hello_world'),
     path('payment/', views.registration.make_payment, name='payment'),
     path('payment/confirmation/', views.registration.payment_confirmation, name='payment_confirmation'),
 

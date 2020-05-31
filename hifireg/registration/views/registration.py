@@ -288,3 +288,6 @@ def make_payment(request):
 
 def payment_confirmation(request):
     return render(request, 'registration/payment_confirmation.html', {})
+
+def hello_world(request):
+    return render(request, 'registration/base.html', {})
