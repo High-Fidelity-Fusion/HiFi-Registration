@@ -26,6 +26,14 @@ class RegistrationRequiredMixin:
 
 
 @chain_with(RegistrationRequiredMixin)
+class PolicyRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not self.registration.agrees_to_policy:
+            return redirect("register_policy")
+        return super().dispatch(request, *args, **kwargs)
+
+
+@chain_with(PolicyRequiredMixin)
 class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
