@@ -280,7 +280,8 @@ def make_payment(request):
     form = None
     if request.method == 'POST':
         if 'previous' in request.POST:
-            return redirect('register_misc')
+            # return redirect('register_misc')
+            return redirect('hello_world')
         return redirect('payment_confirmation')
     else:
         return render(request, 'registration/payment.html', {'form': form})
