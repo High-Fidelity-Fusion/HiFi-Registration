@@ -273,10 +273,16 @@ class RegisterMiscView(PolicyRequiredMixin, FunctionBasedView, View):
             form = RegMiscForm(request.POST, instance=registration)
             if form.is_valid():
                 form.save()
-                return redirect('payment')  # logic needed here to decide whether payment is needed
+                return redirect('payment_plan')  # logic needed here to decide whether payment is needed
         else:
             form = RegMiscForm(instance=self.registration)
         return render(request, 'registration/register_misc.html', {'form': form})
+
+
+class PaymentPlan(View):
+    def get(self, request):
+        return render(request, 'registration/payment_plan.html', {})
+
 
 
 class MakePaymentView(PolicyRequiredMixin, FunctionBasedView, View):
@@ -284,7 +290,7 @@ class MakePaymentView(PolicyRequiredMixin, FunctionBasedView, View):
         form = None
         if request.method == 'POST':
             if 'previous' in request.POST:
-                return redirect('register_misc')
+                return redirect('payment_plan')
             return redirect('payment_confirmation')
         else:
             return render(request, 'registration/payment.html', {'form': form})
