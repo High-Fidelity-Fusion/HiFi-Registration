@@ -33,6 +33,7 @@ urlpatterns = [
     path('register/miscellaneous/', views.RegisterMiscView.as_view(), name='register_misc'),
 
     # payment:
+    path('payment/payment_plan/', views.PaymentPlan.as_view(), name='payment_plan'),
     path('payment/', views.MakePaymentView.as_view(), name='make_payment'),
     path('payment/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
 
