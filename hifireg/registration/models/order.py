@@ -12,6 +12,7 @@ class Order(models.Model):
     registration = models.ForeignKey(Registration, on_delete=models.CASCADE)
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
+    donation = models.PositiveIntegerField(default=0)
 
     @property
     def is_submitted(self):
