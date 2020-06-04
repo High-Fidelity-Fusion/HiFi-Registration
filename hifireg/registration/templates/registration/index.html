@@ -2,7 +2,7 @@
 
 {% block card_content %}
 
-<p>Hi, {{ user.first_name }}!</p>
+<p>Hi, {{ view.request.user.first_name }}!</p>
 <p>Thanks for logging in.</p>
 {% include "utils/form_fields.html" %}
 
