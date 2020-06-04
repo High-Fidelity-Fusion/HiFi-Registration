@@ -16,9 +16,8 @@ from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 
 
-class IndexView(LoginRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        return render(request, 'registration/index.html', {'user': request.user})
+class IndexView(LoginRequiredMixin, TemplateView):
+    template_name = "registration/index.html"
 
 
 class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
