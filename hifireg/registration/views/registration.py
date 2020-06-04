@@ -202,18 +202,14 @@ class RegisterDonateView(OrderRequiredMixin, FunctionBasedView, View):
             form = RegDonateForm(request.POST)
             if form.is_valid():
                 cd = form.cleaned_data
-                order.accessible_price = order.original_price + int(100*cd['donation'])
+                order.donation = int(100 * cd['donation'])
                 order.save()
                 return redirect('register_volunteer')
         else:
             subtotal = '${:,.2f}'.format(order.original_price * .01)
-            if order.accessible_price > order.original_price:
-                donation = order.accessible_price - order.original_price
-            else:
-                donation = 0
             form = RegDonateForm()
-            form.fields['donation'].initial = float(donation) * .01
-            context = {'form': form, 'subtotal': subtotal, 'donation': donation}
+            form.fields['donation'].initial = float(order.donation) * .01
+            context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
         return render(request, 'registration/register_donate.html', context)
 
 
