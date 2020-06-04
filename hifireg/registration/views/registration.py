@@ -55,7 +55,7 @@ class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_comp_code.html', {'form': form})
 
 
-class RegisterPolicyView(PolicyRequiredMixin, FunctionBasedView, View):
+class RegisterPolicyView(RegistrationRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):       
         if request.method == 'POST':
             if 'previous' in request.POST:
