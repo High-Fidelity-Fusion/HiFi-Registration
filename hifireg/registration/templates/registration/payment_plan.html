@@ -1,17 +1,80 @@
 {% extends "registration/base.html" %}
+{% load static %}
+{% load special_sauce %}
 
-{% block content %}
-<div>Payment Plan</div>
+{% block countdown %}
+{% include 'registration/countdown_widget.html' %}
+{% endblock %}
 
-<form method="post">
-  {% csrf_token %}
 
-  {% include "utils/form_fields.html" %}
+{% block card_content %}
 
-  <div class="control">
-    {% include "utils/button.html" with button=view.previous_button %}
-    {% include "utils/button.html" with button=view.next_button %}
-  </div>
+<div>Request Payment Plan</div>
 
-</form>
+    <form method="post" id="payment-plan">
+        {% csrf_token %}
+
+        <div>Your total is:</div>
+        <div id="order-total">{{ view.order.original_price|dollars }}</div>
+
+        <label>
+            <input id="checkbox" onclick="setDefaultPaymentPlan('ppm-dropdown', 'months-dropdown', '1', '1')" type="checkbox">
+                I am not able to pay this up front and need a payment plan.
+        </label>
+
+        <div id="hidden-div" class="hidden-div">
+            <div>By selecting a pyament plan, you are agreeing to the following terms:</div>
+            
+            <div>Asdfasdfasdfasdfasdfasdasvasvsda</div>
+            
+            <div>Make your plan:</div>
+            
+            <span class="field">
+                <span class="control">
+                    <span class="select">
+                        <select id= "ppm-dropdown" name="ppm" onchange="calculateAmountPerPayment()">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </span>
+                </span>
+            </span>
+            
+            <label for="ppm">Payment(s) per month</label>
+
+            <div>for</div>
+
+            <span class="field">
+                <span class="control">
+                    <span class="select">
+                        <select id="months-dropdown" name="ppm" onchange="calculateAmountPerPayment()">
+                            {% for i in view.months %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </span>
+                </span>
+            </span>
+
+            <label for="ppm">Month(s)</label>
+
+            <div>
+                Due Today:
+                <span>
+                    $<span id="dueToday"></span>
+                </span> 
+            </div>
+
+            <div id="payment-options"></div>
+
+
+        </div>
+        
+        <div class="control">
+            {% include "utils/button.html" with button=view.previous_button %}
+            {% include "utils/button.html" with button=view.next_button %}
+          </div>
+    </form>
+
+<script src="{% static 'scripts/payment_plan.js' %}"></script>
 {% endblock %}
