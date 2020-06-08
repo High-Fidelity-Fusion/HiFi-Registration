@@ -272,6 +272,7 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
     next_button = SubmitButton("make_payment", "Next")
 
     def get(self, request):
+        self.months = range(1, 5)
         return super().get(request)
 
     def post(self, request):
@@ -282,7 +283,6 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
             Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=4), amount=12300)
             Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=6), amount=12300)
             return redirect('make_payment')
-
 
 
 class MakePaymentView(InvoiceRequiredMixin, TemplateView):
