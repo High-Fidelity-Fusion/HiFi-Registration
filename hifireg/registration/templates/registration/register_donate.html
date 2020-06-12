@@ -16,7 +16,7 @@
 
     <p>Cart Subtotal: <output id="id_subtotal">{{ subtotal }}</output></p>
 
-    {% include "utils/form_fields_donate.html" %}
+    {% include "utils/form_fields.html" %}
 
     <p>Total: <output id="id_total"></output></p>
 
@@ -27,8 +27,5 @@
 </form>
 
 <script src="{% static 'scripts/donate-page-outputs.js' %}"></script>
-<script>
-    window.onload = calculateOutputs()
-</script>
 
 {% endblock %}
