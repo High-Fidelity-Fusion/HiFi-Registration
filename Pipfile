@@ -12,6 +12,7 @@ django = {extras = ["argon2"],version = "*"}
 psycopg2-binary = "*"
 pillow = "*"
 django-widget-tweaks = "*"
+stripe = "*"
 
 [requires]
 python_version = "3.8"
