@@ -175,3 +175,8 @@ LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'login'
 
 SESSION_COOKIE_AGE = int(os.getenv('SESSION_AGE', '3600'))
+
+# Stripe Keys
+# https://stripe.com/docs/payments/checkout/accept-a-payment
+STRIPE_PUBLIC_TEST_KEY = os.getenv('STRIPE_PUBLIC_TEST_KEY')
+STRIPE_SECRET_TEST_KEY = os.getenv('STRIPE_SECRET_TEST_KEY')
