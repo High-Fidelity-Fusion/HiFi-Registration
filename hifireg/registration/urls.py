@@ -35,6 +35,7 @@ urlpatterns = [
     # payment:
     path('payment/payment_plan/', views.PaymentPlan.as_view(), name='payment_plan'),
     path('payment/', views.MakePaymentView.as_view(), name='make_payment'),
+    path('payment/new_checkout', views.NewCheckoutView.as_view(), name='new_checkout'),
     path('payment/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
 
     # auth/account views (some are overridden in views)

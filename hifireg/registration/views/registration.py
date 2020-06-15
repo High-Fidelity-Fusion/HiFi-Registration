@@ -1,11 +1,15 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.views import View
+
+import stripe
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
@@ -289,6 +293,48 @@ class MakePaymentView(PolicyRequiredMixin, FunctionBasedView, View):
             return redirect('payment_confirmation')
         else:
             return render(request, 'registration/payment.html', {'form': form})
+
+
+class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        if request.method == 'GET':
+            # configure Stripe w/secret API key
+            stripe.api_key = settings.STRIPE_SECRET_TEST_KEY
+
+            # Using fake amount and variable because real variable unknown atm 6.15.20
+            reg_amount = 150000
+
+            # urls for recieving redirects from Stripe
+            success_url = request.build_absolute_uri(reverse('payment_confirmation') + '?session_id={CHECKOUT_SESSION_ID}')
+            cancel_url = request.build_absolute_uri(reverse('make_payment'))
+            
+            try:
+                # Create new Checkout Session for the order
+                # Other optional params: https:#stripe.com/docs/api/checkout/sessions/create
+                checkout_session = stripe.checkout.Session.create(
+                    success_url = success_url,
+                    cancel_url = cancel_url,
+                    payment_method_types = ['card'],
+                    line_items = [{
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {
+                                'name': 'HiFi Registration',
+                            },
+                            'unit_amount': reg_amount,
+                        },
+                        'quantity': 1,
+                    }],
+                    mode = 'payment',
+                )
+                # Provide public key to initialize Stripe Client in browser
+                # And checkout session id
+                return JsonResponse({
+                    'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
+                    'session_id': checkout_session['id'],
+                })
+            except Exception as e:
+                return JsonResponse({'error': str(e)})
 
 
 class PaymentConfirmationView(FunctionBasedView, View):
