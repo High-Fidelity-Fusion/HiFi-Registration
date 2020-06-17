@@ -42,17 +42,16 @@ class Registration(models.Model):
     def is_submitted(self):
         return self.order_set.filter(session=None).exists()
 
-    @property
     def is_accessible_pricing(self):
         return self.order_set.filter(original_price__gt=F('accessible_price')).exists()
 
-    @property
     def is_comped(self):
         return self.comp_code is not None
 
     @classmethod
     def for_user(cls, user):
         return cls.objects.get(user=user)
+
 
 
 class Volunteer(models.Model):
