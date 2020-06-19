@@ -11,6 +11,9 @@ urlpatterns = [
     # index:
     path('', views.IndexView.as_view(), name='index'),
 
+    #testing email:
+    path('order/send_email', views.SendEmail.as_view(), name='send_email'),
+
     # must have registration:
     path('register/', RedirectView.as_view(url=reverse_lazy('register_comp_code')), name='registration'), # redirects to registration creation view
     path('register/comp/', views.RegisterCompCodeView.as_view(), name='register_comp_code'),
