@@ -1,0 +1,124 @@
+<!-- 
+
+How to use/edit this file:
+
+Run "make email", to generate the HTML template from this MJML template.
+
+This MJML markup is used to write high-level mark-up that generates inlined HTML that
+for use with E-mail.
+
+https://mjml.io/documentation/
+
+Since the content of E-Mails is dynamic, we use Django template tags just like with HTML.
+However, care must be taken to verify that the template tags are preserved when the HTML
+template is generated from this MJML template. In most cases, the tags will be preserved, 
+but if they are not, enclosing the tags in <mj-raw></mj-raw> tags should do the trick.
+
+Notice the load tags had to be added inside <mj-raw> tags to preserve them. 
+
+MJML to HTML generation may not work as expected with complex template logic since it
+is not designed with templates in mind.
+
+-->
+
+<mjml>
+    <mj-head>
+        <mj-raw>
+            {% load special_sauce %}
+            {% load static %}
+        </mj-raw>
+        <mj-style inline="inline">
+            tr {
+                text-align: left;
+            }
+        </mj-style>
+    </mj-head>
+    <mj-body>
+        <mj-section>
+            <mj-column>
+
+                <mj-text font-size="20px" color="#0CA6AC" font-family="helvetica">
+                    Thank you for registering for High-Fidelity Fusion, {{ user.get_short_name }}.
+                </mj-text>
+
+                <mj-text font-family="helvetica">
+                    We're hella excited for you to be joining us. Below you will find your order details.
+                    If you've already paid, great, otherwise you can click this link to make an installment.
+                </mj-text>
+
+                <mj-text font-family="helvetica">
+                    We can conditionally build in paragraphs that have links to payment plan, etc.
+                </mj-text>
+
+                <mj-text font-family="helvetica">
+                    Perhaps also a conditional link to sign-up to volunteer or change your status.
+                </mj-text>
+
+                <mj-text font-family="helvetica">
+                    I dunno how to craft an e-mail... this is hard.
+                </mj-text>
+
+                <mj-divider border-color="#0CA6AC"></mj-divider>
+
+                <mj-text font-size="18px" font-family="helvetica">Order Summary</mj-text>
+
+                <mj-table>
+                    <thead>
+                    <tr style="border-bottom:1px solid #ecedee;">
+                        <th>Category</th>
+                        <th>Title</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    {% if order.original_price > order.accessible_price %}
+                    <tr>
+                        <th>Accessible Total</th>
+                        <th></th>
+                        <th></th>
+                        <th>{{order.accessible_price|dollars}}</th>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <th>Subtotal</th>
+                        <th></th>
+                        <th></th>
+                        <th>{{order.original_price|dollars}}</th>
+                    </tr>
+                    <tr>
+                        <th>Donation</th>
+                        <th></th>
+                        <th></th>
+                        <th>{{order.donation|dollars}}</th>
+                    </tr>
+                    <tr style="border-top:1px solid #ecedee;">
+                        <th>Total</th>
+                        <th></th>
+                        <th></th>
+                        <th>{{order.donation|add:order.original_price|dollars}}</th>
+                    </tr>
+                    {% endif %}
+                    </tfoot>
+                    <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{item.product.category.get_section_display}}</td>
+                        <td><strong>{{item.product.title}}</strong></td>
+                        <td>{{item.quantity}}</td>
+                    {% if item.unit_price == 0 %}
+                        <td>Comped</td>
+                    {% elif order.original_price > order.accessible_price and item.product.is_ap_eligible %}
+                        <td>Adjusted</td>
+                    {% else %}
+                        <td>{{item.total_price|dollars}}</td>
+                    {% endif %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </mj-table>
+
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

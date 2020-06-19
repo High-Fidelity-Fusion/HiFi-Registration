@@ -1,6 +1,6 @@
 MANAGE = python hifireg/manage.py
 
-all: style migrate run
+all: migrate style email run
 clean_migrate: clean migrate
 clean_run: clean migrate run
 
@@ -29,6 +29,10 @@ shell:
 	
 style:
 	npm run css-build
+
+email:
+	# npm run mjml-order
+	python hifireg/tools/mjml.py hifireg/registration/templates/email/order.mjml hifireg/registration/templates/email/order.html
 
 style-watch:
 	npm run css-watch

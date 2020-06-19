@@ -1,0 +1,8 @@
+
+Thanks for registering, {{ user.get_full_name }}.
+
+Here is your order:
+
+{% for item in order.orderitem_set.all %}{{ item.product.title }}
+{% endfor %}
+

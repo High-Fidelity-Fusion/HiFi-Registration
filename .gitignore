@@ -110,3 +110,6 @@ db.sqlite3
 migrations/
 
 .DS_Store
+
+# MJML generated
+**/email/*.html

@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 black = "*"
 pylint = "*"
+requests = "*"
 
 [packages]
 django = {extras = ["argon2"],version = "*"}
