@@ -342,10 +342,24 @@ class PaymentConfirmationView(FunctionBasedView, View):
         return render(request, 'registration/payment_confirmation.html', {})
 
 
-class VolunteerEdit(LoginRequiredMixin, RegistrationRequiredMixin, TemplateView):
+class VolunteerEdit(RegistrationRequiredMixin, TemplateView):
     template_name = "registration/volunteer_edit.html"
 
+    # if request.method == 'POST':
+    #     if 'previous' in request.POST:
+    #         return redirect('register_volunteer')
+    #     form = RegVolunteerDetailsForm(request.POST, request.FILES, instance=volunteer)
+    #     if form.is_valid():
+    #         form.save()
+    #         return redirect('register_misc')
+    # else:
+    #     form = RegVolunteerDetailsForm(instance=volunteer)
+    # return render(request, 'registration/register_volunteer_details.html', {'form': form})
+
     def get(self, request):
-        return super().get(request)
+        registration = Registration.objects.get(user=request.user)
+        volunteer = Volunteer.objects.get(registration=registration)
+        form = RegVolunteerDetailsForm(instance=volunteer)
+        return super().get(request, 'registration/register_volunteer_details.html', {'form': form})
 
     # def post(self, request):
