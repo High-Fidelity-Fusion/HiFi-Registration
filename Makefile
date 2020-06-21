@@ -6,7 +6,7 @@ clean_run: clean migrate run
 
 clean:
 	cd hifireg/registration/migrations && ls --ignore=__init__.py | xargs rm -f
-	rm -f hifireg/db.sqlite3
+	$(MANAGE) shell -c "from tools import pgadmin; pgadmin.reset_db()"
 
 migrate:
 	$(MANAGE) makemigrations
