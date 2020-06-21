@@ -37,6 +37,7 @@ def setup_products():
     Product.objects.all().delete()
     ProductCategory.objects.all().delete()
     ProductSlot.objects.all().delete()
+    APFund.objects.all().delete()
 
     slot1 = ProductSlot.objects.create(name='1pm', rank=3)
     slot2 = ProductSlot.objects.create(name='11am', rank=2)
@@ -64,6 +65,7 @@ def setup_products():
     category = ProductCategory.objects.create(name='Dance Passes', section='DANCE', is_slot_based=False, rank=3)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: rebecca black', description='description', category=category, is_compable=True)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category, is_compable=True)
+    APFund.objects.create(contribution=3000, notes='notes')
 
 class OrderTestCase(TestCase):
     def setUp(self):
