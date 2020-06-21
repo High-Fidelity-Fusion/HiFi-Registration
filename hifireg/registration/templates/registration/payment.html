@@ -17,9 +17,13 @@
 
     <div class="control">
         <button type="submit" name='previous' class="button is-link">Previous</button>
-        <button type="submit" name='submit' class="button is-link">Checkout</button>
+        <button id="checkoutButton" type="submit" name='submit' class="button is-link">Checkout</button>
     </div>
 
 </form>
 
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="{% static 'scripts/checkout.js' %}"></script>
 {% endblock %}

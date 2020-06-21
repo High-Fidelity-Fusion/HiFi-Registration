@@ -290,9 +290,7 @@ class MakePaymentView(PolicyRequiredMixin, FunctionBasedView, View):
         if request.method == 'POST':
             if 'previous' in request.POST:
                 return redirect('payment_plan')
-            return redirect('payment_confirmation')
-        else:
-            return render(request, 'registration/payment.html', {'form': form})
+        return render(request, 'registration/payment.html', {'form': form})
 
 
 class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):
@@ -305,9 +303,9 @@ class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):
             reg_amount = 150000
 
             # urls for recieving redirects from Stripe
-            success_url = request.build_absolute_uri(reverse('payment_confirmation') + '?session_id={CHECKOUT_SESSION_ID}')
+            success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
             cancel_url = request.build_absolute_uri(reverse('make_payment'))
-            
+      
             try:
                 # Create new Checkout Session for the order
                 # Other optional params: https:#stripe.com/docs/api/checkout/sessions/create
