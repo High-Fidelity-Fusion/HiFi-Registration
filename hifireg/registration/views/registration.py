@@ -342,8 +342,8 @@ class PaymentConfirmationView(FunctionBasedView, View):
         return render(request, 'registration/payment_confirmation.html', {})
 
 
-class VolunteerEdit(RegistrationRequiredMixin, TemplateView):
-    template_name = "registration/volunteer_edit.html"
+class VolunteerEdit(RegistrationRequiredMixin, DispatchMixin, View):
+    # template_name = "registration/volunteer_edit.html"
 
     # if request.method == 'POST':
     #     if 'previous' in request.POST:
@@ -356,10 +356,17 @@ class VolunteerEdit(RegistrationRequiredMixin, TemplateView):
     #     form = RegVolunteerDetailsForm(instance=volunteer)
     # return render(request, 'registration/register_volunteer_details.html', {'form': form})
 
-    def get(self, request):
+    def dispatch_mixin(self, request):
         registration = Registration.objects.get(user=request.user)
-        volunteer = Volunteer.objects.get(registration=registration)
-        form = RegVolunteerDetailsForm(instance=volunteer)
-        return super().get(request, 'registration/register_volunteer_details.html', {'form': form})
+        self.volunteer = Volunteer.objects.get(registration=registration)
+        
+    def get(self, request):
+        form = RegVolunteerDetailsForm(instance=self.volunteer)
+        return render(request, 'registration/volunteer_edit.html', {'form': form})
+        # return super().get(request)
 
-    # def post(self, request):
+    def post(self, request):
+        form = RegVolunteerDetailsForm(request.POST, request.FILES, instance=self.volunteer)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
