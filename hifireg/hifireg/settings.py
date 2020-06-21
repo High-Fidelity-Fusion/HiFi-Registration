@@ -92,15 +92,13 @@ database = {
     'NAME': os.getenv('DBNAME'),
 }
 
-# If debug mode, get database name from DBNAME_DEV in the environment.
-# Use the local SQLite database if DBNAME_DEV isn't set.
+# If DEBUG mode, override database name with DBNAME_DEV from environment.
 if DEBUG:
     database['NAME'] = os.getenv('DBNAME_DEV')
-    use_sqlite = os.getenv('USE_SQLITE', 'False').lower() == 'true'
-    if use_sqlite:
-        database = local_database
-    elif database['NAME'] is None:
-        raise RuntimeError('Was not able to read the DBNAME_DEV environment variable.')
+
+# Throw error if database name is not set.
+if database['NAME'] is None:
+    raise RuntimeError('Was not able to read the DBNAME/DBNAME_DEV environment variable.')
 
 DATABASES = {
     'default': database
