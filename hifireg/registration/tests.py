@@ -500,4 +500,3 @@ class RegistrationTestCase(TestCase):
 
         # Assert
         self.assertEqual(registration.outstanding_balance, -500)
-
