@@ -6,9 +6,9 @@
 <p>Thanks for logging in.</p>
 {% include "utils/form_fields.html" %}
 
-<div class="control">
-    <a href="{% url 'register_comp_code' %}"><button class="button is-link">Register</button></a>
-    <a href="{% url 'view_user' %}"><button class="button is-link">Account</button></a>
+<div class="buttons">
+    {% include "utils/button.html" with button=view.register_button %}
+    {% include "utils/button.html" with button=view.account_button %}
 </div>
 
 {% endblock %}
