@@ -73,6 +73,7 @@ class RegisterPolicyView(RegistrationRequiredMixin, FunctionBasedView, View):
             form = RegPolicyForm(instance=self.registration)
         return render(request, 'registration/register_policy.html', {'form': form})
 
+
 class AddItemView(FunctionBasedView, View):
     def fbv(self, request):
         try:
@@ -87,6 +88,7 @@ class AddItemView(FunctionBasedView, View):
                 'error': "error: {0}".format(e)
             }
         return JsonResponse(data)
+
 
 class RemoveItemView(FunctionBasedView, View):
     def fbv(self, request):
@@ -131,11 +133,6 @@ class RegisterShowcaseView(OrderRequiredMixin, DispatchMixin, TemplateView):
     next_button = LinkButton("register_merchandise", "Next")
 
     def dispatch_mixin(self, request):
-        order, created = Order.objects.update_or_create(
-            registration=request.user.registration_set.get(), 
-            session__isnull=False, 
-            defaults={'session': Session.objects.get(pk=request.session.session_key)})
-
         self.extra_context = get_context_for_product_selection(ProductCategory.SHOWCASE, request.user)
 
 
