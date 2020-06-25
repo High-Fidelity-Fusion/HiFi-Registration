@@ -17,7 +17,7 @@
 <form method="post">
     {% csrf_token %}
 
-    <div class="buttons is-grouped">
+    <div class="buttons">
         {% if view.ap_available %}
         {% include "utils/button.html" with button=view.ap_yes_button content="I would like to apply for AP" %}
         {% else %}
@@ -26,7 +26,7 @@
         {% include "utils/button.html" with button=view.ap_no_button content="I don't need AP"%}
     </div>
 
-    <div class="buttons is-grouped">
+    <div class="buttons">
         {% include "utils/button.html" with button=view.previous_button %}
     </div>
 

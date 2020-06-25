@@ -70,8 +70,7 @@ class PasswordChangeView(auth_views.PasswordChangeView):
 
 class PasswordChangeDoneView(auth_views.PasswordChangeDoneView):
     template_name = 'utils/generic_form.html'
-    extra_context = {}
-    extra_context['buttons'] = [LinkButton("view_user", "Account"), LinkButton("index", "Home")]
+    extra_context = dict(buttons=[LinkButton("view_user", "Account"), LinkButton("index", "Home")])
 
 
 # allows user to generate reset password link

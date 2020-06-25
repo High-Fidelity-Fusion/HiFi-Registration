@@ -21,6 +21,8 @@ from .helpers import get_context_for_product_selection
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
+    register_button = LinkButton("register_comp_code", "Register")
+    account_button = LinkButton("view_user", "Account")
     template_name = "registration/index.html"
 
 
@@ -100,62 +102,50 @@ class RemoveItemView(FunctionBasedView, View):
         return JsonResponse(data)
 
 
-class RegisterTicketSelectionView(PolicyRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('register_policy')
-            return redirect('register_class_selection')
+class RegisterTicketSelectionView(PolicyRequiredMixin, DispatchMixin, TemplateView):
+    template_name = 'registration/register_selection.html'
+    previous_button = LinkButton("register_policy", "Previous")
+    next_button = LinkButton("register_class_selection", "Next")
 
+    def dispatch_mixin(self, request):
         order, created = Order.objects.update_or_create(
             registration=request.user.registration_set.get(), 
             session__isnull=False, 
             defaults={'session': Session.objects.get(pk=request.session.session_key)})
 
-        context = get_context_for_product_selection(ProductCategory.DANCE, request.user)
-
-        return render(request, 'registration/register_selection.html', context)
+        self.extra_context = get_context_for_product_selection(ProductCategory.DANCE, request.user)
 
 
-class RegisterClassSelectionView(OrderRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('register_ticket_selection')
-            return redirect('register_showcase')
+class RegisterClassSelectionView(OrderRequiredMixin, DispatchMixin, TemplateView):
+    template_name = 'registration/register_selection.html'
+    previous_button = LinkButton("register_ticket_selection", "Previous")
+    next_button = LinkButton("register_showcase", "Next")
 
-        context = get_context_for_product_selection(ProductCategory.CLASS, request.user)
-
-        return render(request, 'registration/register_selection.html', context)
+    def dispatch_mixin(self, request):
+        self.extra_context = get_context_for_product_selection(ProductCategory.CLASS, request.user)
 
 
-class RegisterShowcaseView(OrderRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('register_class_selection')
-            return redirect('register_merchandise')
+class RegisterShowcaseView(OrderRequiredMixin, DispatchMixin, TemplateView):
+    template_name = 'registration/register_selection.html'
+    previous_button = LinkButton("register_class_selection", "Previous")
+    next_button = LinkButton("register_merchandise", "Next")
 
+    def dispatch_mixin(self, request):
         order, created = Order.objects.update_or_create(
             registration=request.user.registration_set.get(), 
             session__isnull=False, 
             defaults={'session': Session.objects.get(pk=request.session.session_key)})
 
-        context = get_context_for_product_selection(ProductCategory.SHOWCASE, request.user)
-
-        return render(request, 'registration/register_selection.html', context)
+        self.extra_context = get_context_for_product_selection(ProductCategory.SHOWCASE, request.user)
 
 
-class RegisterMerchandiseView(OrderRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('register_showcase')
-            return redirect('register_subtotal')
+class RegisterMerchandiseView(OrderRequiredMixin, DispatchMixin, TemplateView):
+    template_name = 'registration/register_selection.html'
+    previous_button = LinkButton("register_showcase", "Previous")
+    next_button = LinkButton("register_subtotal", "Next")
 
-        context = get_context_for_product_selection(ProductCategory.MERCH, request.user)
-
-        return render(request, 'registration/register_selection.html', context)
+    def dispatch_mixin(self, request):
+        self.extra_context = get_context_for_product_selection(ProductCategory.MERCH, request.user)
 
 
 class RegisterSubtotal(NonZeroOrderRequiredMixin, TemplateView):
@@ -169,7 +159,7 @@ class RegisterSubtotal(NonZeroOrderRequiredMixin, TemplateView):
         return super().get(request)
 
     def post(self, request):
-        if "claim_ap" in request.POST:
+        if self.ap_yes_button.name in request.POST:
             if self.order.claim_accessible_pricing():
                 return redirect("register_accessible_pricing")
             else:
