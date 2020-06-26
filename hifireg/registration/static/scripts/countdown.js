@@ -28,7 +28,8 @@
       // If the count down is finished, write some text
       if (distance < 0) {
         clearInterval(countDownInterval);
-        location.reload();
+        document.getElementById("session-expiry-timer").innerHTML = "YOUR ORDER HAS EXPIRED";
+        setTimeout(function(){ location.reload(); }, 3000);
       }
     }, 1000);
   }
