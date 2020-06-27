@@ -1,9 +1,11 @@
 from django.test import TestCase
 from registration.models import *
+from registration.models.helpers import with_is_paid
 from django.core.exceptions import SuspiciousOperation
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 from datetime import datetime
+
 
 def clean_db():
     Product.slots.through.objects.all().delete()
@@ -15,6 +17,7 @@ def clean_db():
     APFund.objects.all().delete()
     Session.objects.all().delete()
     CompCode.objects.all().delete()
+    User.objects.all().delete()
 
 def setup_test_data():
     category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3)
@@ -31,21 +34,14 @@ def setup_test_data():
     APFund.objects.create(contribution=2000, notes='notes')
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
 
-def setup_products():
-    Order.objects.all().delete()
-    Product.slots.through.objects.all().delete()
-    Product.objects.all().delete()
-    ProductCategory.objects.all().delete()
-    ProductSlot.objects.all().delete()
-    APFund.objects.all().delete()
-
+def setup_products_no_delete():
     slot1 = ProductSlot.objects.create(name='1pm', rank=3)
     slot2 = ProductSlot.objects.create(name='11am', rank=2)
 
     category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
-    product.slots.add(slot1)
-    product.slots.add(slot2)
+    multi_slot_product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
+    multi_slot_product1.slots.add(slot1)
+    multi_slot_product1.slots.add(slot2)
 
     category = ProductCategory.objects.create(name='Friday', section='CLASS', rank=3)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Dance like a Baby Giraffe', subtitle='featuring a real baby giraffe!', description='description', category=category)
@@ -54,9 +50,9 @@ def setup_products():
     product.slots.add(slot1)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Ants in your Pants', subtitle='teacher: Ant Man', description='We are going to put literal ants in your literal pants.', category=category)
     product.slots.add(slot2)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category)
-    product.slots.add(slot1)
-    product.slots.add(slot2)
+    multi_slot_product2 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category)
+    multi_slot_product2.slots.add(slot1)
+    multi_slot_product2.slots.add(slot2)
 
     category = ProductCategory.objects.create(name='Clothing', section='MERCH', is_slot_based=False, rank=2)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 3, price=1500, title='t-shirt', subtitle='subtitle', description='description', category=category, is_ap_eligible=False)
@@ -67,9 +63,18 @@ def setup_products():
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category, is_compable=True)
     APFund.objects.create(contribution=3000, notes='notes')
 
+def setup_products():
+    Order.objects.all().delete()
+    Product.slots.through.objects.all().delete()
+    Product.objects.all().delete()
+    ProductCategory.objects.all().delete()
+    ProductSlot.objects.all().delete()
+    APFund.objects.all().delete()
+
+    setup_products_no_delete()
+
 class OrderTestCase(TestCase):
     def setUp(self):
-        clean_db()
         setup_test_data()
 
     def test_add_item__simple_case(self):
@@ -298,7 +303,6 @@ class OrderTestCase(TestCase):
 
 class ProductTestCase(TestCase):
     def setUp(self):
-        clean_db()
         setup_test_data()
 
     def test_get_product_info_for_user(self):
@@ -352,10 +356,16 @@ class ProductTestCase(TestCase):
 
     def test_get_product_info_for_user__multi_slot_products_with_conflict(self):
         #Arrange
-        setup_products()
-        products = Product.objects.filter(slots=ProductSlot.objects.first()).filter(slots=ProductSlot.objects.last())
-        product1 = products.first()
-        product2 = products.last()
+        slot1 = ProductSlot.objects.create(name='1pm', rank=3)
+        slot2 = ProductSlot.objects.create(name='11am', rank=2)
+        category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2)
+        product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
+        product1.slots.add(slot1)
+        product1.slots.add(slot2)
+        product2 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category)
+        product2.slots.add(slot1)
+        product2.slots.add(slot2)
+
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
         incomplete_order.add_item(product1.pk, 1)
@@ -374,7 +384,7 @@ class ProductTestCase(TestCase):
         self.assertEqual(product_result2.quantity_purchased, 0)
         self.assertEqual(product_result2.quantity_claimed, 0)
         self.assertEqual(product_result2.available_quantity, 5)
-        self.assertEqual(product_result2.slot_conflicts, [ProductSlot.objects.last().pk, ProductSlot.objects.first().pk])
+        self.assertEqual(product_result2.slot_conflicts, [slot2.pk, slot1.pk])
 
     def test_get_product_info_for_user__product_does_not_conflict(self):
         #Arrange
@@ -418,14 +428,19 @@ class ProductTestCase(TestCase):
         self.assertEqual(product_result.slot_conflicts, [])
         self.assertEqual(unclaimed_product_result.slot_conflicts, [product_slot.pk])
 
-    def test_get_product_info_for_user__product_conflicts_with_purchase(self):
+    def test_get_product_info_for_user__product_conflicts_with_purchases(self):
         #Arrange
         product_slot = ProductSlot.objects.first()
         product_purchased = Product.objects.first()
         unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
         registration = Registration.objects.first()
-        complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
 
+        complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
+        complete_order.add_item(product_purchased.pk, 1)
+        complete_order.session = None
+        complete_order.save()
+
+        complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test2', expire_date=timezone.now()))
         complete_order.add_item(product_purchased.pk, 1)
         complete_order.session = None
         complete_order.save()
@@ -443,13 +458,26 @@ class ProductTestCase(TestCase):
 
 class RegistrationTestCase(TestCase):
     def setUp(self):
-        clean_db()
         setup_test_data()
+
+    def test_with_outstanding_balances__unfinished_order(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        Invoice.objects.create(amount=1000, order=order)
+
+        # Act
+        registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
+
+        # Assert
+        self.assertEqual(registration.outstanding_balance, 0)
 
     def test_with_outstanding_balances__positive_balance_without_payments(self):
         # Arrange
         registration = Registration.objects.first()
         order = registration.order_set.first()
+        order.session = None
+        order.save()
         Invoice.objects.create(amount=1000, order=order)
 
         # Act
@@ -464,6 +492,8 @@ class RegistrationTestCase(TestCase):
         # Arrange
         registration = Registration.objects.first()
         order = registration.order_set.first()
+        order.session = None
+        order.save()
         Invoice.objects.create(amount=1000, order=order)
         Payment.objects.create(amount=250, registration=registration)
 
@@ -479,8 +509,12 @@ class RegistrationTestCase(TestCase):
         # Arrange
         registration = Registration.objects.first()
         order = registration.order_set.first()
+        order.session = None
+        order.save()
         Invoice.objects.create(amount=1000, order=order)
+        Invoice.objects.create(amount=2000, order=order)
         Payment.objects.create(amount=1000, registration=registration)
+        Payment.objects.create(amount=2000, registration=registration)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -492,6 +526,8 @@ class RegistrationTestCase(TestCase):
         # Arrange
         registration = Registration.objects.first()
         order = registration.order_set.first()
+        order.session = None
+        order.save()
         Invoice.objects.create(amount=1000, order=order)
         Payment.objects.create(amount=1500, registration=registration)
 
@@ -500,3 +536,200 @@ class RegistrationTestCase(TestCase):
 
         # Assert
         self.assertEqual(registration.outstanding_balance, -500)
+
+class InvoiceTestCase(TestCase):
+    def setUp(self):
+        setup_test_data()
+
+    def test_is_paid__no_payments(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        order.session = None
+        order.save()
+        invoice1 = Invoice.objects.create(amount=1000, order=order)
+        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(amount=1002, order=order)
+
+        # Act
+        invoices = with_is_paid(Invoice.objects.all())
+
+        result1 = invoices.get(pk=invoice1.pk)
+        result2 = invoices.get(pk=invoice2.pk)
+        result3 = invoices.get(pk=invoice3.pk)
+
+        # Assert
+        self.assertEqual(result1.pay_at_checkout_invoices, 1001)
+        self.assertEqual(result1.prior_pay_later_invoices, 0)
+        self.assertEqual(result1.sum_of_payments, 0)
+        self.assertEqual(result1.unpaid_amount_through_this, 2001)
+        self.assertEqual(result1.unpaid_amount, 1000)
+        self.assertEqual(result1.is_paid, False)
+
+        self.assertEqual(result2.pay_at_checkout_invoices, 0)
+        self.assertEqual(result2.prior_pay_later_invoices, 0)
+        self.assertEqual(result2.sum_of_payments, 0)
+        self.assertEqual(result2.unpaid_amount_through_this, 1001)
+        self.assertEqual(result2.unpaid_amount, 1001)
+        self.assertEqual(result2.is_paid, False)
+
+        self.assertEqual(result3.pay_at_checkout_invoices, 1001)
+        self.assertEqual(result3.prior_pay_later_invoices, 1000)
+        self.assertEqual(result3.sum_of_payments, 0)
+        self.assertEqual(result3.unpaid_amount_through_this, 3003)
+        self.assertEqual(result3.unpaid_amount, 1002)
+        self.assertEqual(result3.is_paid, False)
+
+    def test_is_paid__paid_at_checkout(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        order.session = None
+        order.save()
+        invoice1 = Invoice.objects.create(amount=1000, order=order)
+        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(amount=1002, order=order)
+        Payment.objects.create(amount=1001, registration=registration)
+
+        # Act
+        invoices = with_is_paid(Invoice.objects.all())
+
+        result1 = invoices.get(pk=invoice1.pk)
+        result2 = invoices.get(pk=invoice2.pk)
+        result3 = invoices.get(pk=invoice3.pk)
+
+        # Assert
+        self.assertEqual(result1.unpaid_amount, 1000)
+        self.assertEqual(result1.is_paid, False)
+
+        self.assertEqual(result2.unpaid_amount, 0)
+        self.assertEqual(result2.is_paid, True)
+
+        self.assertEqual(result3.unpaid_amount, 1002)
+        self.assertEqual(result3.is_paid, False)
+
+    def test_is_paid__with_partial(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        order.session = None
+        order.save()
+        invoice1 = Invoice.objects.create(amount=1000, order=order)
+        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(amount=1002, order=order)
+        Payment.objects.create(amount=1001, registration=registration)
+        Payment.objects.create(amount=500, registration=registration)
+
+        # Act
+        invoices = with_is_paid(Invoice.objects.all())
+
+        result1 = invoices.get(pk=invoice1.pk)
+        result2 = invoices.get(pk=invoice2.pk)
+        result3 = invoices.get(pk=invoice3.pk)
+
+        # Assert
+        self.assertEqual(result1.unpaid_amount, 500)
+        self.assertEqual(result1.is_paid, False)
+
+        self.assertEqual(result2.unpaid_amount, 0)
+        self.assertEqual(result2.is_paid, True)
+
+        self.assertEqual(result3.unpaid_amount, 1002)
+        self.assertEqual(result3.is_paid, False)
+
+    def test_is_paid__with_one_later_payment(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        order.session = None
+        order.save()
+        invoice1 = Invoice.objects.create(amount=1000, order=order)
+        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(amount=1002, order=order)
+        Payment.objects.create(amount=1001, registration=registration)
+        Payment.objects.create(amount=1000, registration=registration)
+
+        # Act
+        invoices = with_is_paid(Invoice.objects.all())
+
+        result1 = invoices.get(pk=invoice1.pk)
+        result2 = invoices.get(pk=invoice2.pk)
+        result3 = invoices.get(pk=invoice3.pk)
+
+        # Assert
+        self.assertEqual(result1.unpaid_amount, 0)
+        self.assertEqual(result1.is_paid, True)
+
+        self.assertEqual(result2.unpaid_amount, 0)
+        self.assertEqual(result2.is_paid, True)
+
+        self.assertEqual(result3.unpaid_amount, 1002)
+        self.assertEqual(result3.is_paid, False)
+
+    def test_is_paid__fully_paid(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        order.session = None
+        order.save()
+        invoice1 = Invoice.objects.create(amount=1000, order=order)
+        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(amount=1002, order=order)
+        Payment.objects.create(amount=1001, registration=registration)
+        Payment.objects.create(amount=2002, registration=registration)
+
+        # Act
+        invoices = with_is_paid(Invoice.objects.all())
+
+        result1 = invoices.get(pk=invoice1.pk)
+        result2 = invoices.get(pk=invoice2.pk)
+        result3 = invoices.get(pk=invoice3.pk)
+
+        # Assert
+        self.assertEqual(result1.unpaid_amount, 0)
+        self.assertEqual(result1.is_paid, True)
+
+        self.assertEqual(result2.unpaid_amount, 0)
+        self.assertEqual(result2.is_paid, True)
+
+        self.assertEqual(result3.unpaid_amount, 0)
+        self.assertEqual(result3.is_paid, True)
+
+    def test_is_paid__over_paid(self):
+        # Arrange
+        registration = Registration.objects.first()
+        order = registration.order_set.first()
+        order.session = None
+        order.save()
+        invoice1 = Invoice.objects.create(amount=1000, order=order)
+        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
+        invoice4 = Invoice.objects.create(amount=1002, order=order)
+        invoice5 = Invoice.objects.create(amount=1002, order=order)
+        Payment.objects.create(amount=1001, registration=registration)
+        Payment.objects.create(amount=10000, registration=registration)
+
+        # Act
+        invoices = with_is_paid(Invoice.objects.all())
+
+        result1 = invoices.get(pk=invoice1.pk)
+        result2 = invoices.get(pk=invoice2.pk)
+        result3 = invoices.get(pk=invoice3.pk)
+        result4 = invoices.get(pk=invoice4.pk)
+        result5 = invoices.get(pk=invoice5.pk)
+
+        # Assert
+        self.assertEqual(result1.unpaid_amount, 0)
+        self.assertEqual(result1.is_paid, True)
+
+        self.assertEqual(result2.unpaid_amount, 0)
+        self.assertEqual(result2.is_paid, True)
+
+        self.assertEqual(result3.unpaid_amount, 0)
+        self.assertEqual(result3.is_paid, True)
+
+        self.assertEqual(result4.unpaid_amount, 0)
+        self.assertEqual(result4.is_paid, True)
+
+        self.assertEqual(result5.unpaid_amount, 0)
+        self.assertEqual(result5.is_paid, True)
