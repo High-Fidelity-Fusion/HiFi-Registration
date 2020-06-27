@@ -17,7 +17,7 @@ def clean_db():
     APFund.objects.all().delete()
     Session.objects.all().delete()
     CompCode.objects.all().delete()
-    User.objects.all().delete()
+    Payment.objects.all().delete()
 
 def setup_test_data():
     category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3)

@@ -12,9 +12,9 @@ from django.views import View
 import stripe
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice
 
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin
 from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
@@ -183,7 +183,7 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
         return redirect('register_volunteer')
 
 
-class RegisterDonateView(OrderRequiredMixin, FunctionBasedView, View):
+class RegisterDonateView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         order = Order.for_user(request.user)
 
@@ -204,7 +204,7 @@ class RegisterDonateView(OrderRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_donate.html', context)
 
 
-class RegisterVolunteerView(PolicyRequiredMixin, FunctionBasedView, View):
+class RegisterVolunteerView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         if request.method == 'POST':
             if 'previous' in request.POST:
@@ -224,7 +224,7 @@ class RegisterVolunteerView(PolicyRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_volunteer.html', {'form': form})
 
 
-class RegisterVolunteerDetailsView(PolicyRequiredMixin, FunctionBasedView, View):
+class RegisterVolunteerDetailsView(VolunteerSelectionRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         registration = self.registration
         try:
@@ -247,7 +247,7 @@ class RegisterVolunteerDetailsView(PolicyRequiredMixin, FunctionBasedView, View)
         return render(request, 'registration/register_volunteer_details.html', {'form': form})
 
 
-class RegisterMiscView(PolicyRequiredMixin, FunctionBasedView, View):
+class RegisterMiscView(VolunteerSelectionRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         if request.method == 'POST':
             registration = Registration.objects.get(user=request.user)
@@ -265,15 +265,26 @@ class RegisterMiscView(PolicyRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_misc.html', {'form': form})
 
 
-class PaymentPlan(View):
+class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
+    template_name = 'registration/payment_plan.html'
+    previous_button = LinkButton("register_misc", "Previous")
+    next_button = SubmitButton("make_payment", "Next")
+
     def get(self, request):
-        return render(request, 'registration/payment_plan.html', {})
+        return super().get(request)
+
+    def post(self, request):
+        if self.next_button.name in request.POST:
+            Invoice.objects.filter(order=self.order).delete()
+            Invoice.objects.create(order=self.order, pay_at_checkout=True, amount=12300)
+            return redirect('make_payment')
 
 
 
-class MakePaymentView(NonZeroOrderRequiredMixin, TemplateView):
+class MakePaymentView(InvoiceRequiredMixin, TemplateView):
     template_name = 'registration/payment.html'
     previous_button = LinkButton("payment_plan", "Previous")
+
     def post(self, request):
         if 'previous' in request.POST:
             return redirect('payment_plan')

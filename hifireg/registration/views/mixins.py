@@ -51,6 +51,22 @@ class NonZeroOrderRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+@chain_with(NonZeroOrderRequiredMixin)
+class VolunteerSelectionRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.registration.wants_to_volunteer is None:
+            return redirect('register_volunteer')
+        return super().dispatch(request, *args, **kwargs)
+
+
+@chain_with(VolunteerSelectionRequiredMixin)
+class InvoiceRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.order.invoice_set.exists():
+            return super().dispatch(request, *args, **kwargs)
+        return redirect('payment_plan')
+
+
 # This Mixin injects arbitrary dispatch code wherever it exists in the MRO. Just
 # implement the dispatch_mixin() method in your class and it will be executed as
 # if it was defined as a dispatch  Mixin. The only difference is that

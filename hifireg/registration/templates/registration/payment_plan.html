@@ -1,5 +1,17 @@
 {% extends "registration/base.html" %}
 
 {% block content %}
-<div>Hello World</div>
+<div>Payment Plan</div>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% include "utils/form_fields.html" %}
+
+  <div class="control">
+    {% include "utils/button.html" with button=view.previous_button %}
+    {% include "utils/button.html" with button=view.next_button %}
+  </div>
+
+</form>
 {% endblock %}
