@@ -271,13 +271,16 @@ class PaymentPlan(View):
 
 
 
-class MakePaymentView(PolicyRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        form = None
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('payment_plan')
-        return render(request, 'registration/payment.html', {'form': form})
+class MakePaymentView(NonZeroOrderRequiredMixin, TemplateView):
+    template_name = 'registration/payment.html'
+    previous_button = LinkButton("payment_plan", "Previous")
+    def post(self, request):
+        if 'previous' in request.POST:
+            return redirect('payment_plan')
+
+    def get(self, request):
+        self.items = self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+        return super().get(request)
 
 
 class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):

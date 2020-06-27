@@ -1,5 +1,7 @@
 {% extends "registration/base.html" %}
 
+{% load special_sauce %}
+
 {% block countdown %}
 {% include 'registration/countdown_widget.html' %}
 {% endblock %}
@@ -9,6 +11,64 @@
 <p class="title">
     Payment
 </p>
+
+<table class="table is-hoverable">
+    <thead>
+    <tr>
+        <th>Category</th>
+        <th>Title</th>
+        <th>Quantity</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tfoot>
+{% if view.order.original_price > view.order.accessible_price %}
+    <tr class="is-size-5">
+        <th>Accessible Total</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.accessible_price|dollars}}</th>
+        <th>(amount due)</th>
+    </tr>
+{% else %}
+    <tr>
+        <th>Subtotal</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.original_price|dollars}}</th>
+    </tr>
+    <tr>
+        <th>Donation</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.donation|dollars}}</th>
+    </tr>
+    <tr class="is-size-5">
+        <th>Total</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.donation|add:view.order.original_price|dollars}}</th>
+        <th>(amount due)</th>
+    </tr>
+{% endif %}
+    </tfoot>
+    <tbody>
+{% for item in view.items %}
+    <tr>
+        <td>{{item.product.category.get_section_display}}</td>
+        <td><strong>{{item.product.title}}</strong></td>
+        <td>{{item.quantity}}</td>
+    {% if item.unit_price == 0 %}
+        <td>Comped</td>
+    {% elif view.order.original_price > view.order.accessible_price and item.product.is_ap_eligible %}
+        <td>Adjusted</td>
+    {% else %}
+        <td>{{item.total_price|dollars}}</td>
+    {% endif %}
+    </tr>
+{% endfor %}
+    </tbody>
+</table>
 
 <form method="post">
     {% csrf_token %}
