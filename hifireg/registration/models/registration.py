@@ -9,10 +9,10 @@ from .invoice import Invoice
 
 class RegistrationQuerySet(models.QuerySet):
     def with_outstanding_balances(self):
-        payments = Payment.objects.filter(registration=OuterRef('pk'))
-        invoices = Invoice.objects.filter(order__registration=OuterRef('pk'))
-        return self.annotate(sum_of_payments=Coalesce(Sum(Subquery(payments.values('amount'))), 0)). \
-            annotate(sum_of_invoices=Coalesce(Sum(Subquery(invoices.values('amount'))), 0)). \
+        payments = Payment.objects.filter(registration=OuterRef('pk')).order_by().values('registration').annotate(sum=Sum('amount')).values('sum')
+        invoices = Invoice.objects.filter(order__registration=OuterRef('pk'), order__session__isnull=True).order_by().values('order__registration').annotate(sum=Sum('amount')).values('sum')
+        return self.annotate(sum_of_payments=Coalesce(Subquery(payments), 0)). \
+            annotate(sum_of_invoices=Coalesce(Subquery(invoices), 0)). \
             annotate(outstanding_balance=F('sum_of_invoices') - F('sum_of_payments'))
 
 
