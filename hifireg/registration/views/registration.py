@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.views import View
+from datetime import datetime, timedelta
 
 import stripe
 
@@ -277,6 +278,9 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
         if self.next_button.name in request.POST:
             Invoice.objects.filter(order=self.order).delete()
             Invoice.objects.create(order=self.order, pay_at_checkout=True, amount=12300)
+            Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=2), amount=12300)
+            Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=4), amount=12300)
+            Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=6), amount=12300)
             return redirect('make_payment')
 
 
