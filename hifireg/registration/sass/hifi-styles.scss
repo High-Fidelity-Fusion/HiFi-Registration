@@ -48,7 +48,16 @@ main {
     flex: 1 0 auto;
 }
 
+.hifi-img {
+    background-image: url("../assets/background.png");
 
+
+    /* Create the parallax scrolling effect */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
 
 // Used for the heavy client-side logic on the product selection screens
 .product-card {
