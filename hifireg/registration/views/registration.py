@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import stripe
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment
 
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin
 from .mixins import DispatchMixin, FunctionBasedView
@@ -298,14 +298,15 @@ class MakePaymentView(InvoiceRequiredMixin, TemplateView):
         return super().get(request)
 
 
-class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):
+class NewCheckoutView(InvoiceRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         if request.method == 'GET':
             # configure Stripe w/secret API key
             stripe.api_key = settings.STRIPE_SECRET_TEST_KEY
 
             # Using fake amount and variable because real variable unknown atm 6.15.20
-            reg_amount = 150000
+            invoice = self.order.invoice_set.get(pay_at_checkout=True)
+            reg_amount = invoice.amount
 
             # urls for recieving redirects from Stripe
             success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
@@ -340,6 +341,23 @@ class NewCheckoutView(PolicyRequiredMixin, FunctionBasedView, View):
                 return JsonResponse({'error': str(e)})
 
 
-class PaymentConfirmationView(FunctionBasedView, View):
+class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
-        return render(request, 'registration/payment_confirmation.html', {})
+        session_id = request.GET.get('session_id', '')
+        # If user refreshes it will not throw the ugly IntegrityError page
+        try: 
+            payment = Payment.objects.get(stripe_session_id=session_id)
+        except ObjectDoesNotExist:
+            stripe.api_key = settings.STRIPE_SECRET_TEST_KEY
+            line_items = stripe.checkout.Session.list_line_items(session_id)
+            total_amount = 0
+            for line_item in line_items['data']:
+                total_amount += line_item['amount_total']
+            payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
+        
+        self.order.session = None
+        self.order.save()
+        
+        return render(request, 'registration/payment_confirmation.html', {
+            'payment': payment
+        })
