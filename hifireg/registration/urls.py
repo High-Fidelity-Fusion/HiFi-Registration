@@ -42,6 +42,11 @@ urlpatterns = [
     path('payment/new_checkout', views.NewCheckoutView.as_view(), name='new_checkout'),
     path('payment/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
 
+    # post-order invoices to be paid
+    path('invoices/', views.InvoicesView.as_view(), name='invoices'),
+    path('invoices/pay', views.PayInvoicesView.as_view(), name='pay_invoices'),
+    path('invoices/pay/success', views.PayInvoicesSuccessView.as_view(), name='pay_success'),
+
     # auth/account views (some are overridden in views)
     path('account/create/', views.CreateUserView.as_view(), name='create_user'),
     path('account/view/', views.ViewUserView.as_view(), name='view_user'),
