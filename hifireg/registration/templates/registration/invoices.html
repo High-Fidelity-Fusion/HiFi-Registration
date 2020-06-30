@@ -1,0 +1,62 @@
+{% extends "registration/base.html" %}
+{% load special_sauce %}
+
+{% block card_content %}
+
+{% if amount_paid %}
+<div class="message is-success">
+  <div class="message-header">
+    <p>Success!</p>
+  </div>
+  <div class="message-body">
+    Yay! You just paid {{ amount_paid|dollars }}!
+  </div>
+</div>
+{% endif %}
+
+<h2 class="is-size-4">Hi, {{ user.first_name }}!</h2>
+
+<div class="box">
+  <button id="payInvoicesButton" class="button is-success is-pulled-right">Pay Invoice(s)</button>
+  <h3 class="is-size-3">Make a Payment: <span id="amountDue"></span></h3>
+</div>
+<br>
+
+<p><em>Note: The invoice at the top of the list below must be paid prior or in addition to any following invoices</em></p>
+<br>
+
+
+<input type="checkbox" id="selectAll">
+<label id="selectAllLabel" for="selectAll">Select All Invoices</label>
+<div id="invoiceTable">
+  <table class="table is-hoverable">
+    <tr>
+      <th></th>
+      <th>Invoice ID</th>
+      <th>Amount</th>
+      <th>Due Date</th>
+    </tr>
+    
+    {% for invoice in unpaid_invoices %}
+    <tr>
+      <td>
+        {% if forloop.counter0 == 0 %}
+          <input type="checkbox" checked data-amount="{{ invoice.amount }}">
+        {% else %}
+          <input type="checkbox" data-amount="{{ invoice.amount }}">
+        {% endif %}
+      </td>
+      <td>{{ invoice.pk }}</td>
+      <td>{{ invoice.amount|dollars }}</td>
+      <td>{{ invoice.due_date|date:"SHORT_DATE_FORMAT" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="{% static 'scripts/invoices.js' %}"></script>
+
+{% endblock %}

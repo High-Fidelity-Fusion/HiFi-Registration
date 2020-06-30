@@ -13,17 +13,20 @@ from datetime import datetime, timedelta
 import stripe
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
+from registration.models.helpers import with_is_paid
 
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin
 from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
-
+from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 
 class IndexView(LoginRequiredMixin, TemplateView):
     register_button = LinkButton("register_comp_code", "Register")
     account_button = LinkButton("view_user", "Account")
+    invoices_button = LinkButton("invoices", "Pay Other Invoices")
     template_name = "registration/index.html"
 
     def get(self, request):
@@ -39,6 +42,55 @@ class OrdersView(LoginRequiredMixin, TemplateView):
             'items': order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
         } for order in Order.objects.filter(registration__user=request.user, session__isnull=True).iterator()]
         return super().get(request)
+
+
+class InvoicesView(RegistrationRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        unpaid_invoices = with_is_paid(
+            Invoice.objects.filter(
+                order__registration__pk=self.registration.pk
+            ).order_by('due_date')
+        ).filter(is_paid=False)
+        
+        return render(request, 'registration/invoices.html', {
+            'unpaid_invoices': unpaid_invoices,
+            'amount_paid': int(request.GET.get('amount_paid', '0')),
+        })
+
+
+class PayInvoicesView(RegistrationRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        if request.method == 'GET':
+
+            invoices_amount = request.GET.get('amount', '')
+
+            # urls for recieving redirects from Stripe
+            success_url = request.build_absolute_uri(reverse('pay_success')) + '?session_id={CHECKOUT_SESSION_ID}'
+            cancel_url = request.build_absolute_uri(reverse('invoices'))
+      
+            try:
+                checkout_session_id = create_stripe_checkout_session(invoices_amount, success_url, cancel_url)
+                # Provide public key to initialize Stripe Client in browser
+                # And checkout session id
+                return JsonResponse({
+                    'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
+                    'session_id': checkout_session_id,
+                })
+            except Exception as e:
+                return JsonResponse({'error': str(e)})
+
+
+class PayInvoicesSuccessView(RegistrationRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
+        session_id = request.GET.get('session_id', '')
+        # If user refreshes it will not throw the ugly IntegrityError page
+        try: 
+            payment = Payment.objects.get(stripe_session_id=session_id)
+        except ObjectDoesNotExist:
+            total_amount = get_stripe_checkout_session_total(session_id)
+            payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
+        
+        return redirect(reverse('invoices') + '?amount_paid=' + str(payment.amount))
 
 
 class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
@@ -313,11 +365,10 @@ class MakePaymentView(InvoiceRequiredMixin, TemplateView):
         return super().get(request)
 
 
+
 class NewCheckoutView(InvoiceRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         if request.method == 'GET':
-            # configure Stripe w/secret API key
-            stripe.api_key = settings.STRIPE_SECRET_TEST_KEY
 
             # Using fake amount and variable because real variable unknown atm 6.15.20
             invoice = self.order.invoice_set.get(pay_at_checkout=True)
@@ -328,29 +379,13 @@ class NewCheckoutView(InvoiceRequiredMixin, FunctionBasedView, View):
             cancel_url = request.build_absolute_uri(reverse('make_payment'))
       
             try:
-                # Create new Checkout Session for the order
-                # Other optional params: https:#stripe.com/docs/api/checkout/sessions/create
-                checkout_session = stripe.checkout.Session.create(
-                    success_url = success_url,
-                    cancel_url = cancel_url,
-                    payment_method_types = ['card'],
-                    line_items = [{
-                        'price_data': {
-                            'currency': 'usd',
-                            'product_data': {
-                                'name': 'HiFi Registration',
-                            },
-                            'unit_amount': reg_amount,
-                        },
-                        'quantity': 1,
-                    }],
-                    mode = 'payment',
-                )
+                checkout_session_id = create_stripe_checkout_session(reg_amount, success_url, cancel_url)
+                
                 # Provide public key to initialize Stripe Client in browser
                 # And checkout session id
                 return JsonResponse({
                     'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
-                    'session_id': checkout_session['id'],
+                    'session_id': checkout_session_id,
                 })
             except Exception as e:
                 return JsonResponse({'error': str(e)})
@@ -363,11 +398,7 @@ class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
         try: 
             payment = Payment.objects.get(stripe_session_id=session_id)
         except ObjectDoesNotExist:
-            stripe.api_key = settings.STRIPE_SECRET_TEST_KEY
-            line_items = stripe.checkout.Session.list_line_items(session_id)
-            total_amount = 0
-            for line_item in line_items['data']:
-                total_amount += line_item['amount_total']
+            total_amount = get_stripe_checkout_session_total(session_id)
             payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
         
         self.order.session = None
@@ -376,3 +407,5 @@ class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/payment_confirmation.html', {
             'payment': payment
         })
+
+
