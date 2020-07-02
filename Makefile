@@ -8,6 +8,9 @@ clean:
 	cd hifireg/registration/migrations && ls --ignore=__init__.py | xargs rm -f
 	$(MANAGE) shell -c "from tools import pgadmin; pgadmin.reset_db()"
 
+disconnect:
+	$(MANAGE) shell -c "from tools import pgadmin; pgadmin.terminate_conn()"
+
 migrate:
 	$(MANAGE) makemigrations
 	$(MANAGE) migrate
