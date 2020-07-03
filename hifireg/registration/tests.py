@@ -30,7 +30,7 @@ def clean_db():
 
 def setup_test_data():
     category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3)
-    slot_1 = ProductSlot.objects.create(name='11amFriday', rank=3)
+    slot_1 = ProductSlot.objects.create(name='11amFriday', rank=3, display_name='timeDay')
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=category_1)
     product.slots.set([slot_1])
     user1 = User.objects.create_user(email='asdf@asdf.asdf')
@@ -44,8 +44,8 @@ def setup_test_data():
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
 
 def setup_products_no_delete():
-    slot1 = ProductSlot.objects.create(name='1pm', rank=3)
-    slot2 = ProductSlot.objects.create(name='11am', rank=2)
+    slot1 = ProductSlot.objects.create(name='Friday1pm', rank=3, display_name='1pm')
+    slot2 = ProductSlot.objects.create(name='Friday11am', rank=2, display_name='11am')
 
     category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2)
     multi_slot_product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
@@ -113,16 +113,16 @@ def setup_performance_test(NUM_PRODUCTS, NUM_REGISTRATIONS, ORDER_ITEMS_PER_ORDE
 
     # create products
     category = ProductCategory.objects.create(name='Passes', section='CLASS', rank=3)
-    slot1 = ProductSlot.objects.create(name='slot1', rank=3)
-    slot2 = ProductSlot.objects.create(name='slot2', rank=2)
-    slot3 = ProductSlot.objects.create(name='slot3', rank=2)
+    slot1 = ProductSlot.objects.create(name='slot1', rank=3, display_name='1pm')
+    slot2 = ProductSlot.objects.create(name='slot2', rank=2, display_name='1pm')
+    slot3 = ProductSlot.objects.create(name='slot3', rank=2, display_name='1pm')
 
     for i in range(NUM_PRODUCTS):
         p = Product.objects.create(total_quantity=5000, max_quantity_per_reg = 1, price=2000, title='title', subtitle='subtitle', description='description', category=category)
 
         if i % 3 == 0:
             p.slots.add(slot1)
-        elif i % 3 == 0:
+        elif i % 3 == 1:
             p.slots.add(slot3)
         else:
             p.slots.add(slot2)
