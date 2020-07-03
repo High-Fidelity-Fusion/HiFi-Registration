@@ -41,68 +41,34 @@
                     <a class="navbar-item" href="{% url 'index'%}">
                         Home
                     </a>
-                    <a class="navbar-item" href="{% url 'view_user'%}">
-                        Profile
-                    </a>
-                    <a class="navbar-item" href="{% url 'registration' %}">
-                        Register
-                    </a>
-                    <a class="navbar-item" href="{% url 'orders' %}">
-                        Orders
-                    </a>
-
-                    <div class="navbar-item has-dropdown is-hoverable">
-                        <a class="navbar-link">
-                            More
-                        </a>
-
-                        <div class="navbar-dropdown">
-                            <a class="navbar-item">
-                                About
-                            </a>
-                            <a class="navbar-item">
-                                Volunteer
-                            </a>
-                            <a class="navbar-item">
-                                Contact
-                            </a>
-                            <hr class="navbar-divider">
-                            <a class="navbar-item">
-                                Report a Problem
-                            </a>
-                        </div>
-                    </div>
-                    <div class="navbar-item has-dropdown is-hoverable">
-                        <a class="navbar-link">
-                            Developer
-                        </a>
-                        <div class="navbar-dropdown">
-                            <a class="navbar-item" href="{% url 'send_email' %}">
-                                Test Email
-                            </a>
-                        </div>
-                    </div>
-
                 </div>
 
                 <div class="navbar-end">
-                    <div class="navbar-item">
-                        {% if user.is_authenticated %}
-                        <a class="button is-light" href="{% url 'logout' %}">
+                    {% if user.is_authenticated %}
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            <img src="{% static 'assets/profile_icon.png' %}" />
+                        </a>
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="{% url 'view_user' %}">
+                                Account
+                            </a>
+                            <a class="navbar-item" href="{% url 'orders' %}">
+                                Orders
+                            </a>
+                            <a class="navbar-item" href="{% url 'logout' %}">
                                 Log out
                             </a>
-                        {% else %}
-                        <div class="buttons">
-                            <a class="button is-primary" href="{% url 'create_user' %}">
-                                <strong>Create Account</strong>
-                            </a>
-                            <a class="button is-light" href="{% url 'login' %}">
-                                Log in
-                            </a>
                         </div>
-                        {% endif %}
                     </div>
+                    {% else %}
+                    <a class="navbar-item" href="{% url 'create_user' %}">
+                        Create Account
+                    </a>
+                    {% endif %}
                 </div>
+
+
 
             </div>
         </div>
@@ -124,8 +90,8 @@
                 {% block content %}
                 <div class="card">
                     <div class="card-content">
-                    {% block card_content %}
-                    {% endblock %}
+                        {% block card_content %}
+                        {% endblock %}
                     </div>
                 </div>
                 {% endblock %}

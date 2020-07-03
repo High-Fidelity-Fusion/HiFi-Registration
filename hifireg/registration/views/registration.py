@@ -38,7 +38,6 @@ class BetaLoginView(FormView):
 
 class IndexView(LoginRequiredMixin, TemplateView):
     register_button = LinkButton('register_policy', 'Register')
-    account_button = LinkButton('view_user', 'Account')
     invoices_button = LinkButton('invoices', 'Pay Other Invoices')
     template_name = 'registration/index.html'
 
@@ -246,11 +245,11 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
                     return redirect('payment_plan')
                 else:
                     return redirect('register_volunteer')
-        else:
-            subtotal = '${:,.2f}'.format(order.original_price * .01)
-            form = RegDonateForm()
-            form.fields['donation'].initial = float(order.donation) * .01
-            context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
+    
+        subtotal = '${:,.2f}'.format(order.original_price * .01)
+        form = RegDonateForm()
+        form.fields['donation'].initial = float(order.donation) * .01
+        context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
         return render(request, 'registration/register_donate.html', context)
 
 
