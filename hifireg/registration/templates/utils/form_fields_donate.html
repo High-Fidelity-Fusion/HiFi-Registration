@@ -1,0 +1,31 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<script src="{% static 'scripts/donate-page-outputs.js' %}"></script>
+
+{% for field in form %}
+<div class="field">
+    {# Field label and input #}
+    <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <div class="control" onchange="calculateOutputs()">
+        ${% render_field field class+="input" step+="1.0" style+="display: inline" %}
+    </div>
+
+    {# Field normal help text #}
+    {% if field.help_text%}
+    <p class="help">
+        {{ field.help_text|safe }}
+    </p>
+    {% endif %}
+
+    {# Field error help text #}
+    {% if field.errors %}
+    {% for error in field.errors %}
+    <p class="help is-danger">
+        {{ error }}
+    </p>
+    {% endfor %}
+    {% endif %}
+
+</div>
+{% endfor %}
