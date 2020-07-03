@@ -10,7 +10,10 @@
     Payment
 </p>
 
-{% include "utils/order_table.html" with order=view.order items=view.items %}
+<table class="table is-hoverable">
+    {% include "utils/order_table.html" with order=view.order items=view.items %}
+</table>
+
 
 <form method="post">
     {% csrf_token %}
