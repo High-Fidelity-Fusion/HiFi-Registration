@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/favicon.png' %}" />
+
+    <!-- HiFi CSS generated from Bulma SASS -->
+    <link rel="stylesheet" href="{% static "css/hifi-styles.css" %}">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    <!-- Bulma js implementation -->
+    <script src="{% static "scripts/bulma-impl.js" %}"></script>
+
+</head>
+
+<body>
+    <!-- Nav -->
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <!-- <a class="navbar-item" href="https://highfidelityfusion.com">
+                    <img src="{% static 'assets/logo-navbar.png' %}" width="112" height="28">
+                </a> -->
+
+                <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                    data-target="navbarHighFidelity">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarHighFidelity" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item">
+                        Profile
+                    </a>
+                    <a class="navbar-item">
+                        Register
+                    </a>
+
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            More
+                        </a>
+
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item">
+                                About
+                            </a>
+                            <a class="navbar-item">
+                                Volunteer
+                            </a>
+                            <a class="navbar-item">
+                                Contact
+                            </a>
+                            <hr class="navbar-divider">
+                            <a class="navbar-item">
+                                Report a Problem
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        {% if user.is_authenticated %}
+                        <a class="button is-light" href="{% url 'logout' %}">
+                                Log out
+                            </a>
+                        {% else %}
+                        <div class="buttons">
+                            <a class="button is-primary" href="{% url 'create_user' %}">
+                                <strong>Create Account</strong>
+                            </a>
+                            <a class="button is-light" href="{% url 'login' %}">
+                                Log in
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main>
+        <section class="section">
+            <div class="container">
+                {% block countdown %}{% endblock %}
+                <h1 class="title">High Fidelity Registration</h1>
+                {% block content %}
+                <div class="card">
+                    <div class="card-content">
+                    {% block card_content %}
+                    {% endblock %}
+                    </div>
+                </div>
+                {% endblock %}
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong>High-Fidelity Registration</strong> is <a
+                    href="https://github.com/High-Fidelity-Fusion/HiFi-Registration">open source</a>.
+                <br>©2020
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

@@ -343,6 +343,7 @@ class NewCheckoutView(InvoiceRequiredMixin, FunctionBasedView, View):
 
 class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
+<<<<<<< HEAD
         session_id = request.GET.get('session_id', '')
         # If user refreshes it will not throw the ugly IntegrityError page
         try: 
@@ -361,3 +362,15 @@ class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/payment_confirmation.html', {
             'payment': payment
         })
+=======
+        return render(request, 'registration/payment_confirmation.html', {})
+
+
+class VolunteerEdit(LoginRequiredMixin, RegistrationRequiredMixin, TemplateView):
+    template_name = "registration/volunteer_edit.html"
+
+    def get(self, request):
+        return super().get(request)
+
+    # def post(self, request):
+>>>>>>> Got volunteer edit page added and routed, no content yet.
