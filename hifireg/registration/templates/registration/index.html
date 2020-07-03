@@ -1,16 +1,15 @@
 {% extends "registration/base.html" %}
-
 {% block card_content %}
 
 <div class="field">
-    <p>Hi, {{ view.request.user.first_name }}!</p>
-    <p>Thanks for logging in.</p>
+  <p>Hi, {{ view.request.user.first_name }}!</p>
+  <p>We look forward to dancing with you at this year's HiFi Fusion!</p>
 </div>
 
 <div class="buttons">
-    {% include "utils/button.html" with button=view.register_button class="is-primary" %}
-    {% include "utils/button.html" with button=view.account_button %}
-    {% include "utils/button.html" with button=view.invoices_button %}
+  {% include "utils/button.html" with button=view.register_button class="is-primary" %}
+  {% include "utils/button.html" with button=view.invoices_button %}
 </div>
+
 
 {% endblock %}
