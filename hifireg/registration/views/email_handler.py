@@ -7,7 +7,7 @@ from .mixins import RegistrationRequiredMixin, OrderRequiredMixin
 
 
 def send_confirmation(user, order):
-    items = order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+    items = order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank')
 
     context = dict(user=user, order=order, items=items)
 
@@ -23,8 +23,8 @@ def send_confirmation(user, order):
 
     msg.send(fail_silently=False)
 
-    return html_content # For debugging
-    # return text_content # For debugging
+    # return html_content # For debugging
+    return text_content # For debugging
 
 
 class SendEmail(OrderRequiredMixin, View):
