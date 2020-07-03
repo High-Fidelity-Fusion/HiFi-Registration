@@ -8,7 +8,7 @@
     {# Field label and input #}
     <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
     <div class="control" onchange="calculateOutputs()">
-        ${% render_field field class+="input" step+="1.0" style+="display: inline" %}
+        ${% render_field field class+="input" style+="display: inline" %}
     </div>
 
     {# Field normal help text #}
