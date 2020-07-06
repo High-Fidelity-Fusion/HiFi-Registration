@@ -15,6 +15,10 @@ class Order(models.Model):
     donation = models.PositiveIntegerField(default=0)
 
     @property
+    def total_price(self):
+        return self.accessible_price if self.is_accessible_pricing else self.original_price + self.donation
+
+    @property
     def is_submitted(self):
         return self.session is None
 
