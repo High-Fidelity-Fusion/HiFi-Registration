@@ -13,10 +13,10 @@ from datetime import datetime, timedelta
 import stripe
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin
-from .mixins import DispatchMixin, FunctionBasedView
+from .mixins import DispatchMixin, FunctionBasedView, NextIfRegisteredMixin
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 
@@ -25,6 +25,20 @@ class IndexView(LoginRequiredMixin, TemplateView):
     register_button = LinkButton("register_comp_code", "Register")
     account_button = LinkButton("view_user", "Account")
     template_name = "registration/index.html"
+
+    def get(self, request):
+        self.items = OrderItem.objects.filter(order__registration__user=request.user).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+        return super().get(request)
+
+class OrdersView(LoginRequiredMixin, TemplateView):
+    template_name = "registration/orders.html"
+
+    def get(self, request):
+        self.orders = [{
+            'order': order,
+            'items': order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+        } for order in Order.objects.filter(registration__user=request.user, session__isnull=True).iterator()]
+        return super().get(request)
 
 
 class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
@@ -61,7 +75,9 @@ class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_comp_code.html', {'form': form})
 
 
-class RegisterPolicyView(RegistrationRequiredMixin, FunctionBasedView, View):
+class RegisterPolicyView(RegistrationRequiredMixin, NextIfRegisteredMixin, FunctionBasedView, View):
+    next_page = 'register_ticket_selection'
+
     def fbv(self, request):       
         if request.method == 'POST':
             if 'previous' in request.POST:
@@ -69,7 +85,7 @@ class RegisterPolicyView(RegistrationRequiredMixin, FunctionBasedView, View):
             form = RegPolicyForm(request.POST, instance=self.registration)
             if form.is_valid():
                 form.save()
-                return redirect('register_ticket_selection')
+                return redirect(self.next_page)
         else:
             form = RegPolicyForm(instance=self.registration)
         return render(request, 'registration/register_policy.html', {'form': form})
@@ -205,7 +221,9 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_donate.html', context)
 
 
-class RegisterVolunteerView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
+class RegisterVolunteerView(NonZeroOrderRequiredMixin, NextIfRegisteredMixin, FunctionBasedView, View):
+    next_page = 'register_misc'
+
     def fbv(self, request):
         if request.method == 'POST':
             if 'previous' in request.POST:
@@ -248,7 +266,9 @@ class RegisterVolunteerDetailsView(VolunteerSelectionRequiredMixin, FunctionBase
         return render(request, 'registration/register_volunteer_details.html', {'form': form})
 
 
-class RegisterMiscView(VolunteerSelectionRequiredMixin, FunctionBasedView, View):
+class RegisterMiscView(VolunteerSelectionRequiredMixin, NextIfRegisteredMixin, FunctionBasedView, View):
+    next_page = 'payment_plan'
+
     def fbv(self, request):
         if request.method == 'POST':
             registration = Registration.objects.get(user=request.user)
@@ -294,6 +314,7 @@ class MakePaymentView(InvoiceRequiredMixin, TemplateView):
             return redirect('payment_plan')
 
     def get(self, request):
+        self.amount_due = self.order.invoice_set.get(pay_at_checkout=True).amount
         self.items = self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
         return super().get(request)
 

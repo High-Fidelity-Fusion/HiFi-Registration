@@ -5,7 +5,8 @@ from django.contrib.sessions.models import Session
 from django.db.models import Sum
 from .product import Product
 from .registration import Registration
-from.ap_fund import APFund
+from .ap_fund import APFund
+from .order_item import OrderItem
 
 class Order(models.Model):
     session = models.OneToOneField(Session, on_delete=models.CASCADE, null=True)
@@ -32,12 +33,13 @@ class Order(models.Model):
 
     def add_item(self, product_id, quantity):
         product = Product.objects.get(pk=product_id)
+        all_order_items_for_registration = OrderItem.objects.filter(order__registration=self.registration)
         if self.is_submitted:
             raise SuspiciousOperation('You cannot add items to a finalized order.')
         for slot in product.slots.iterator():
-            if slot.is_exclusionary == True and self.orderitem_set.exclude(product=product).filter(product__slots=slot).exists():
+            if slot.is_exclusionary == True and all_order_items_for_registration.exclude(product=product).filter(product__slots=slot).exists():
                 raise SuspiciousOperation('You cannot have more than one product in an exclusionary slot.')
-        if (self.orderitem_set.get(product=product).quantity if self.orderitem_set.filter(product=product).exists() else 0) + quantity > product.max_quantity_per_reg:
+        if (all_order_items_for_registration.filter(product=product).aggregate(Sum('quantity'))['quantity__sum'] or 0) + quantity > product.max_quantity_per_reg:
             raise SuspiciousOperation('You cannot exceed the max quantity per registration for that product.')
 
 
