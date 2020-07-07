@@ -10,6 +10,7 @@ from . import views
 urlpatterns = [
     # index:
     path('', views.IndexView.as_view(), name='index'),
+    path('orders', views.OrdersView.as_view(), name='orders'),
 
     #testing email:
     path('order/send_email', views.SendEmail.as_view(), name='send_email'),

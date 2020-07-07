@@ -64,9 +64,14 @@ main {
 
     &[class*="conflict-"] {
         background: lightgrey;
+        pointer-events: none;
 
         input, button {
             pointer-events: none;
+        }
+
+        details {
+            pointer-events: auto;
         }
 
         .error:after {
@@ -77,9 +82,14 @@ main {
 
     &.unavailable {
         background: lightgrey;
+        pointer-events: none;
 
         input, button {
             pointer-events: none;
+        }
+
+        details {
+            pointer-events: auto;
         }
 
         .error:after {
@@ -88,10 +98,20 @@ main {
         }
     }
 
-    &.maximum-purchased {
+    &.max-purchased {
+        background: #B0C4DE;
+        pointer-events: none;
+
+        input, button {
+            pointer-events: none;
+        }
+
+        details {
+            pointer-events: auto;
+        }
+
         .error:after {
             content: "You have already purchased the maximum amount.";
-            color: red;
         }
     }
 

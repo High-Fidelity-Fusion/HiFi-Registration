@@ -1,5 +1,11 @@
 {% load special_sauce %}
     <thead>
+    <tr class="is-selected is-size-4">
+        <th>Items</th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
     <tr>
         <th>Category</th>
         <th>Title</th>
@@ -8,13 +14,24 @@
     </tr>
     </thead>
     <tfoot>
+    <tr class="is-selected is-size-4">
+        <th>Summary</th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
 {% if order.original_price > order.accessible_price %}
-    <tr class="is-size-5">
+    <tr>
         <th>Accessible Total</th>
         <th></th>
         <th></th>
         <th>{{order.accessible_price|dollars}}</th>
-        <th>(amount due)</th>
+    </tr>
+    <tr class="is-size-4">
+        <th>Due Now</th>
+        <th></th>
+        <th></th>
+        <th>{{view.amount_due|dollars}}</th>
     </tr>
 {% else %}
     <tr>
@@ -29,12 +46,17 @@
         <th></th>
         <th>{{order.donation|dollars}}</th>
     </tr>
-    <tr class="is-size-5">
+    <tr>
         <th>Total</th>
         <th></th>
         <th></th>
         <th>{{order.donation|add:order.original_price|dollars}}</th>
-        <th>(amount due)</th>
+    </tr>
+    <tr class="is-size-4">
+        <th>Due Now</th>
+        <th></th>
+        <th></th>
+        <th>{{view.amount_due|dollars}}</th>
     </tr>
 {% endif %}
     </tfoot>
