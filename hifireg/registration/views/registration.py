@@ -16,7 +16,7 @@ from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, Re
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin
-from .mixins import DispatchMixin, FunctionBasedView, NextIfRegisteredMixin
+from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 
@@ -75,17 +75,15 @@ class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_comp_code.html', {'form': form})
 
 
-class RegisterPolicyView(RegistrationRequiredMixin, NextIfRegisteredMixin, FunctionBasedView, View):
-    next_page = 'register_ticket_selection'
-
-    def fbv(self, request):       
+class RegisterPolicyView(RegistrationRequiredMixin, FunctionBasedView, View):
+    def fbv(self, request):
         if request.method == 'POST':
             if 'previous' in request.POST:
                 return redirect('register_comp_code')
             form = RegPolicyForm(request.POST, instance=self.registration)
             if form.is_valid():
                 form.save()
-                return redirect(self.next_page)
+                return redirect('register_ticket_selection')
         else:
             form = RegPolicyForm(instance=self.registration)
         return render(request, 'registration/register_policy.html', {'form': form})
@@ -221,9 +219,7 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_donate.html', context)
 
 
-class RegisterVolunteerView(NonZeroOrderRequiredMixin, NextIfRegisteredMixin, FunctionBasedView, View):
-    next_page = 'register_misc'
-
+class RegisterVolunteerView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         if request.method == 'POST':
             if 'previous' in request.POST:
@@ -266,9 +262,7 @@ class RegisterVolunteerDetailsView(VolunteerSelectionRequiredMixin, FunctionBase
         return render(request, 'registration/register_volunteer_details.html', {'form': form})
 
 
-class RegisterMiscView(VolunteerSelectionRequiredMixin, NextIfRegisteredMixin, FunctionBasedView, View):
-    next_page = 'payment_plan'
-
+class RegisterMiscView(VolunteerSelectionRequiredMixin, FunctionBasedView, View):
     def fbv(self, request):
         if request.method == 'POST':
             registration = Registration.objects.get(user=request.user)
