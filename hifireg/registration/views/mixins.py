@@ -15,12 +15,6 @@ def chain_with(base_class):
     return chainer
 
 
-class NextIfRegisteredMixin:
-    def dispatch(self, request, *args, **kwargs):
-        if (self.registration.is_submitted):
-            return redirect(self.next_page)
-
-
 @chain_with(LoginRequiredMixin)
 class RegistrationRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
