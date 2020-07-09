@@ -7,23 +7,36 @@
 
 {% block card_content %}
 
-<p class="title">
-    Subtotal
-</p>
 
-<p>Your order total is {{ view.order.original_price|dollars }}</p>
+<p class="title">Your order total is {{ view.order.original_price|dollars }}</p>
+<p>Your cart is eligible for Accessible Pricing. This means that if you have financial need and would not be able to pay the above price, you may apply for a discount.</p>
 <br>
+
+{% if view.ineligible_items %}
+However some of your items are NOT eligible for Accessible Pricing Discounts:
+<table class="table is-hoverable is-bordered">
+    <tbody>
+    {% for item in view.ineligible_items %}
+    <tr>
+        <td><strong>{{item.product.title}}</strong></td>
+        <td><strong>{{item.quantity}}</strong></td>
+        <td>{{item.total_price|dollars}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 
 <form method="post">
     {% csrf_token %}
-
+    <p class="is-bold">Payment plan options will be available later in registration whether or not you apply for Accessible Pricing. Accessible Pricing is only for adjusting your order total.</p>
     <div class="buttons">
         {% if view.ap_available %}
-        {% include "utils/button.html" with button=view.ap_yes_button content="I would like to apply for AP" %}
+        {% include "utils/button.html" with button=view.ap_yes_button content="I have financial need and would like to apply for Accessible Pricing." %}
         {% else %}
-        {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP Pricing Currently Unavailable 😢" %}
+        {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="Accessibly Pricing Currently Unavailable 😢" %}
         {% endif %}
-        {% include "utils/button.html" with button=view.ap_no_button content="I don't need AP"%}
+        {% include "utils/button.html" with button=view.ap_no_button content="I can pay the above total."%}
     </div>
 
     <div class="buttons">
