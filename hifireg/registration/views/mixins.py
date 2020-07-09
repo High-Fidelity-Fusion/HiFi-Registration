@@ -37,7 +37,7 @@ class PolicyRequiredMixin:
 class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.order = Order.objects.get(session=Session.objects.get(pk=request.session.session_key))
+            self.order = Order.objects.get(registration=self.registration, session__pk=request.session.session_key)
         except ObjectDoesNotExist:
             return redirect('order')
         return super().dispatch(request, *args, **kwargs)

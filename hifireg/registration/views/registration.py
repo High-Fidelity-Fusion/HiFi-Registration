@@ -186,7 +186,7 @@ class RegisterTicketSelectionView(PolicyRequiredMixin, DispatchMixin, TemplateVi
 
     def dispatch_mixin(self, request):
         order, created = Order.objects.update_or_create(
-            registration=request.user.registration_set.get(), 
+            registration=self.registration,
             session__isnull=False, 
             defaults={'session': Session.objects.get(pk=request.session.session_key)})
 
