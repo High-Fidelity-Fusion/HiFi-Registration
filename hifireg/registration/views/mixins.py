@@ -46,7 +46,7 @@ class OrderRequiredMixin:
 @chain_with(OrderRequiredMixin)
 class NonZeroOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
-        if self.order.original_price == 0:
+        if not self.order.orderitem_set.exists():
             return redirect('register_merchandise')
         return super().dispatch(request, *args, **kwargs)
 
@@ -89,4 +89,3 @@ class DispatchMixin:
 class FunctionBasedView:
     def dispatch(self, request, *args, **kwargs):
         return self.fbv(request)
-

@@ -14,6 +14,7 @@ class Order(models.Model):
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
     donation = models.PositiveIntegerField(default=0)
+    ap_eligible_amount = models.PositiveIntegerField(default=0)
 
     @property
     def total_price(self):
@@ -26,10 +27,6 @@ class Order(models.Model):
     @property
     def is_accessible_pricing(self):
         return self.original_price > self.accessible_price
-
-    @property
-    def ap_eligible_amount(self):
-        return self.orderitem_set.filter(product__is_ap_eligible=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
 
     def add_item(self, product_id, quantity):
         product = Product.objects.get(pk=product_id)
@@ -54,6 +51,7 @@ class Order(models.Model):
 
                 self.original_price = self.orderitem_set.aggregate(Sum('total_price'))['total_price__sum']
                 self.accessible_price = self.original_price
+                self.ap_eligible_amount = self.orderitem_set.filter(product__is_ap_eligible=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
                 self.save()
                 return True
             return False
@@ -65,8 +63,8 @@ class Order(models.Model):
         product.save()
         self.orderitem_set.get(product=product).decrement(quantity)
         self.original_price = self.orderitem_set.aggregate(Sum('total_price'))['total_price__sum'] or 0
-        if self.original_price < self.accessible_price:
-            self.accessible_price = self.original_price
+        self.ap_eligible_amount = self.orderitem_set.filter(product__is_ap_eligible=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
+        self.accessible_price = self.original_price
         self.save()
 
     @transaction.atomic
@@ -78,10 +76,21 @@ class Order(models.Model):
             return True
         return False
 
+    def set_accessible_price(self, price):
+        if price < self.original_price - self.ap_eligible_amount or price > self.original_price:
+            raise SuspiciousOperation('Your price is not within the acceptable range for this order.')
+        self.accessible_price = price
+        self.save()
+
+    def revoke_accessible_pricing(self):
+        self.accessible_price = self.original_price
+        self.save()
+
     @classmethod
     def get_available_ap_funds(cls):
         return (APFund.objects.aggregate(Sum('contribution'))['contribution__sum'] or 0) \
-               - (cls.objects.aggregate(disbursed_amount=Sum('original_price') - Sum('accessible_price'))['disbursed_amount'] or 0)
+            - (cls.objects.filter(session__isnull=True).aggregate(disbursed_amount=Sum('original_price') - Sum('accessible_price'))['disbursed_amount'] or 0) \
+            - (cls.objects.filter(session__isnull=False).aggregate(disbursed_amount=Sum('ap_eligible_amount'))['disbursed_amount'] or 0)
 
     @classmethod
     def for_user(cls, user):
