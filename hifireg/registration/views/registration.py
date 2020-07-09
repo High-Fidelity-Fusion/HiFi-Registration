@@ -241,6 +241,7 @@ class RegisterSubtotal(NonZeroOrderRequiredMixin, TemplateView):
         if self.order.ap_eligible_amount == 0:
             return redirect('register_donate')
         self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds() or self.order.is_accessible_pricing
+        self.ineligible_items = self.order.orderitem_set.filter(unit_price__gt=0, product__is_ap_eligible=False).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
         return super().get(request)
 
     def post(self, request):
