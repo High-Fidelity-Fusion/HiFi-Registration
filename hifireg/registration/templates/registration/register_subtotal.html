@@ -12,7 +12,7 @@
 <p>Your cart is eligible for Accessible Pricing. This means that if you have financial need and would not be able to pay the above price, you may apply for a discount.</p>
 <br>
 
-{% if view.ineligible_items %}
+{% if view.ineligible_items.all %}
 However some of your items are NOT eligible for Accessible Pricing Discounts:
 <table class="table is-hoverable is-bordered">
     <tbody>
