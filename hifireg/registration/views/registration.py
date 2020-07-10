@@ -241,7 +241,7 @@ class RegisterSubtotal(NonZeroOrderRequiredMixin, TemplateView):
         if self.order.ap_eligible_amount == 0:
             return redirect('register_donate')
         self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds() or self.order.is_accessible_pricing
-        self.ineligible_items = self.order.orderitem_set.filter(unit_price__gt=0, product__is_ap_eligible=False).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+        self.ineligible_items = self.order.orderitem_set.filter(unit_price__gt=0, product__is_ap_eligible=False).order_by('product__category__section', 'product__category__rank', 'product__slots__rank')
         return super().get(request)
 
     def post(self, request):
@@ -259,7 +259,6 @@ class RegisterSubtotal(NonZeroOrderRequiredMixin, TemplateView):
 class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, TemplateView):
     template_name = 'registration/register_accessible_pricing.html'
     previous_button = LinkButton('register_subtotal', 'Previous')
-    next_button = LinkButton('register_volunteer', 'Next')
 
     def dispatch_mixin(self, request):
         if not self.order.is_accessible_pricing:
@@ -268,7 +267,10 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
     def post(self, request):
         price = int(request.POST.get('price_submit', self.order.original_price))
         self.order.set_accessible_price(price)
-        return redirect('register_volunteer')
+        if self.registration.is_submitted:
+            return redirect('payment_plan')
+        else:
+            return redirect('register_volunteer')
 
 
 class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBasedView, View):
