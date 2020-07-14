@@ -10,8 +10,6 @@ from django.views.generic.base import TemplateView
 from django.views import View
 from datetime import datetime, timedelta
 
-import stripe
-
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
@@ -22,6 +20,7 @@ from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
+from .mailchimp_client import create_or_update_subscriber
 
 class IndexView(LoginRequiredMixin, TemplateView):
     register_button = LinkButton('register_comp_code', 'Register')
@@ -373,6 +372,7 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
         if self.order.accessible_price + self.order.donation == 0:
             self.order.session = None
             self.order.save()
+            create_or_update_subscriber(request.user, self.registration)
             return render(request, 'registration/payment_confirmation.html', {})
 
         self.months = range(1, 5)
@@ -446,7 +446,8 @@ class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
         except ObjectDoesNotExist:
             total_amount = get_stripe_checkout_session_total(session_id)
             payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
-        
+
+        create_or_update_subscriber(request.user, self.registration)
         self.order.session = None
         self.order.save()
         

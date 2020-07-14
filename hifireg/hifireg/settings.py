@@ -104,6 +104,8 @@ DATABASES = {
     'default': database
 }
 
+ADMINS = [('Admin', 'register@highfidelityfusion.com')]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -178,3 +180,7 @@ SESSION_COOKIE_AGE = int(os.getenv('SESSION_AGE', '3600'))
 # https://stripe.com/docs/payments/checkout/accept-a-payment
 STRIPE_PUBLIC_TEST_KEY = os.getenv('STRIPE_PUBLIC_TEST_KEY')
 STRIPE_SECRET_TEST_KEY = os.getenv('STRIPE_SECRET_TEST_KEY')
+
+MAILCHIMP_API_KEY = os.getenv('MAILCHIMP_API_KEY')
+MAILCHIMP_USERNAME = os.getenv('MAILCHIMP_USERNAME')
+MAILCHIMP_LIST = os.getenv('MAILCHIMP_LIST')

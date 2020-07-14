@@ -27,10 +27,14 @@
   </div>
 {% endfor %}
 
-<div class="buttons">
-  {% include "utils/button.html" with button=view.previous_button %}
-  {% include "utils/button.html" with button=view.next_button %}
-</div>
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="control">
+    {% include "utils/button.html" with button=view.previous_button %}
+    {% include "utils/button.html" with button=view.next_button %}
+  </div>
+</form>
 
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
