@@ -40,11 +40,15 @@ class Registration(models.Model):
 
     @property
     def is_submitted(self):
-        return self.order_set.filter(session=None).exists()
+        return self.order_set.filter(session__isnull=True).exists()
 
     @property
     def is_accessible_pricing(self):
-        return self.order_set.filter(original_price__gt=F('accessible_price')).exists()
+        return self.order_set.filter(session__isnull=True, original_price__gt=F('accessible_price')).exists()
+
+    @property
+    def is_payment_plan(self):
+        return Invoice.objects.filter(order__in=Subquery(self.order_set.filter(session__isnull=True).values('pk')), pay_at_checkout=False).exists()
 
     @property
     def is_comped(self):
