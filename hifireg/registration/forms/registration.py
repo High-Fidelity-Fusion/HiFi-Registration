@@ -1,3 +1,4 @@
+from django.conf import settings
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -6,6 +7,16 @@ from registration.models import CompCode, Order, Registration, Volunteer, CompCo
 
 
 YESNO = [(False, 'No'), (True, 'Yes')]
+
+
+class BetaPasswordForm(forms.Form):
+    beta_password = forms.CharField(widget=forms.PasswordInput)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('beta_password')
+        if password != settings.BETA_PASSWORD:
+            raise forms.ValidationError('Beta password is not correct')
 
 
 class RegPolicyForm(forms.ModelForm):
