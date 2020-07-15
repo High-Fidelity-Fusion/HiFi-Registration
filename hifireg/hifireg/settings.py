@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'registration.middleware.RefreshSessions',
+    'registration.middleware.CheckBetaPassword',
 ]
 
 ROOT_URLCONF = 'hifireg.urls'
@@ -184,3 +185,6 @@ STRIPE_SECRET_TEST_KEY = os.getenv('STRIPE_SECRET_TEST_KEY')
 MAILCHIMP_API_KEY = os.getenv('MAILCHIMP_API_KEY')
 MAILCHIMP_USERNAME = os.getenv('MAILCHIMP_USERNAME')
 MAILCHIMP_LIST = os.getenv('MAILCHIMP_LIST')
+
+# Beta Site Password
+BETA_PASSWORD = os.getenv('BETA_PASSWORD')

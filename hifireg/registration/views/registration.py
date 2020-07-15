@@ -7,11 +7,12 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 from django.views import View
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+from registration.forms import BetaPasswordForm, RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 from registration.models.helpers import with_is_paid
@@ -22,6 +23,17 @@ from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .mailchimp_client import create_or_update_subscriber
+
+
+class BetaLoginView(FormView):
+    template_name = 'registration/beta_login.html'
+    form_class = BetaPasswordForm
+    success_url = '/'
+
+    def form_valid(self, form):
+        self.request.session['site_password'] = True
+        return super().form_valid(form)
+
 
 class IndexView(LoginRequiredMixin, TemplateView):
     register_button = LinkButton('register_comp_code', 'Register')
