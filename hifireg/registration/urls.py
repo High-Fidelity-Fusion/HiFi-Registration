@@ -15,6 +15,9 @@ urlpatterns = [
     #testing email:
     path('order/send_email', views.SendEmail.as_view(), name='send_email'),
 
+    # beta login url:
+    path('beta_login/', views.BetaLoginView.as_view(), name='beta_login'),
+
     # must have registration:
     path('register/', RedirectView.as_view(url=reverse_lazy('register_comp_code')), name='registration'), # redirects to registration creation view
     path('register/comp/', views.RegisterCompCodeView.as_view(), name='register_comp_code'),
