@@ -28,6 +28,10 @@ class Order(models.Model):
     def is_accessible_pricing(self):
         return self.original_price > self.accessible_price
 
+    @property
+    def is_payment_plan(self):
+        return self.invoice_set.filter(pay_at_checkout=False).exists()
+
     def add_item(self, product_id, quantity):
         product = Product.objects.get(pk=product_id)
         all_order_items_for_registration = OrderItem.objects.filter(order__registration=self.registration)
@@ -51,6 +55,7 @@ class Order(models.Model):
 
                 self.original_price = self.orderitem_set.aggregate(Sum('total_price'))['total_price__sum']
                 self.accessible_price = self.original_price
+                self.invoice_set.all().delete()
                 self.ap_eligible_amount = self.orderitem_set.filter(product__is_ap_eligible=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
                 self.save()
                 return True
@@ -65,6 +70,7 @@ class Order(models.Model):
         self.original_price = self.orderitem_set.aggregate(Sum('total_price'))['total_price__sum'] or 0
         self.ap_eligible_amount = self.orderitem_set.filter(product__is_ap_eligible=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
         self.accessible_price = self.original_price
+        self.invoice_set.all().delete()
         self.save()
 
     @transaction.atomic
@@ -72,6 +78,7 @@ class Order(models.Model):
         Order.objects.select_for_update()
         if self.get_available_ap_funds() >= self.ap_eligible_amount:
             self.accessible_price = self.original_price - self.ap_eligible_amount
+            self.invoice_set.all().delete()
             self.save()
             return True
         return False
@@ -80,10 +87,12 @@ class Order(models.Model):
         if price < self.original_price - self.ap_eligible_amount or price > self.original_price:
             raise SuspiciousOperation('Your price is not within the acceptable range for this order.')
         self.accessible_price = price
+        self.invoice_set.all().delete()
         self.save()
 
     def revoke_accessible_pricing(self):
         self.accessible_price = self.original_price
+        self.invoice_set.all().delete()
         self.save()
 
     @classmethod

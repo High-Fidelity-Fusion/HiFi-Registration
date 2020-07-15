@@ -3,7 +3,8 @@ from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 
-from registration.models import Registration, Order
+from registration.models import Registration, Order, Payment
+from .stripe_helpers import get_stripe_checkout_session_total
 
 
 # A magical decorator that provides syntactic cleanliness for chaining dispatch
@@ -65,6 +66,20 @@ class InvoiceRequiredMixin:
         if self.order.invoice_set.exists():
             return super().dispatch(request, *args, **kwargs)
         return redirect('payment_plan')
+
+
+@chain_with(InvoiceRequiredMixin)
+class FinishedOrderRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.order.accessible_price + self.order.donation == 0:
+            return super().dispatch(request, *args, **kwargs)
+        try:
+            session_id = request.GET.get('session_id', '')
+            total_amount = get_stripe_checkout_session_total(session_id)
+            payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
+            return super().dispatch(request, *args, **kwargs)
+        except:
+            return redirect('make_payment')
 
 
 # This Mixin injects arbitrary dispatch code wherever it exists in the MRO. Just
