@@ -255,6 +255,8 @@ class OrderTestCase(TestCase):
         order.add_item(product.pk, 1)
 
         result = order.claim_accessible_pricing()
+        order.session = None
+        order.save()
 
         self.assertEqual(result, True)
         order.refresh_from_db()

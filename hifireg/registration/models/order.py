@@ -2,7 +2,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.db import transaction
 from django.contrib.sessions.models import Session
-from django.db.models import Sum
+from django.db.models import Sum, F
 from .product import Product
 from .registration import Registration
 from .ap_fund import APFund
@@ -99,7 +99,7 @@ class Order(models.Model):
     def get_available_ap_funds(cls):
         return (APFund.objects.aggregate(Sum('contribution'))['contribution__sum'] or 0) \
             - (cls.objects.filter(session__isnull=True).aggregate(disbursed_amount=Sum('original_price') - Sum('accessible_price'))['disbursed_amount'] or 0) \
-            - (cls.objects.filter(session__isnull=False).aggregate(disbursed_amount=Sum('ap_eligible_amount'))['disbursed_amount'] or 0)
+            - (cls.objects.filter(session__isnull=False, original_price__gt=F('accessible_price')).aggregate(disbursed_amount=Sum('ap_eligible_amount'))['disbursed_amount'] or 0)
 
     @classmethod
     def for_user(cls, user):
