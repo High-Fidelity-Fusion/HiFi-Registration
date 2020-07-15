@@ -4,8 +4,12 @@ from registration.models.helpers import with_is_paid
 from django.core.exceptions import SuspiciousOperation
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-from datetime import datetime
+import random
+import string
 
+def random_string():
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(10))
 
 def clean_db():
     Product.slots.through.objects.all().delete()
@@ -31,7 +35,7 @@ def setup_test_data():
     registration2 = Registration.objects.create()
     session2 = Session.objects.create(pk='b', expire_date=timezone.now())
     Order.objects.create(registration=registration2, session=session2)
-    APFund.objects.create(contribution=2000, notes='notes')
+    APFund.objects.create(contribution=2001, notes='notes')
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
 
 def setup_products_no_delete():
@@ -464,7 +468,7 @@ class RegistrationTestCase(TestCase):
         # Arrange
         registration = Registration.objects.first()
         order = registration.order_set.first()
-        Invoice.objects.create(amount=1000, order=order)
+        Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -478,7 +482,7 @@ class RegistrationTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        Invoice.objects.create(amount=1000, order=order)
+        Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -494,8 +498,8 @@ class RegistrationTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        Invoice.objects.create(amount=1000, order=order)
-        Payment.objects.create(amount=250, registration=registration)
+        Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=250, registration=registration)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -511,10 +515,10 @@ class RegistrationTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        Invoice.objects.create(amount=1000, order=order)
-        Invoice.objects.create(amount=2000, order=order)
-        Payment.objects.create(amount=1000, registration=registration)
-        Payment.objects.create(amount=2000, registration=registration)
+        Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        Invoice.objects.create(due_date=timezone.now(), amount=2000, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1000, registration=registration)
+        Payment.objects.create(stripe_session_id=random_string(), amount=2000, registration=registration)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -528,8 +532,8 @@ class RegistrationTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        Invoice.objects.create(amount=1000, order=order)
-        Payment.objects.create(amount=1500, registration=registration)
+        Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1500, registration=registration)
 
         # Act
         registration = Registration.objects.filter(pk=registration.pk).with_outstanding_balances().get()
@@ -547,9 +551,9 @@ class InvoiceTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        invoice1 = Invoice.objects.create(amount=1000, order=order)
-        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice3 = Invoice.objects.create(amount=1002, order=order)
+        invoice1 = Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        invoice2 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
 
         # Act
         invoices = with_is_paid(Invoice.objects.all())
@@ -586,10 +590,10 @@ class InvoiceTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        invoice1 = Invoice.objects.create(amount=1000, order=order)
-        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice3 = Invoice.objects.create(amount=1002, order=order)
-        Payment.objects.create(amount=1001, registration=registration)
+        invoice1 = Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        invoice2 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1001, registration=registration)
 
         # Act
         invoices = with_is_paid(Invoice.objects.all())
@@ -614,11 +618,11 @@ class InvoiceTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        invoice1 = Invoice.objects.create(amount=1000, order=order)
-        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice3 = Invoice.objects.create(amount=1002, order=order)
-        Payment.objects.create(amount=1001, registration=registration)
-        Payment.objects.create(amount=500, registration=registration)
+        invoice1 = Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        invoice2 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1001, registration=registration)
+        Payment.objects.create(stripe_session_id=random_string(), amount=500, registration=registration)
 
         # Act
         invoices = with_is_paid(Invoice.objects.all())
@@ -643,11 +647,11 @@ class InvoiceTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        invoice1 = Invoice.objects.create(amount=1000, order=order)
-        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice3 = Invoice.objects.create(amount=1002, order=order)
-        Payment.objects.create(amount=1001, registration=registration)
-        Payment.objects.create(amount=1000, registration=registration)
+        invoice1 = Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        invoice2 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1001, registration=registration)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1000, registration=registration)
 
         # Act
         invoices = with_is_paid(Invoice.objects.all())
@@ -672,11 +676,11 @@ class InvoiceTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        invoice1 = Invoice.objects.create(amount=1000, order=order)
-        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice3 = Invoice.objects.create(amount=1002, order=order)
-        Payment.objects.create(amount=1001, registration=registration)
-        Payment.objects.create(amount=2002, registration=registration)
+        invoice1 = Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        invoice2 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1001, registration=registration)
+        Payment.objects.create(stripe_session_id=random_string(), amount=2002, registration=registration)
 
         # Act
         invoices = with_is_paid(Invoice.objects.all())
@@ -701,13 +705,13 @@ class InvoiceTestCase(TestCase):
         order = registration.order_set.first()
         order.session = None
         order.save()
-        invoice1 = Invoice.objects.create(amount=1000, order=order)
-        invoice2 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice3 = Invoice.objects.create(amount=1001, order=order, pay_at_checkout=True)
-        invoice4 = Invoice.objects.create(amount=1002, order=order)
-        invoice5 = Invoice.objects.create(amount=1002, order=order)
-        Payment.objects.create(amount=1001, registration=registration)
-        Payment.objects.create(amount=10000, registration=registration)
+        invoice1 = Invoice.objects.create(due_date=timezone.now(), amount=1000, order=order)
+        invoice2 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice3 = Invoice.objects.create(due_date=timezone.now(), amount=1001, order=order, pay_at_checkout=True)
+        invoice4 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
+        invoice5 = Invoice.objects.create(due_date=timezone.now(), amount=1002, order=order)
+        Payment.objects.create(stripe_session_id=random_string(), amount=1001, registration=registration)
+        Payment.objects.create(stripe_session_id=random_string(), amount=10000, registration=registration)
 
         # Act
         invoices = with_is_paid(Invoice.objects.all())

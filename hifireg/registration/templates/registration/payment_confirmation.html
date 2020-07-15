@@ -1,10 +1,108 @@
 {% extends "registration/base.html" %}
+{% load special_sauce %}
 
 {% block card_content %}
 
 <p class="title">
     Order Complete!
 </p>
+<table class="table is-hoverable">
+    <thead>
+    <tr class="is-selected is-size-4">
+        <th>Items</th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    <tr>
+        <th>Category</th>
+        <th>Title</th>
+        <th>Quantity</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tfoot>
+    <tr class="is-selected is-size-4">
+        <th>Summary</th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    {% if view.order.is_accessible_pricing %}
+    <tr>
+        <th>Accessible Total</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.accessible_price|dollars}}</th>
+    </tr>
+    {% else %}
+    <tr>
+        <th>Subtotal</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.original_price|dollars}}</th>
+    </tr>
+    <tr>
+        <th>Donation</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.donation|dollars}}</th>
+    </tr>
+    <tr>
+        <th>Total</th>
+        <th></th>
+        <th></th>
+        <th>{{view.order.donation|add:view.order.original_price|dollars}}</th>
+    </tr>
+    {% endif %}
+    <tr class="is-size-4">
+        <th>Paid</th>
+        <th></th>
+        <th></th>
+        <th>{{view.amount_due|dollars}}</th>
+    </tr>
+    </tfoot>
+    <tbody>
+    {% for item in view.items %}
+    <tr>
+        <td>{{item.product.category.get_section_display}}</td>
+        <td><strong>{{item.product.title}}</strong></td>
+        <td>{{item.quantity}}</td>
+        {% if item.unit_price == 0 %}
+        <td>Comped</td>
+        {% elif view.order.is_accessible_pricing and item.product.is_ap_eligible %}
+        <td>Adjusted</td>
+        {% else %}
+        <td>{{item.total_price|dollars}}</td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if view.order.is_payment_plan %}
+<br>
+<p class="title">
+    Payment plan details:
+</p>
+<table class="table is-hoverable">
+    <tr>
+        <th>Invoice ID</th>
+        <th>Amount</th>
+        <th>Due Date</th>
+    </tr>
+
+    {% for invoice in view.invoices %}
+    <tr>
+        <td>{{ invoice.pk }}</td>
+        <td>{{ invoice.amount|dollars }}</td>
+        <td>{{ invoice.due_date|date:"SHORT_DATE_FORMAT" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+
 
 <div class="control">
     <a href = "{% url 'index' %}"><button class="button is-link">Home</button></a>

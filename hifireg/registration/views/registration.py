@@ -8,14 +8,15 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.views import View
-from datetime import datetime, timedelta
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 from registration.forms import RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 from registration.models.helpers import with_is_paid
 
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin
 from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
@@ -288,8 +289,11 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
             form = RegDonateForm(request.POST)
             if form.is_valid():
                 cd = form.cleaned_data
-                order.donation = int(100 * cd['donation'])
-                order.save()
+                donation = int(100 * cd['donation'])
+                if donation != order.donation:
+                    order.donation = donation
+                    order.save()
+                    order.invoice_set.all().delete()
                 if self.registration.is_submitted:
                     return redirect('payment_plan')
                 else:
@@ -370,21 +374,42 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
 
     def get(self, request):
         if self.order.accessible_price + self.order.donation == 0:
-            self.order.session = None
-            self.order.save()
-            create_or_update_subscriber(request.user, self.registration)
-            return render(request, 'registration/payment_confirmation.html', {})
+            return redirect('payment_confirmation')
 
-        self.months = range(1, 5)
+        self.months_range = range(1, 5)
+        self.already_selected = self.order.invoice_set.exists()
+        if self.already_selected:
+            self.payments_per_month = request.session['payments_per_month']
+            self.months = request.session['months']
+        else:
+            self.payments_per_month = 1
+            self.months = 1
         return super().get(request)
 
     def post(self, request):
         if self.next_button.name in request.POST:
-            Invoice.objects.filter(order=self.order).delete()
-            Invoice.objects.create(order=self.order, pay_at_checkout=True, amount=12300)
-            Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=2), amount=12300)
-            Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=4), amount=12300)
-            Invoice.objects.create(order=self.order, due_date=datetime.now()+timedelta(weeks=6), amount=12300)
+            self.order.invoice_set.all().delete()
+            payments_per_month = int(request.POST.get('ppm'))
+            months = int(request.POST.get('months'))
+            request.session['payments_per_month'] = payments_per_month
+            request.session['months'] = months
+
+            numOfPayments = payments_per_month * months
+            individualPayment = int(self.order.total_price / numOfPayments)
+            firstPayment = individualPayment + self.order.total_price - individualPayment * numOfPayments
+
+            date = timezone.now()
+            date_in_two_weeks = date + relativedelta(weeks=+2)
+
+            Invoice.objects.create(order=self.order, pay_at_checkout=True, due_date=date, amount=firstPayment)
+            if payments_per_month == 2:
+                Invoice.objects.create(order=self.order, due_date=date_in_two_weeks, amount=individualPayment)
+
+            for i in range(1, payments_per_month):
+                Invoice.objects.create(order=self.order, due_date=date+relativedelta(months=i), amount=individualPayment)
+                if payments_per_month == 2:
+                    Invoice.objects.create(order=self.order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)
+
             return redirect('make_payment')
 
         elif self.previous_button.name in request.POST:
@@ -437,22 +462,21 @@ class NewCheckoutView(InvoiceRequiredMixin, FunctionBasedView, View):
                 return JsonResponse({'error': str(e)})
 
 
-class PaymentConfirmationView(OrderRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        session_id = request.GET.get('session_id', '')
-        # If user refreshes it will not throw the ugly IntegrityError page
-        try: 
-            payment = Payment.objects.get(stripe_session_id=session_id)
-        except ObjectDoesNotExist:
-            total_amount = get_stripe_checkout_session_total(session_id)
-            payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
+class PaymentConfirmationView(FinishedOrderRequiredMixin, TemplateView):
+    template_name = 'registration/payment_confirmation.html'
+
+    def get(self, request):
+        request.session['payments_per_month'] = None
+        request.session['months'] = None
 
         create_or_update_subscriber(request.user, self.registration)
         self.order.session = None
         self.order.save()
-        
-        return render(request, 'registration/payment_confirmation.html', {
-            'payment': payment
-        })
+
+        self.amount_due = self.order.invoice_set.get(pay_at_checkout=True).amount if self.order.invoice_set.exists() else 0
+        self.items = self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank')
+        self.invoices = self.order.invoice_set.filter(pay_at_checkout=False)
+
+        return super().get(request)
 
 
