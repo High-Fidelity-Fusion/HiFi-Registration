@@ -31,7 +31,6 @@ style:
 	npm run css-build
 
 email:
-	# npm run mjml-order
 	python hifireg/tools/mjml.py hifireg/registration/templates/email/order.mjml hifireg/registration/templates/email/order.html
 
 style-watch:
