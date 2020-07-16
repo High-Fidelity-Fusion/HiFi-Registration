@@ -5,7 +5,7 @@ clean_migrate: clean migrate
 clean_run: clean migrate run
 
 clean:
-	cd hifireg/registration/migrations && ls --ignore=__init__.py | xargs rm -f
+	cd hifireg/registration/migrations && ls --ignore=__init__.py | xargs rm -rf
 	$(MANAGE) shell -c "from tools import pgadmin; pgadmin.reset_db()"
 
 disconnect:
