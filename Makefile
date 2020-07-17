@@ -44,3 +44,9 @@ lint:
 
 test-data:
 	$(MANAGE) shell -c "from registration.tests import setup_products; setup_products()"
+
+settings:
+	wget "${SETTINGS_SECRET_URL}" -O hifireg/hifireg/settings/secret.py
+
+settings-dev:
+	wget "${SETTINGS_DEV_URL}" -O hifireg/hifireg/settings/developer.py
