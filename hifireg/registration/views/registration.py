@@ -405,7 +405,7 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
             if payments_per_month == 2:
                 Invoice.objects.create(order=self.order, due_date=date_in_two_weeks, amount=individualPayment)
 
-            for i in range(1, payments_per_month):
+            for i in range(1, payments_per_month - 1):
                 Invoice.objects.create(order=self.order, due_date=date+relativedelta(months=i), amount=individualPayment)
                 if payments_per_month == 2:
                     Invoice.objects.create(order=self.order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)
@@ -469,9 +469,9 @@ class PaymentConfirmationView(FinishedOrderRequiredMixin, TemplateView):
         request.session['payments_per_month'] = None
         request.session['months'] = None
 
-        create_or_update_subscriber(request.user, self.registration)
         self.order.session = None
         self.order.save()
+        create_or_update_subscriber(request.user, self.registration)
 
         self.amount_due = self.order.invoice_set.get(pay_at_checkout=True).amount if self.order.invoice_set.exists() else 0
         self.items = self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank')
