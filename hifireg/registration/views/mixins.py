@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
@@ -65,6 +66,7 @@ class InvoiceRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if self.order.invoice_set.exists():
             return super().dispatch(request, *args, **kwargs)
+        messages.error(request, 'You have no invoices to pay.')    
         return redirect('payment_plan')
 
 

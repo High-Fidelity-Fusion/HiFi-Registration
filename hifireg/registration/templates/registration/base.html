@@ -114,6 +114,13 @@
             <div class="container">
                 {% block countdown %}{% endblock %}
                 <h1 class="title has-text-white">High Fidelity Registration</h1>
+                {% if messages %}
+                <div class="message is-danger messages">
+                    {% for message in messages %}
+                    <div class="message-body">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 {% block content %}
                 <div class="card">
                     <div class="card-content">
