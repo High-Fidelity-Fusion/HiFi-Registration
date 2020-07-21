@@ -50,3 +50,19 @@ settings:
 
 settings-dev:
 	wget "${SETTINGS_DEV_URL}" -O hifireg/hifireg/settings/developer.py
+
+deploy: style email
+	cp Pipfile.lock hifireg/Pipfile.lock
+	cd hifireg && eb deploy
+
+deploy-simple:
+	cd hifireg && eb deploy
+
+deploy-env:
+	cd hifireg && eb setenv SETTINGS_SECRET_URL="${SETTINGS_SECRET_URL}"
+
+deploy-init:
+	cd hifireg && eb init
+
+deploy-open:
+	cd hifireg && eb open
