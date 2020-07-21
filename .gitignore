@@ -116,3 +116,6 @@ migrations/
 
 # MJML generated
 **/email/*.html
+
+# Deploy files
+hifireg/Pipfile.lock
