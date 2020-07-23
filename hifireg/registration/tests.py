@@ -4,6 +4,8 @@ from registration.models.helpers import with_is_paid
 from django.core.exceptions import SuspiciousOperation
 from django.contrib.sessions.models import Session
 from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+from django.db.models import Max, Min
 import random
 import string
 
@@ -11,13 +13,16 @@ def random_string():
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(10))
 
+def coin_flip():
+    return random.choice([False, True])
+
 def clean_db():
+    Order.objects.all().delete()
+    Registration.objects.all().delete()
     Product.slots.through.objects.all().delete()
     Product.objects.all().delete()
     ProductCategory.objects.all().delete()
     ProductSlot.objects.all().delete()
-    Order.objects.all().delete()
-    Registration.objects.all().delete()
     APFund.objects.all().delete()
     Session.objects.all().delete()
     CompCode.objects.all().delete()
@@ -76,6 +81,90 @@ def setup_products():
     APFund.objects.all().delete()
 
     setup_products_no_delete()
+
+def get_random(cls):
+    max_id = cls.objects.all().aggregate(max_id=Max("pk"))['max_id']
+    min_id = cls.objects.all().aggregate(min_id=Min("pk"))['min_id']
+    pk = random.randint(min_id, max_id)
+    return cls.objects.get(pk=pk)
+
+
+# Case 1:
+# NUM_PRODUCTS = 50
+# NUM_REGISTRATIONS = 500
+# ORDER_ITEMS_PER_ORDER = 20
+# Results:
+# Classes page load latency = 5 seconds
+# Add item latency = 0.75 seconds
+# Claim AP = 0.5 seconds
+def setup_performance_test(NUM_PRODUCTS, NUM_REGISTRATIONS, ORDER_ITEMS_PER_ORDER):
+    # 2 orders are created per registration, ~50% of orders are AP, ~25% of orders are unsubmitted
+
+    Order.objects.all().delete()
+    Registration.objects.all().delete()
+    Product.slots.through.objects.all().delete()
+    Product.objects.all().delete()
+    ProductCategory.objects.all().delete()
+    ProductSlot.objects.all().delete()
+    APFund.objects.all().delete()
+    Session.objects.all().delete()
+    CompCode.objects.all().delete()
+    Payment.objects.all().delete()
+
+    # create products
+    category = ProductCategory.objects.create(name='Passes', section='CLASS', rank=3)
+    slot1 = ProductSlot.objects.create(name='slot1', rank=3)
+    slot2 = ProductSlot.objects.create(name='slot2', rank=2)
+    slot3 = ProductSlot.objects.create(name='slot3', rank=2)
+
+    for i in range(NUM_PRODUCTS):
+        p = Product.objects.create(total_quantity=5000, max_quantity_per_reg = 1, price=2000, title='title', subtitle='subtitle', description='description', category=category)
+
+        if i % 3 == 0:
+            p.slots.add(slot1)
+        elif i % 3 == 0:
+            p.slots.add(slot3)
+        else:
+            p.slots.add(slot2)
+    first_p = Product.objects.first().pk
+    last_p = Product.objects.first().pk
+
+    # create users/registrations
+    APFund.objects.create(contribution=300000000, notes='notes')
+    for i in range(NUM_REGISTRATIONS):
+        user = User.objects.create_user(email=random_string() + '@asdf.asdf')
+        registration = Registration.objects.create(user=user)
+        session = Session.objects.create(pk=random_string(), expire_date=timezone.now() + relativedelta(weeks=+2))
+
+        order = Order.objects.create(registration=registration, session=session)
+        for i in range(1, ORDER_ITEMS_PER_ORDER + 1):
+            try:
+                order.add_item(random.randrange(first_p, last_p-1), 1)
+            except:
+                continue
+        if coin_flip():
+            order.claim_accessible_pricing()
+        else:
+            order.donation = 1000
+        order.session = None
+        order.save()
+
+        order = Order.objects.create(registration=registration, session=session)
+        for i in range(1, ORDER_ITEMS_PER_ORDER + 1):
+            try:
+                order.add_item(random.randrange(first_p, last_p-1), 1)
+            except:
+                continue
+        if coin_flip():
+            order.claim_accessible_pricing()
+        else:
+            order.donation = 1000
+        if coin_flip():
+            order.session = None
+        order.save()
+
+
+
 
 class OrderTestCase(TestCase):
     def setUp(self):
