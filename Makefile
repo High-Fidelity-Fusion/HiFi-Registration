@@ -1,4 +1,7 @@
 MANAGE = python hifireg/manage.py
+define WGET 
+	python -c "from urllib.request import urlretrieve; urlretrieve('$(1)', '$(2)')"
+endef
 
 all: migrate style email run
 clean_migrate: clean migrate
@@ -46,10 +49,10 @@ test-data:
 	$(MANAGE) shell -c "from registration.tests import setup_products; setup_products()"
 
 settings:
-	wget "${SETTINGS_SECRET_URL}" -O hifireg/hifireg/settings/secret.py
+	$(call WGET,${SETTINGS_SECRET_URL},hifireg/hifireg/settings/secret.py)
 
 settings-dev:
-	wget "${SETTINGS_DEV_URL}" -O hifireg/hifireg/settings/developer.py
+	$(call WGET,${SETTINGS_DEV_URL},hifireg/hifireg/settings/developer.py)
 
 deploy: style email
 	cp Pipfile.lock hifireg/Pipfile.lock
