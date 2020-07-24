@@ -119,6 +119,6 @@ class RegCompCodeForm(forms.Form):
 
 
 class RegDonateForm(forms.Form):
-    donation = forms.DecimalField(
-        label='I would like to contribute this dollar amount:', initial=0.00, decimal_places=0
+    donation = forms.IntegerField(
+        label='I would like to contribute this dollar amount:', initial=0
     )

@@ -310,11 +310,11 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
                     return redirect('payment_plan')
                 else:
                     return redirect('register_volunteer')
-        else:
-            subtotal = '${:,.2f}'.format(order.original_price * .01)
-            form = RegDonateForm()
-            form.fields['donation'].initial = float(order.donation) * .01
-            context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
+    
+        subtotal = '${:,.2f}'.format(order.original_price * .01)
+        form = RegDonateForm()
+        form.fields['donation'].initial = float(order.donation) * .01
+        context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
         return render(request, 'registration/register_donate.html', context)
 
 

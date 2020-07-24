@@ -43,7 +43,7 @@ def get_context_for_product_selection(section, user):
         'categories': [{
             'name': category.name,
             'slots': [{
-                'name': slot.name,
+                'name': slot.display_name,
                 'is_exclusionary': slot.is_exclusionary,
                 'products': [build_product(product, user, slot.pk) for product in Product.objects.get_product_info_for_user(user).filter(category=category, slots=slot).iterator()]
             } for slot in ProductSlot.objects.filter(product__in=category.product_set.all()).distinct().order_by('rank').iterator()]
