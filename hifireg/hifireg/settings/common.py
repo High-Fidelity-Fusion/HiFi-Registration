@@ -135,4 +135,5 @@ LOGIN_REDIRECT_URL = '/registration/'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'login'
 
+
 SESSION_COOKIE_AGE = 3600

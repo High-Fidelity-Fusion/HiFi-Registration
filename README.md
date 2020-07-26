@@ -55,13 +55,20 @@ Additional deployment machines can be setup by running `eb init`:
   (https://console.aws.amazon.com/iam/home?region=us-west-2#/security_credentials)
 - New SSH keys (generated locally) will need to be created for each new deployer.
 
-### Setting up HTTPS for Beta Site
-Follow these instructions using the "Terminate at the load balancer" method:
-https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https.html
-- These instructions are only useful for a beta site as it uses a self-signed certificate.
-- This only needs to be done once.
-- You'll need to setup `aws` cli tool.
-- Use the web console to do this setup (instead of the *.config file)
+### Setting up Domain name
+Add a CNAME record mapping your subdomain 
+(e.g. beta.highfidelityfusion.com) 
+to the name of your elastic beanstalk instance
+(e.g. hifireg-env.eba-blahblah.us-west-2.elasticbeanstalk.com).
 
-### Setting up HTTPS for Production Site
-TODO
+### Setting up HTTPS
+Before you begin, make sure you've done the following:
+- Make sure you have added a CNAME entry to your DNS for a domain that you control.
+- Use AWS Certificate Manager to issue a certificate covering your domain:
+  https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html#request-public-console
+
+Then, follow these instructions using the "Terminate at the load balancer" method:
+https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/configuring-https-elb.html
+- Use the web console to do this setup (not the *.config file)
+- Do not disable port 80 on the load balancer. The Django app is configured 
+  to redirect this HTTP traffic to HTTPS requiring no configuration of Elastic Beanstalk.
