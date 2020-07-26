@@ -17,6 +17,7 @@ python-dateutil = "*"
 mailchimp3 = "*"
 awsebcli = "*"
 requests = "*"
+libsass = "*"
 
 [requires]
 python_version = "3.8"

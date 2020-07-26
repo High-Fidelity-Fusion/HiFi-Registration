@@ -29,9 +29,9 @@ test:
 
 shell:
 	$(MANAGE) shell
-	
+
 style:
-	npm run css-build
+	python -c "import sass; sass.compile(dirname=('hifireg/registration/sass', 'hifireg/registration/static/css'), output_style='compressed', omit_source_map_url=False)"
 
 email:
 	python hifireg/tools/mjml.py hifireg/registration/templates/email/order.mjml hifireg/registration/templates/email/order.html
