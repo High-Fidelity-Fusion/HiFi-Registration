@@ -106,10 +106,7 @@ ENV/
 .vscode
 
 # Node.js
-node_modules/
-package-lock.json
 css/
-db.sqlite3
 migrations/
 
 .DS_Store
