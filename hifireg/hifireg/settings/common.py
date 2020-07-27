@@ -123,6 +123,12 @@ PASSWORD_HASHERS = [
 AUTH_USER_MODEL = 'registration.User'
 
 
+
+# Redirect HTTP traffic to HTTPS
+# https://docs.djangoproject.com/en/2.2/topics/security/#ssl-https
+SECURE_SSL_REDIRECT = True
+
+
 # LoginView
 # https://docs.djangoproject.com/en/3.0/topics/auth/default/#django.contrib.auth.views.LoginView
 LOGIN_REDIRECT_URL = '/registration/'
