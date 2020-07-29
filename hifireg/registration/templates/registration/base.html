@@ -41,17 +41,11 @@
                     <a class="navbar-item" href="{% url 'index'%}">
                         Home
                     </a>
-                    <a class="navbar-item" href="{% url 'view_user'%}">
-                        Profile
-                    </a>
-                    <a class="navbar-item" href="{% url 'registration' %}">
-                        Register
-                    </a>
-                    <a class="navbar-item" href="{% url 'orders' %}">
-                        Orders
-                    </a>
 
-                    <div class="navbar-item has-dropdown is-hoverable">
+
+                   
+<!-- I am unsure if any of this should be kept, but the buttons seem to be nonfunctional, so I am removing them per the Asana instructions, but keeping them per my feeling there might be something important here. -->
+                    <!-- <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-link">
                             More
                         </a>
@@ -75,7 +69,7 @@
                     <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-link">
                             Developer
-                        </a>
+                        </a> -->
                         <div class="navbar-dropdown">
                             <a class="navbar-item" href="{% url 'send_email' %}">
                                 Test Email
