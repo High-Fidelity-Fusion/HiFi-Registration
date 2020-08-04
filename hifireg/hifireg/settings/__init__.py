@@ -1,4 +1,4 @@
-from .common import *
+from .public import *
 from .secret import *
 
 import os
