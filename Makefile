@@ -58,9 +58,6 @@ deploy: style email
 	cp Pipfile.lock hifireg/Pipfile.lock
 	cd hifireg && eb deploy
 
-deploy-simple:
-	cd hifireg && eb deploy
-
 deploy-env:
 	cd hifireg && eb setenv SETTINGS_SECRET_URL="${SETTINGS_SECRET_URL}"
 
