@@ -1,5 +1,6 @@
 {% load special_sauce %}
-<div class="column is-half">
+
+<div class="my-4">
 <div class="">
   <div data-product="{{product.id}}" data-slots="{{product.slots}}" data-max="{{product.max_quantity}}"
        class="box product-card {{product.slotClasses}} {{product.conflictClasses}}
@@ -12,7 +13,7 @@
     </div>
     {% if product.max_quantity_per_reg == 1 %}
       <div class="loader"></div>
-      <input class="check-{{product.id}} product-checkbox" type="checkbox" {% if product.status == 'max_purchased' or product.quantity_claimed > 0 %}checked{% endif %}>
+      <input class="check-{{product.id}} product-checkbox big-checkbox" type="checkbox" {% if product.status == 'max_purchased' or product.quantity_claimed > 0 %}checked{% endif %}>
     {% else %}
     <p>{{product.quantity_purchased}} already purchased.</p>
     <div class="quantity-selector">
@@ -23,14 +24,15 @@
     </div>
     {% endif %}
     {% if product.has_parts %}
-      <p>{{product.part}} of {{product.total_parts}}</p>
+      <p class="is-inline pl-3">{{product.part}} of {{product.total_parts}}</p>
     {% endif %}
-    <p>{{product.title}}</p>
-    <p>{{product.subtitle}}</p>
-    <details>
+    <p class="is-inline pl-3">{{product.title}} - </p>
+    <p class="is-inline">{{product.subtitle}}</p>
+    <p class="is-inline has-text-weight-semibold is-pulled-right {% if product.is_comped %}comped{% endif %}"><span class="has-text-weight-normal">Price: </span> {{product.price}}</p>
+    <details class="level-left pl-6">
       <p>{{product.description}}</p>
     </details>
-    <p {% if product.is_comped %}class="comped"{% endif %}>{{product.price}}</p>
+    
     {% if product.is_comped %}<p>Included with Comp</p>{% endif %}
 
   </div>
