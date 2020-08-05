@@ -6,12 +6,15 @@
 
 {% block card_content %}
 <p>Choose your {{section}}!</p>
+<!-- This line below needs to be copied and changed up for each section on the new register_products.html -->
+<p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
 {% for category in categories %}
   <h3 class="title">{{category.name}}</h3>
+
   <!-- Starting slots For category {{category.name}}  -->
   {% for slot in category.slots %}
     <h4 class="title is-4">{{slot.name}}</h4>
-    <div class="columns is-multiline">
+    <div class="">
       <!-- Starting products For category {{category.name}} slot {{slot.name}} -->
       {% for product in slot.products %}
         {% include 'registration/product_card.html' %}
@@ -20,7 +23,7 @@
   {% endfor %}
   
   <!-- Starting products For category {{category.name}}  -->
-  <div class="columns is-multiline">
+  <div class="">
   {% for product in category.products %}
     {% include 'registration/product_card.html' %}
   {% endfor %}
