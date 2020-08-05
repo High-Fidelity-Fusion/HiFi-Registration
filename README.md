@@ -16,15 +16,16 @@ https://docs.google.com/document/d/1qdJ-26sYB21YMrn7ydTUSXP6XCWlehiwo_vOs1cUhM0/
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html#python-django-deploy
 
 ### First Time Setup
-Change directories into `./hifireg`.
+Change directory into `./hifireg`.
 - This is where all deployment actions take place.
 - Anything above this directory is invisible to deployment.
 
 Run `eb init -p python-3.7 hifireg` selecting reasonable options (probably the defaults):
-- On your first run of `eb` you'll need to create some EB credentials.
+- On your first run of `eb` you'll need to create AWS credentials.
+  (https://console.aws.amazon.com/iam/home?region=us-west-2#/security_credentials)
 - Choose the default region.
 - Setup SSH...
-- Create a local keypair with an identifiable name.
+- Create a local keypair.
 
 Run `eb create hifireg-env`.
 
@@ -34,25 +35,26 @@ Run `eb status`
 
 Run `eb setenv SETTINGS_SECRET_URL="${SETTINGS_SECRET_URL}"`
 - This will set the URL on the environment for your "secret.py" settings.
+- Shortcut target: `make deploy-env`
 
 Deploying:
 - Return to the top level directory and run `make deploy`
   (This task builds all of the necessary styling and bootstrapping for deploying)
-- If you haven't modified style, email, or pipenv dependencies, you can run `make deploy-simple` for future deployments.
 - Check out the running instance by running: `make deploy-open`
 
+### Setting up IAM Deployer
+You may choose to setup a non-root account with access to your AWS console:
+https://console.aws.amazon.com/iam/home#/home
+
 ### Adding a New Deployer
-Additional deployment machines can be setup by running `eb init`:
-- A helper task has been added to make: `make deploy-init`
-- (The instructions are un-tested).
+Additional deployment machines can be setup:
+- Change directory to `./hifireg` and run `eb init`.
+- New AWS access keys will need to be created or distributed to each new deployer.
 - Since the application and environment are already setup, you shoudn't have to re-create them.
-- New AWS access keys will need to be created for each new deployer.
-  (https://console.aws.amazon.com/iam/home?region=us-west-2#/security_credentials)
-- New SSH keys (generated locally) will need to be created for each new deployer.
 
 ### Setting up Domain name
 Add a CNAME record mapping your subdomain 
-(e.g. beta.highfidelityfusion.com) 
+(e.g. alpha.highfidelityfusion.com) 
 to the name of your elastic beanstalk instance
 (e.g. hifireg-env.eba-blahblah.us-west-2.elasticbeanstalk.com).
 
