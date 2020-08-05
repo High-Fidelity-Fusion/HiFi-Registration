@@ -37,6 +37,10 @@ $fullhd-enabled: false;
 // $input-border-color: transparent;
 // $input-shadow: none;
 
+$scheme-invert: black;
+$box-shadow: 0.3em 0.3em 0.3em 0.002em rgba($scheme-invert, 0.25), 0 0px 0 1.2px rgba($scheme-invert, 0.2);
+$box-padding: .75rem;
+$box-color: rgb(19, 20, 20);
 
 // TODO: only import modules that are  used
 @import "../../bulma/bulma.sass";
@@ -48,6 +52,7 @@ body {
     min-height: 100vh;
     flex-direction: column;
 }
+
 main {
     flex: 1 0 auto;
 }
@@ -169,8 +174,34 @@ main {
     .comped {
         text-decoration: line-through;
     }
+
 }
 
 .hidden-div {
     display: none;
+}
+
+input[type="checkbox"].big-checkbox {
+    -webkit-appearance:none;
+    width:20px;
+    height:20px;
+    background:white;
+    border:1px solid #555;
+    vertical-align: text-top;
+}
+
+input[type='checkbox']:checked {
+    background: rgb(166, 169, 177);
+}
+
+input[type='checkbox']:checked:after {
+    content: "✓";
+    font-size: 15px;
+    padding-left: 4px;
+    font-family: 'Zapf Dingbats';
+    vertical-align: middle;
+}
+
+.sectionHead {
+    color: black;
 }
