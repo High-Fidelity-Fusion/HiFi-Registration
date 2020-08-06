@@ -45,6 +45,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         self.items = OrderItem.objects.filter(order__registration__user=request.user).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
         return super().get(request)
 
+
 class OrdersView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/orders.html'
 

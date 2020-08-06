@@ -2,12 +2,13 @@
 
 {% block card_content %}
 
-<p>Hi, {{ view.request.user.first_name }}!</p>
-<p>Thanks for logging in.</p>
-{% include "utils/form_fields.html" %}
+<div class="field">
+    <p>Hi, {{ view.request.user.first_name }}!</p>
+    <p>Thanks for logging in.</p>
+</div>
 
 <div class="buttons">
-    {% include "utils/button.html" with button=view.register_button %}
+    {% include "utils/button.html" with button=view.register_button class="is-primary" %}
     {% include "utils/button.html" with button=view.account_button %}
     {% include "utils/button.html" with button=view.invoices_button %}
 </div>

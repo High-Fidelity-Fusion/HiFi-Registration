@@ -6,6 +6,6 @@
 <button type="button" onclick="window.location.href = '{% url button.link %}';"
 {% endif %}
 
-class="button is-link" {{ attrs|default:button.attrs|default:"" }}>
+class="button {{ class|default:"" }}" {{ attrs|default:button.attrs|default:"" }}>
     {{ content|default:button.content }}
 </button>

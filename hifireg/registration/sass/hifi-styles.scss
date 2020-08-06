@@ -4,9 +4,13 @@
 // @import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
 
 // Set your brand colors
+$hifi-lettering: #F7F3EB; 
+$light-teal: #00FFFF;
+$hifi-dark-teal: #00C5C5;
+$hifi-dark: #211827;
 
 // $purple: #8A4D76;
-$pink: #FA7C91;
+// $pink: #FA7C91;
 // $brown: #757763;
 // $beige-light: #D0D1CD;
 // $beige-lighter: #EFF0EB;
@@ -16,7 +20,7 @@ $pink: #FA7C91;
 // $family-sans-serif: "Nunito", sans-serif;
 // $grey-dark: $brown;
 // $grey-light: $beige-light;
-// $primary: $purple;
+$primary: $light-teal;
 // $link: $pink;
 // $background: $pink;
 $widescreen-enabled: false;
