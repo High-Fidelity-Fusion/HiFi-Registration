@@ -11,42 +11,37 @@ The Human Economic Negotiating Adjuster
 
 <form method="post">
     {% csrf_token %}
+    
+    <div class="notification is-primary is-light has text-centered content">
+        <p class="title is-5">Welcome to your accessible price finder!</>
+        <ul>
+            <li>Below is the proposed discounted price for your order.</li>
+            <li>Please use the arrows to adjust to your personal comfort level.</li>
+            <li>The least you may pay is $<span id="min_price"></span>.</li>
+            <li>If you need to start over, just refresh the page.</li>
+        </ul>
+    </div>
 
-    <p>Let's find your accessible price!</p>
-    <p>Your order total is $<span id="max_price"></span>.</p>
-    <p>Your order is eligible for up to $<span id="ap_eligible_amount"></span> in accessible pricing discounts.</p>
-    <p>The least you might pay is $<span id="min_price"></span>.</p>
-    <br>
-
-    <p class="notification is-primary is-light has-text-centered" id="quote_box">
-        Use the controls below to tell me what you think of each price and together. 
-        We will find something that works for you.
-        <br>
-        If you want to start over, just refresh the page.
-    </p>
-
-    <div class="level notification">
-        <p class="is-size-5 has-text-success">
-            <span class="tag is-success">MIN</span><br>
-            <span id="search_min">$</span>
+    <div class="level is-mobile notification">
+        <p class="has-text-centered" onclick=PriceDecrease() style="cursor: pointer;">
+            <i class="fa fa-caret-left fa-4x" style="color: #00C5C5;" aria-hidden="true"></i><br>
+            Less<br>
+            (Min <span id="search_min">$</span>)
         </p>
+
         <p id="test_price" class="is-size-3">$0</p>
-        <p class="is-size-5 has-text-danger">
-            <span class="tag is-danger">MAX</span><br>
-            <span id="search_max">$</span>
+
+        <p class="has-text-centered" onclick=PriceIncrease() style="cursor: pointer;">
+            <i class="fa fa-caret-right fa-4x" style="color: #00C5C5;" aria-hidden="true"></i><br>
+            More<br>
+            (Max <span id="search_max">$</span>)
         </p>
     </div>
+
     <input type="hidden" id="price_submit" name="price_submit" value="0">
 
-    <div class="buttons level">
-        <button type="button" class="button is-danger" onclick=PriceDecrease()>I could not pay this price.</button>
-        <button type="submit" class="button is-link" name="ready_to_pay" id="ready_to_pay" title="Find your price first!" disabled>I'm ready to pay!</button>
-        <button type="button" class="button is-success" onclick=PriceIncrease()>I could comfortably pay this price.</button>
-    </div>
-
-    <div class="buttons">
-        {% include "utils/button.html" with button=view.previous_button %}
-    </div>
+    {% include "utils/button.html" with button=view.previous_button %}
+    <button type="submit" class="button is-primary is-pulled-right" name="ready_to_pay" id="ready_to_pay" title="Find your price first!" disabled>I'm ready to pay!</button>
 </form>
 
 <script>
@@ -69,9 +64,7 @@ The Human Economic Negotiating Adjuster
 
     /* Initialize DOM elements */
     window.onload = function() {
-        document.getElementById("max_price").textContent = max_price;
         document.getElementById("min_price").textContent = min_price;
-        document.getElementById("ap_eligible_amount").textContent = ap_eligible_amount;
 
         SeekPrice(); // Shows initial middle value
         min_element.textContent = "$" + min_price;
@@ -82,13 +75,11 @@ The Human Economic Negotiating Adjuster
     function PriceDecrease() {
         search_max = search_mid;
         SeekPrice(-1);
-        //LoadQuote();
     }
 
     function PriceIncrease() {
         search_min = search_mid;
         SeekPrice(1);
-        //LoadQuote();
     }
 
     /* Search algorithm setup and helper functions */
@@ -147,27 +138,6 @@ The Human Economic Negotiating Adjuster
             price_element.textContent = "$" + display_mid;
             await new Promise(r => setTimeout(r, 10));
         }
-    }
-
-    /* Quote Box (currently disabled) */
-    var quote_element = document.getElementById("quote_box");
-    var quote_index = 0;
-    var quote_list = ["Looking forward to seeing you!",
-                      "Make sure you pick a price that you're totally comfortable with.",
-                      "I can't wait to dance with you!",
-                      "You are amazing!",
-                      "<3 <3 <3",
-                      "Zach May will pun for you.",
-                      "See your cute face on the dance floor.",
-                      "We can't wait to hug you (with consent).",
-                      "Not quite the right price? Zach May punderstands.",
-                      "So excite. Much affordable price. Yasss.",
-                      "Heckin' yeah!",
-                      ];
-
-    function LoadQuote() {
-        quote_element.textContent = quote_list[quote_index];
-        quote_index = (quote_index + 1) % quote_list.length;
     }
 
 </script>
