@@ -23,18 +23,18 @@ The Human Economic Negotiating Adjuster
     </div>
 
     <div class="level is-mobile notification">
-        <p class="has-text-centered" onclick=PriceDecrease() style="cursor: pointer;">
+        <p class="has-text-left" onclick=PriceDecrease() style="cursor: pointer;">
             <i class="fa fa-caret-left fa-4x" style="color: #00C5C5;" aria-hidden="true"></i><br>
             Less<br>
-            (Min <span id="search_min">$</span>)
+            <strong>(Min <span id="search_min">$</span>)</strong>
         </p>
 
         <p id="test_price" class="is-size-3">$0</p>
 
-        <p class="has-text-centered" onclick=PriceIncrease() style="cursor: pointer;">
+        <p class="has-text-right" onclick=PriceIncrease() style="cursor: pointer;">
             <i class="fa fa-caret-right fa-4x" style="color: #00C5C5;" aria-hidden="true"></i><br>
             More<br>
-            (Max <span id="search_max">$</span>)
+            <strong>(Max <span id="search_max">$</span>)</strong>
         </p>
     </div>
 
@@ -94,7 +94,7 @@ The Human Economic Negotiating Adjuster
     }
 
     function make_price_list() {
-        if(ap_eligible_amount == 0) {
+        if (ap_eligible_amount == 0) {
             SetPriceFound();
             return [max_price];
         }
@@ -108,16 +108,24 @@ The Human Economic Negotiating Adjuster
     
     function SeekPrice(step_sign) {
         if (!price_found) {
-            search_mid = Math.floor((search_min + search_max) / 2);
-            if(search_mid == search_min && search_mid == search_max - 1) {
+            let next_mid = Math.floor((search_min + search_max) / 2);
+            if (next_mid == search_mid) { // upper stop condition, mid can no go higher due to floor function
+                search_mid += step_sign; // force a single step since we haven't incremented
                 SetPriceFound();
+            } else {
+                search_mid = next_mid; // next_mid is not-zero, so set it
+                if (search_mid == search_min) { // lower stop condition, search has reached minimum
+                    SetPriceFound();
+                }
             }
-        } else {
+            if(price_found) { // if price is has now been found, reset min/max search range for display
+                search_min = 0;
+                search_max = price_list.length - 1;
+            }
+        } else { // once price is found, make single steps only
             search_mid += step_sign;
             search_mid = Math.min(search_mid, price_list.length - 1);
             search_mid = Math.max(search_mid, 0);
-            search_min = 0;
-            search_max = price_list.length - 1;
         }
         min_element.textContent = "$" + price_list[search_min];
         max_element.textContent = "$" + price_list[search_max];
