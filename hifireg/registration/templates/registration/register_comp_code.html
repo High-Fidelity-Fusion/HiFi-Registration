@@ -8,9 +8,8 @@
 
   {% include "utils/form_fields.html" %}
 
-  <div class="control">
-    <button type="submit" name='previous' class="button is-link">Previous</button>
-    <button type="submit" name='next' class="button is-link">Next</button>
-  </div>
+  <a class="button" href="{% url 'index' %}">Previous</a>
+  <button type="submit" name='next' class="button is-primary is-pulled-right">Next</button>
+
 </form>
 {% endblock %}
