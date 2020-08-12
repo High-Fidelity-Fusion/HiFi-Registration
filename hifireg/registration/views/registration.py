@@ -146,18 +146,25 @@ class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_comp_code.html', {'form': form})
 
 
-class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
+class RegisterPolicyView(DispatchMixin, UpdateView):
     template_name = 'registration/register_policy.html'
     model = Registration
     form_class = RegisterPolicyForm
     success_url = reverse_lazy('register_products')
     previous_url = 'index'
 
-    def get_object(self):
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.registration = Registration.objects.get(user=request.user)
+        except ObjectDoesNotExist:
+            self.registration = Registration(user=request.user)
+            self.registration.save()
+
+    def get_object(self, request):
         return self.registration
 
 
-class RegisterAllProductsView(PolicyRequiredMixin, DispatchMixin, TemplateView):
+class RegisterAllProductsView(PolicyRequiredMixin, DispatchMixin, View):
     template_name = 'registration/register_products.html'
     next_button = LinkButton('register_subtotal', 'Next')
 
@@ -174,6 +181,24 @@ class RegisterAllProductsView(PolicyRequiredMixin, DispatchMixin, TemplateView):
             'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, request.user),
             'merch': get_context_for_product_selection(ProductCategory.MERCH, request.user)
         }
+
+    def post(self, request):
+        form = RegCompCodeForm(request.POST)
+
+        with transaction.atomic():
+            CompCode.objects.select_for_update()
+            if form.is_valid():
+                if form.cleaned_data.get('code'):
+                    self.registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
+                    self.registration.order_set.filter(session__isnull=False).delete()
+                    self.registration.save()
+
+                return redirect('register_subtotal')
+
+    def get(self, request):
+        form = RegCompCodeForm(initial={'code': self.registration.comp_code.code if self.registration.comp_code else ''})
+        self.extra_context['form'] = form
+        return render(request, 'registration/register_products.html', self.extra_context)
 
 
 class AddItemView(FunctionBasedView, View):
