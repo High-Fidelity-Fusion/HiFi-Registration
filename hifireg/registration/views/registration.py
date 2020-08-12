@@ -150,11 +150,30 @@ class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
     template_name = 'registration/register_policy.html'
     model = Registration
     form_class = RegisterPolicyForm
-    success_url = reverse_lazy('register_ticket_selection')
-    previous_url = 'register_comp_code'
+    success_url = reverse_lazy('register_products')
+    previous_url = 'index'
 
     def get_object(self):
         return self.registration
+
+
+class RegisterAllProductsView(PolicyRequiredMixin, DispatchMixin, TemplateView):
+    template_name = 'registration/register_products.html'
+    next_button = LinkButton('register_subtotal', 'Next')
+
+
+    def dispatch_mixin(self, request):
+        order, created = Order.objects.update_or_create(
+            registration=self.registration,
+            session__isnull=False, 
+            defaults={'session': Session.objects.get(pk=request.session.session_key)})
+        
+        self.extra_context = {
+            'dance': get_context_for_product_selection(ProductCategory.DANCE, request.user),
+            'class': get_context_for_product_selection(ProductCategory.CLASS, request.user),
+            'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, request.user),
+            'merch': get_context_for_product_selection(ProductCategory.MERCH, request.user)
+        }
 
 
 class AddItemView(FunctionBasedView, View):

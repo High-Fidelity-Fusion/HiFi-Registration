@@ -24,6 +24,7 @@ urlpatterns = [
     path('register/policy/', views.RegisterPolicyView.as_view(), name='register_policy'),
 
     # must have order:
+    path('register/selection/', views.RegisterAllProductsView.as_view(), name='register_products'),
     path('register/order/', RedirectView.as_view(url=reverse_lazy('register_ticket_selection')), name='order'), # redirects to order creation view
     path('ajax/add_item/', views.AddItemView.as_view(), name='add_item'),
     path('ajax/remove_item/', views.RemoveItemView.as_view(), name='remove_item'),
