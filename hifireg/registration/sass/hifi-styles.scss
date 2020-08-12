@@ -190,11 +190,11 @@ input[type="checkbox"].big-checkbox {
     vertical-align: text-top;
 }
 
-input[type='checkbox']:checked {
+input[type='checkbox'].big-checkbox:checked {
     background: rgb(166, 169, 177);
 }
 
-input[type='checkbox']:checked:after {
+input[type='checkbox'].big-checkbox:checked:after {
     content: "✓";
     font-size: 15px;
     padding-left: 4px;
