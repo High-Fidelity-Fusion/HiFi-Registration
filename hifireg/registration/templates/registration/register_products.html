@@ -5,6 +5,15 @@
 {% endblock %}
 
 {% block card_content %}
+<h1>Event Selection and Pricing</h1>
+<p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Repellendus temporibus numquam pariatur atque, aut saepe culpa quos reiciendis. Fuga perspiciatis ullam eos minus neque quam maiores quos rerum reprehenderit quaerat.</p>
+
+<form method="post">
+  {% csrf_token %}
+  {% include "utils/form_fields.html" %}
+  <a class="button" href="{% url 'index' %}">Previous</a>
+  <button type="submit" name='next' class="button is-primary is-pulled-right">Next</button>
+</form>
 
 <p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
 
