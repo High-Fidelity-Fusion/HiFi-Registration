@@ -1,14 +1,5 @@
-{% extends "registration/base.html" %}
 
-{% block countdown %}
-{% include 'registration/countdown_widget.html' %}
-{% endblock %}
-
-{% block card_content %}
-<p>Choose your {{section}}!</p>
-<!-- This line below needs to be copied and changed up for each section on the new register_products.html -->
-<p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
-{% for category in categories %}
+{% for category in selection_source.categories %}
   <h3 class="title">{{category.name}}</h3>
 
   <!-- Starting slots For category {{category.name}}  -->
@@ -30,16 +21,5 @@
   </div>
 {% endfor %}
 
-<form method="post" novalidate>
-  {% csrf_token %}
 
-  <div class="control">
-    {% include "utils/button.html" with button=view.previous_button %}
-    {% include "utils/button.html" with button=view.next_button %}
-  </div>
-</form>
 
-{% load static %}
-<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-<script src="{% static 'scripts/ticket_selection.js' %}"></script>
-{% endblock %}

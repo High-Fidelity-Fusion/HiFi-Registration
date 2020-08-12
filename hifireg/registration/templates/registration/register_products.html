@@ -1,0 +1,38 @@
+{% extends "registration/base.html" %}
+
+{% block countdown %}
+{% include 'registration/countdown_widget.html' %}
+{% endblock %}
+
+{% block card_content %}
+
+<p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
+
+{% include 'registration/register_selection.html' with selection_source=dance only %}
+
+<p class="has-text-weight-bold sectionHead is-size-5">2. Select your Workshops:</p>
+
+{% include 'registration/register_selection.html' with selection_source=class only %}
+
+<p class="has-text-weight-bold sectionHead is-size-5">3. Add on a Showcase:</p>
+
+{% include 'registration/register_selection.html' with selection_source=showcase only %}
+
+<p class="has-text-weight-bold sectionHead is-size-5">4. Grab some Swag:</p>
+
+{% include 'registration/register_selection.html' with selection_source=merch only %}
+
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="control">
+    {% include "utils/button.html" with button=view.next_button %}
+  </div>
+</form>
+
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src="{% static 'scripts/ticket_selection.js' %}"></script>
+{% endblock %}
+
