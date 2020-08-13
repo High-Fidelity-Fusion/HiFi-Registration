@@ -100,90 +100,80 @@ $(".product-checkbox").change(function() {
 
 // CURRENTLY NOT SUPPORTED: Multi-quantity products with multiple parts across slots
 
-$(".product-increment").click(function() {
-  var thisButton = this;
-  var parent = $(thisButton).parent().parent();
-  var productId = parent[0].dataset.product;
+$(".quantity-input").change(function() {
+  var thisSelector = this;
   $('.product-card').addClass('call-in-progress');
+  var parent = $(thisSelector).parent().parent();
   parent.addClass('loading');
-
-  $.ajax({
-    url: '/registration/ajax/add_item/',
-    data: {
-      'product': productId,
-      'increment': 1
-    },
-    dataType: 'json',
-    success: function (data) {
-      console.log(data);
-      if (data.error) {
-        location.reload();
-
-      } else if (data.success) {
-        resetCountDown();
-        var slots = parent[0].dataset.slots.split(',');
-        slots.forEach(slot => {
-          var conflicts = $(`.slot-${slot}`).not(parent);
-          conflicts.addClass(`conflict-${slot}`);
-        });
-        var quantity = parent.find('.quantity-claimed');
-        quantity.text(parseInt(quantity.text()) + 1);
-        parent.removeClass('minimum maximum');
-        parent.addClass('claimed');
-        if (quantity.text() == parent[0].dataset.max) {
-          parent.addClass('maximum')
-        }
-
-      } else {
-        parent.addClass('unavailable')
-      }
-
-      $('.product-card').removeClass('call-in-progress');
-      parent.removeClass('loading');
-    },
-    error: function (xhr, status, error) {
-      location.reload();
-    }
-  });
-});
-
-$(".product-decrement").click(function() {
-  var thisButton = this;
-  var parent = $(thisButton).parent().parent();
   var productId = parent[0].dataset.product;
-  $('.product-card').addClass('call-in-progress');
-  parent.addClass('loading');
+  var oldQuantity = parseInt(thisSelector.dataset.quantity);
+  var newQuantity = parseInt(thisSelector.value);
+  var increment = newQuantity - oldQuantity;
+  thisSelector.dataset.quantity = thisSelector.value;
+  console.log("Incrementing by " + increment);
+  if (increment > 0) {
+    $.ajax({
+      url: '/registration/ajax/add_item/',
+      data: {
+        'product': productId,
+        'increment': increment
+      },
+      dataType: 'json',
+      success: function (data) {
+        console.log(data);
+        if (data.error) {
+          location.reload();
 
-  $.ajax({
-    url: '/registration/ajax/remove_item/',
-    data: {
-      'product': productId,
-      'decrement': 1
-    },
-    dataType: 'json',
-    success: function (data) {
-      if (data.error) {
-        location.reload();
-      } else {
-        resetCountDown();
-        var slots = parent[0].dataset.slots.split(',');
-        slots.forEach(slot => {
-          var conflicts = $(`.conflict-${slot}`);
-          conflicts.removeClass(`conflict-${slot}`);
-        });
-        var quantity = parent.find('.quantity-claimed');
-        quantity.text(parseInt(quantity.text()) - 1);
-        parent.removeClass('minimum maximum');
-        if (quantity.text() == '0') {
-          parent.addClass('minimum').removeClass('claimed');
+        } else if (data.success) {
+          resetCountDown();
+          var slots = parent[0].dataset.slots.split(',');
+          slots.forEach(slot => {
+            var conflicts = $(`.slot-${slot}`).not(parent);
+            conflicts.addClass(`conflict-${slot}`);
+          });
+          parent.addClass('claimed');
+
+        } else {
+          location.reload();
         }
 
         $('.product-card').removeClass('call-in-progress');
         parent.removeClass('loading');
+      },
+      error: function (xhr, status, error) {
+        location.reload();
       }
-    },
-    error: function (xhr, status, error) {
-      location.reload();
-    }
-  });
+    });
+  }
+  if (increment < 0) {
+    $.ajax({
+      url: '/registration/ajax/remove_item/',
+      data: {
+        'product': productId,
+        'decrement': increment * -1
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.error) {
+          location.reload();
+        } else {
+          resetCountDown();
+          var slots = parent[0].dataset.slots.split(',');
+          slots.forEach(slot => {
+            var conflicts = $(`.conflict-${slot}`);
+            conflicts.removeClass(`conflict-${slot}`);
+          });
+          if (newQuantity == '0') {
+            parent.removeClass('claimed');
+          }
+
+          $('.product-card').removeClass('call-in-progress');
+          parent.removeClass('loading');
+        }
+      },
+      error: function (xhr, status, error) {
+        location.reload();
+      }
+    });
+  }
 });

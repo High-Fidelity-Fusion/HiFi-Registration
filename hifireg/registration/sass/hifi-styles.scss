@@ -129,10 +129,6 @@ main {
     }
 
     .quantity-selector {
-        input {
-            width: auto;
-        }
-
         * {
             display: inline-flex;
         }
@@ -153,22 +149,6 @@ main {
 
     &.call-in-progress {
         pointer-events: none;
-    }
-
-    &.minimum {
-        .product-decrement {
-            border-color: gray;
-            background: gray;
-            pointer-events: none;
-        }
-    }
-
-    &.maximum {
-        .product-increment {
-            border-color: gray;
-            background: gray;
-            pointer-events: none;
-        }
     }
 
     .comped {

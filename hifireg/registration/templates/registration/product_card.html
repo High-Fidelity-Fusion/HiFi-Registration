@@ -17,9 +17,11 @@
     {% else %}
     <p>{{product.quantity_purchased}} already purchased.</p>
     <div class="quantity-selector">
-      <button class="button is-rounded product-decrement">-</button>
-      <p class="quantity-claimed">{{product.quantity_claimed}}</p>
-      <button class="button is-rounded product-increment">+</button>
+      <select class="quantity-input" data-quantity="{{ product.quantity_claimed }}">
+        {% for i in product.quantity_range %}
+        <option value="{{ i }}" {% if i == product.quantity_claimed %}selected="selected"{% endif %}>{{ i }}</option>
+        {% endfor %}
+      </select>
       <div class="loader"></div>
     </div>
     {% endif %}
