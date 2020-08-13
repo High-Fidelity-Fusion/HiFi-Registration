@@ -1,4 +1,5 @@
 {% extends "registration/base.html" %}
+{% load special_sauce %}
 
 {% block countdown %}
 {% include 'registration/countdown_widget.html' %}
@@ -10,35 +11,37 @@
 
 <form method="post">
   {% csrf_token %}
+
   {% include "utils/form_fields.html" %}
-  <a class="button" href="{% url 'index' %}">Previous</a>
-  <button type="submit" name='next' class="button is-primary is-pulled-right">Next</button>
-</form>
 
-<p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
+  <p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
 
-{% include 'registration/register_selection.html' with selection_source=dance only %}
+  {% include 'registration/register_selection.html' with selection_source=dance only %}
 
-<p class="has-text-weight-bold sectionHead is-size-5">2. Select your Workshops:</p>
+  <p class="has-text-weight-bold sectionHead is-size-5">2. Select your Workshops:</p>
 
-{% include 'registration/register_selection.html' with selection_source=class only %}
+  {% include 'registration/register_selection.html' with selection_source=class only %}
 
-<p class="has-text-weight-bold sectionHead is-size-5">3. Add on a Showcase:</p>
+  <p class="has-text-weight-bold sectionHead is-size-5">3. Add on a Showcase:</p>
 
-{% include 'registration/register_selection.html' with selection_source=showcase only %}
+  {% include 'registration/register_selection.html' with selection_source=showcase only %}
 
-<p class="has-text-weight-bold sectionHead is-size-5">4. Grab some Swag:</p>
+  <p class="has-text-weight-bold sectionHead is-size-5">4. Grab some Swag:</p>
 
-{% include 'registration/register_selection.html' with selection_source=merch only %}
+  {% include 'registration/register_selection.html' with selection_source=merch only %}
 
+  <p class="title">Your order total is {{ view.order.original_price|dollars }}</p>
 
-<form method="post" novalidate>
-  {% csrf_token %}
-
-  <div class="control">
-    {% include "utils/button.html" with button=view.next_button %}
+  <div class="buttons">
+    {% if view.ap_available %}
+    {% include "utils/button.html" with button=view.ap_yes_button content="AP Please" %}
+    {% else %}
+    {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP is Currently Unavailable 😢" %}
+    {% endif %}
+    {% include "utils/button.html" with button=view.ap_no_button content="Next"%}
   </div>
 </form>
+
 
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
