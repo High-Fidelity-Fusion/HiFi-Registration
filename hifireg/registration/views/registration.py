@@ -5,14 +5,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, UpdateView
 from django.views import View
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-from registration.forms import BetaPasswordForm, RegCompCodeForm, RegPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+
+from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 from registration.models.helpers import with_is_paid
@@ -145,21 +146,15 @@ class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
         return render(request, 'registration/register_comp_code.html', {'form': form})
 
 
-class RegisterPolicyView(RegistrationRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                if self.registration.comp_code is None:
-                    return redirect('register_comp_code')
-                else:
-                    return redirect('index')
-            form = RegPolicyForm(request.POST, instance=self.registration)
-            if form.is_valid():
-                form.save()
-                return redirect('register_ticket_selection')
-        else:
-            form = RegPolicyForm(instance=self.registration)
-        return render(request, 'registration/register_policy.html', {'form': form})
+class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
+    template_name = 'registration/register_policy.html'
+    model = Registration
+    form_class = RegisterPolicyForm
+    success_url = reverse_lazy('register_ticket_selection')
+    previous_url = 'register_comp_code'
+
+    def get_object(self):
+        return self.registration
 
 
 class AddItemView(FunctionBasedView, View):
