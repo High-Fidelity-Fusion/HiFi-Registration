@@ -18,7 +18,7 @@ from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicy
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 from registration.models.helpers import with_is_paid
 
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
 from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
 from .helpers import get_context_for_product_selection
@@ -37,7 +37,7 @@ class BetaLoginView(FormView):
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
-    register_button = LinkButton('register_comp_code', 'Register')
+    register_button = LinkButton('register_policy', 'Register')
     account_button = LinkButton('view_user', 'Account')
     invoices_button = LinkButton('invoices', 'Pay Other Invoices')
     template_name = 'registration/index.html'
@@ -107,46 +107,7 @@ class PayInvoicesSuccessView(RegistrationRequiredMixin, FunctionBasedView, View)
         return redirect(reverse('invoices') + '?amount_paid=' + str(payment.amount))
 
 
-class RegisterCompCodeView(LoginRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        try:
-            registration = Registration.objects.get(user=request.user)
-        except ObjectDoesNotExist:
-            registration = Registration(user=request.user)
-            registration.save()
-
-        # Skip condition
-        if registration.comp_code is not None:
-            if registration.is_submitted:
-                return redirect('register_ticket_selection')
-            else:
-                return redirect('register_policy')
-
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('index')
-
-            form = RegCompCodeForm(request.POST)
-
-            with transaction.atomic():
-                CompCode.objects.select_for_update()
-                if form.is_valid():
-                    if form.cleaned_data.get('code'):
-                        registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
-                        registration.order_set.filter(session__isnull=False).delete()
-                        registration.save()
-
-                    if registration.is_submitted:
-                        return redirect('register_ticket_selection')
-                    else:
-                        return redirect('register_policy')
-
-        else:
-            form = RegCompCodeForm(initial={'code': registration.comp_code.code if registration.comp_code else ''})
-        return render(request, 'registration/register_comp_code.html', {'form': form})
-
-
-class RegisterPolicyView(DispatchMixin, UpdateView):
+class RegisterPolicyView(LoginRequiredMixin, DispatchMixin, UpdateView):
     template_name = 'registration/register_policy.html'
     model = Registration
     form_class = RegisterPolicyForm
@@ -164,41 +125,55 @@ class RegisterPolicyView(DispatchMixin, UpdateView):
         return self.registration
 
 
-class RegisterAllProductsView(PolicyRequiredMixin, DispatchMixin, View):
+class RegisterAllProductsView(CreateOrderMixin, FormView):
     template_name = 'registration/register_products.html'
-    next_button = LinkButton('register_subtotal', 'Next')
+    form_class = RegCompCodeForm
+    ap_yes_button = SubmitButton('claim_ap')
+    ap_no_button = SubmitButton('not_ap')
 
+    def get_success_url(self):
+        if self.ap_yes_button.name in self.request.POST:
+            if self.order.is_accessible_pricing or self.order.claim_accessible_pricing():
+                return reverse('register_accessible_pricing')
+            else:
+                # TODO: Not sure what to do if this happens
+                # self.ap_available = False
+                # return super().get(self.request)
+                return reverse('register_donate')
 
-    def dispatch_mixin(self, request):
-        order, created = Order.objects.update_or_create(
-            registration=self.registration,
-            session__isnull=False, 
-            defaults={'session': Session.objects.get(pk=request.session.session_key)})
-        
-        self.extra_context = {
-            'dance': get_context_for_product_selection(ProductCategory.DANCE, request.user),
-            'class': get_context_for_product_selection(ProductCategory.CLASS, request.user),
-            'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, request.user),
-            'merch': get_context_for_product_selection(ProductCategory.MERCH, request.user)
+        elif self.ap_no_button.name in self.request.POST:
+            self.order.revoke_accessible_pricing()
+            return reverse('register_donate')
+
+    def get_initial(self):
+        return {
+            'code': self.registration.comp_code.code if self.registration.comp_code else ''
         }
 
-    def post(self, request):
-        form = RegCompCodeForm(request.POST)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
+        self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds() or self.order.is_accessible_pricing
+        # TODO: remove this line, just for testing so you can see the button but if clicked it redirects from ap page to subtotal page because our ap account is 0
+        self.ap_available = True
+
+        context.update({
+            'dance': get_context_for_product_selection(ProductCategory.DANCE, self.request.user),
+            'class': get_context_for_product_selection(ProductCategory.CLASS, self.request.user),
+            'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, self.request.user),
+            'merch': get_context_for_product_selection(ProductCategory.MERCH, self.request.user)
+        })
+
+        return context
+
+    def form_valid(self, form):
         with transaction.atomic():
             CompCode.objects.select_for_update()
-            if form.is_valid():
-                if form.cleaned_data.get('code'):
-                    self.registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
-                    self.registration.order_set.filter(session__isnull=False).delete()
-                    self.registration.save()
-
-                return redirect('register_subtotal')
-
-    def get(self, request):
-        form = RegCompCodeForm(initial={'code': self.registration.comp_code.code if self.registration.comp_code else ''})
-        self.extra_context['form'] = form
-        return render(request, 'registration/register_products.html', self.extra_context)
+            if form.cleaned_data.get('code'):
+                self.registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
+                self.registration.order_set.filter(session__isnull=False).delete()
+                self.registration.save()
+        return super().form_valid(form)
 
 
 class AddItemView(FunctionBasedView, View):
@@ -231,90 +206,13 @@ class RemoveItemView(FunctionBasedView, View):
         return JsonResponse(data)
 
 
-class RegisterTicketSelectionView(PolicyRequiredMixin, DispatchMixin, TemplateView):
-    template_name = 'registration/register_selection.html'
-    previous_button = SubmitButton('Previous')
-    next_button = LinkButton('register_class_selection', 'Next')
-
-    def dispatch_mixin(self, request):
-        order, created = Order.objects.update_or_create(
-            registration=self.registration,
-            session__isnull=False, 
-            defaults={'session': Session.objects.get(pk=request.session.session_key)})
-
-        self.extra_context = get_context_for_product_selection(ProductCategory.DANCE, request.user)
-
-    def post(self, request):
-        if self.previous_button.name in request.POST:
-            if self.registration.is_submitted:
-                if self.registration.comp_code is None:
-                    return redirect('register_comp_code')
-                else:
-                    return redirect('index')
-            else:
-                return redirect('register_policy')
-
-
-
-class RegisterClassSelectionView(OrderRequiredMixin, DispatchMixin, TemplateView):
-    template_name = 'registration/register_selection.html'
-    previous_button = LinkButton('register_ticket_selection', 'Previous')
-    next_button = LinkButton('register_showcase', 'Next')
-
-    def dispatch_mixin(self, request):
-        self.extra_context = get_context_for_product_selection(ProductCategory.CLASS, request.user)
-
-
-class RegisterShowcaseView(OrderRequiredMixin, DispatchMixin, TemplateView):
-    template_name = 'registration/register_selection.html'
-    previous_button = LinkButton('register_class_selection', 'Previous')
-    next_button = LinkButton('register_merchandise', 'Next')
-
-    def dispatch_mixin(self, request):
-        self.extra_context = get_context_for_product_selection(ProductCategory.SHOWCASE, request.user)
-
-
-class RegisterMerchandiseView(OrderRequiredMixin, DispatchMixin, TemplateView):
-    template_name = 'registration/register_selection.html'
-    previous_button = LinkButton('register_showcase', 'Previous')
-    next_button = LinkButton('register_subtotal', 'Next')
-
-    def dispatch_mixin(self, request):
-        self.extra_context = get_context_for_product_selection(ProductCategory.MERCH, request.user)
-
-
-class RegisterSubtotal(NonZeroOrderRequiredMixin, TemplateView):
-    template_name = 'registration/register_subtotal.html'
-    previous_button = LinkButton('register_merchandise', 'Previous')
-    ap_yes_button = SubmitButton('claim_ap')
-    ap_no_button = SubmitButton('not_ap')
-
-    def get(self, request):
-        if self.order.ap_eligible_amount == 0:
-            return redirect('register_donate')
-        self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds() or self.order.is_accessible_pricing
-        self.ineligible_items = self.order.orderitem_set.filter(unit_price__gt=0, product__is_ap_eligible=False).order_by('product__category__section', 'product__category__rank', 'product__slots__rank')
-        return super().get(request)
-
-    def post(self, request):
-        if self.ap_yes_button.name in request.POST:
-            if self.order.is_accessible_pricing or self.order.claim_accessible_pricing():
-                return redirect('register_accessible_pricing')
-            else:
-                self.ap_available = False
-                return super().get(request)
-        elif self.ap_no_button.name in request.POST:
-            self.order.revoke_accessible_pricing()
-            return redirect('register_donate')
-
-
 class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, TemplateView):
     template_name = 'registration/register_accessible_pricing.html'
-    previous_button = LinkButton('register_subtotal', 'Previous')
+    previous_button = LinkButton('register_products', 'Previous')
 
     def dispatch_mixin(self, request):
         if not self.order.is_accessible_pricing:
-            return redirect('register_subtotal')
+            return redirect('register_products')
 
     def post(self, request):
         price = int(request.POST.get('price_submit', self.order.original_price))
@@ -328,7 +226,7 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
 class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBasedView, View):
     def dispatch_mixin(self, request):
         if self.order.is_accessible_pricing:
-            return redirect('register_subtotal')
+            return redirect('register_products')
 
     def fbv(self, request):
         order = Order.for_user(request.user)
@@ -336,8 +234,8 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
         if request.method == 'POST':
             if 'previous' in request.POST:
                 if self.order.ap_eligible_amount == 0:
-                    return redirect('register_merchandise')
-                return redirect('register_subtotal')
+                    return redirect('register_products')
+                return redirect('register_products')
             form = RegDonateForm(request.POST)
             if form.is_valid():
                 cd = form.cleaned_data
@@ -363,7 +261,7 @@ class RegisterVolunteerView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
         if request.method == 'POST':
             if 'previous' in request.POST:
                 if self.order.is_accessible_pricing:
-                    return redirect('register_subtotal')
+                    return redirect('register_products')
                 else:
                     return redirect('register_donate')
             form = RegVolunteerForm(request.POST, instance=self.registration)
@@ -467,7 +365,7 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
         elif self.previous_button.name in request.POST:
             if self.registration.is_submitted:
                 if self.order.is_accessible_pricing:
-                    return redirect('register_subtotal')
+                    return redirect('register_products')
                 else:
                     return redirect('register_donate')
             else:
