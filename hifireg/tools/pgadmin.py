@@ -3,9 +3,9 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from hifireg import settings
 
+database = settings.DATABASES['default']
 
 def get_db_conn(db_name):
-    database = settings.database
     conn = psycopg2.connect(
         host=database['HOST'],
         port=database['PORT'],
@@ -19,11 +19,11 @@ def get_simple_cursor():
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT) # turn off transactions
     return conn.cursor()
 
-def terminate_conn(db_name=settings.database['NAME']):
+def terminate_conn(db_name=database['NAME']):
     cursor = get_simple_cursor()
     cursor.execute(f"select pg_terminate_backend (pg_stat_activity.pid) from pg_stat_activity where pg_stat_activity.datname = '{db_name}'")
 
-def reset_db(db_name=settings.database['NAME']):
+def reset_db(db_name=database['NAME']):
     cursor = get_simple_cursor()
 
     if(settings.DEBUG != True):
