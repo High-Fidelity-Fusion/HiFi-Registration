@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'registration.apps.RegistrationConfig',
-    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
