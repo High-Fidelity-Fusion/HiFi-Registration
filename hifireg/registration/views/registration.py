@@ -154,8 +154,6 @@ class RegisterAllProductsView(CreateOrderMixin, FormView):
         context = super().get_context_data(**kwargs)
 
         self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds() or self.order.is_accessible_pricing
-        # TODO: remove this line, just for testing so you can see the button but if clicked it redirects from ap page to subtotal page because our ap account is 0
-        self.ap_available = True
 
         context.update({
             'dance': get_context_for_product_selection(ProductCategory.DANCE, self.request.user),
