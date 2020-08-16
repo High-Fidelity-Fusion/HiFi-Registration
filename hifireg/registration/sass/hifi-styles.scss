@@ -71,7 +71,14 @@ main {
 // Used for the heavy client-side logic on the product selection screens
 .product-card {
 
+    transition: box-shadow 0.1s;
+    cursor: pointer;
+    &:hover {
+        box-shadow: 0.3em 0.3em 0.3em 0.002em rgba($hifi-dark-teal, 0.25), 0 0px 0 1.2px rgba($hifi-dark-teal, 0.2);
+    }
+
     &[class*="conflict-"] {
+        cursor: default;
         background: lightgrey;
         pointer-events: none;
 
@@ -87,9 +94,14 @@ main {
             content: "This conflicts with something you've selected or purchased.";
             color: red;
         }
+
+        &:hover {
+            box-shadow: $box-shadow
+        }
     }
 
     &.unavailable {
+        cursor: default;
         background: lightgrey;
         pointer-events: none;
 
@@ -105,9 +117,14 @@ main {
             content: "This item is out of stock.";
             color: red;
         }
+
+        &:hover {
+            box-shadow: $box-shadow
+        }
     }
 
     &.max-purchased {
+        cursor: default;
         background: #B0C4DE;
         pointer-events: none;
 
@@ -122,10 +139,14 @@ main {
         .error:after {
             content: "You have already purchased the maximum amount.";
         }
+
+        &:hover {
+            box-shadow: $box-shadow
+        }
     }
 
     &.claimed {
-        background: #00d1b2;
+        background: $hifi-dark-teal;
     }
 
     .quantity-selector {
@@ -154,7 +175,6 @@ main {
     .comped {
         text-decoration: line-through;
     }
-
 }
 
 .hidden-div {
@@ -184,4 +204,47 @@ input[type='checkbox'].big-checkbox:checked:after {
 
 .sectionHead {
     color: black;
+}
+
+.comp-box {
+    margin: 1.5rem 0;
+    box-shadow: 0.2em 0.2em 0.3em 0.002em rgba($scheme-invert, 0.25);
+    background-color: rgb(240, 240, 240);
+}
+
+.comp-box .field {
+    align-items: center;
+}
+
+/* using :first-child here to match specificity of a Bulma rule we want to override */
+.comp-box label:first-child {
+    margin: 0 15px 0 0;
+    font-weight: normal;
+}
+
+.comp-box .control {
+    width: 300px;
+}
+
+hr.heavy-rule {
+    height: 15px;
+    background-color: black;
+    border-radius: 7.5px;
+}
+
+.choose-ap-box {
+    background-color: $hifi-lettering;
+    border-radius: 7px;
+}
+
+.choose-ap-box button {
+    box-shadow: 0.2em 0.2em 0.3em 0.002em rgba($scheme-invert, 0.25);
+}
+
+.subtotal-box {
+    border-top: 1px solid gray;
+}
+
+.subtotal-box label {
+    margin-right: 70px;
 }
