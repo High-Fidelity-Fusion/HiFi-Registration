@@ -114,14 +114,14 @@ class RegisterPolicyView(LoginRequiredMixin, DispatchMixin, UpdateView):
     success_url = reverse_lazy('register_products')
     previous_url = 'index'
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch_mixin(self, request):
         try:
             self.registration = Registration.objects.get(user=request.user)
         except ObjectDoesNotExist:
             self.registration = Registration(user=request.user)
             self.registration.save()
 
-    def get_object(self, request):
+    def get_object(self):
         return self.registration
 
 

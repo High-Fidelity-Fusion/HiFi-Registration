@@ -1,10 +1,8 @@
 
 {% for category in selection_source.categories %}
-  <h3 class="title">{{category.name}}</h3>
-
   <!-- Starting slots For category {{category.name}}  -->
   {% for slot in category.slots %}
-    <h4 class="title is-4">{{slot.name}}</h4>
+    <h4 class="title is-5 mt-5 pt-2 mb-0 is-uppercase">{{slot.name}}</h4>
     <div class="">
       <!-- Starting products For category {{category.name}} slot {{slot.name}} -->
       {% for product in slot.products %}

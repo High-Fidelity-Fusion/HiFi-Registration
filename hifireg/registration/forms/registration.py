@@ -95,7 +95,7 @@ class RegMiscForm(forms.ModelForm):
 
 
 class RegCompCodeForm(forms.Form):
-    code = forms.CharField(label='If you have a Comp Code for a free ticket, enter it here:', max_length=CompCodeHelper.CODE_LENGTH, required=False)
+    code = forms.CharField(label='If so, please enter your comp code here:', max_length=CompCodeHelper.CODE_LENGTH, required=False)
 
     def clean(self):
         code = self.cleaned_data.get('code')

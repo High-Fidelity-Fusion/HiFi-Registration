@@ -6,40 +6,81 @@
 {% endblock %}
 
 {% block card_content %}
-<h1>Event Selection and Pricing</h1>
-<p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Repellendus temporibus numquam pariatur atque, aut saepe culpa quos reiciendis. Fuga perspiciatis ullam eos minus neque quam maiores quos rerum reprehenderit quaerat.</p>
+<h1 class="title">Event Selection and Pricing</h1>
+
+<p>Dances, Classes, and more! On this page, you may choose ala carte what you'd like to attend
+  during the weekend. If you have any questions, feel free to contact us.</p>
 
 <form method="post">
   {% csrf_token %}
 
-  {% include "utils/form_fields.html" %}
+  <div class="box comp-box">
+    <p>Are you a Volunteer or Event Partner?</p>
+    {% include "utils/form_fields.html" with field_classes="is-horizontal" %}
+  </div>
 
-  <p class="has-text-weight-bold sectionHead is-size-5">1. Let's get started! Select your dances:</p>
+  <h2 class="has-text-weight-bold sectionHead is-size-5 mt-6">1. Let's get started! Select your dances:</h2>
 
   {% include 'registration/register_selection.html' with selection_source=dance only %}
 
-  <p class="has-text-weight-bold sectionHead is-size-5">2. Select your Workshops:</p>
+  <hr class="heavy-rule">
+
+  <h2 class="has-text-weight-bold sectionHead is-size-5 mt-5">2. Select your Workshops:</h2>
 
   {% include 'registration/register_selection.html' with selection_source=class only %}
 
-  <p class="has-text-weight-bold sectionHead is-size-5">3. Add on a Showcase:</p>
+  <hr class="heavy-rule">
+
+  <h2 class="has-text-weight-bold sectionHead is-size-5 mt-5">3. Add on a Showcase:</h2>
+
+  <p>Do you plan on taking part in the Showcare division? If not, you may skip this question.</p>
+
+  <p class="my-3">
+    <input id="showcase-checkbox" class="big-checkbox" type="checkbox">
+    <label for="showcase-checkbox">Yep! Sign me up!</label>
+  </p>
+
+  <p>
+    Please add your amount here for the show
+    <input type="text" class="is-pulled-right">
+  </p>
 
   {% include 'registration/register_selection.html' with selection_source=showcase only %}
 
-  <p class="has-text-weight-bold sectionHead is-size-5">4. Grab some Swag:</p>
+  <hr class="heavy-rule">
+
+  <h2 class="has-text-weight-bold sectionHead is-size-6 mt-5">4. Grab some Swag:</h2>
 
   {% include 'registration/register_selection.html' with selection_source=merch only %}
 
-  <p class="title">Your order total is {{ view.order.original_price|dollars }}</p>
-
-  <div class="buttons">
-    {% if view.ap_available %}
-    {% include "utils/button.html" with button=view.ap_yes_button content="AP Please" %}
-    {% else %}
-    {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP is Currently Unavailable 😢" %}
-    {% endif %}
-    {% include "utils/button.html" with button=view.ap_no_button content="Next"%}
+  <div class="is-clearfix is-size-4 mt-6 mb-5">
+    <div class="subtotal-box my-5 py-2 px-5 is-pulled-right">
+      <label class="has-text-weight-bold">SUBTOTAL</label>
+      <!-- TODO: This is not dynamically populating "Live" when boxes are checked or unchecked (it does if you manually reload) -->
+      {{ view.order.original_price|dollars }}
+    </div>
   </div>
+
+  <div class="choose-ap-box py-3 px-3">
+    <h2 class="has-text-weight-bold is-size-5 ">Looking great!</h2>
+    <p>Will you be needing any Affordable Pricing (AP) adjustments?</p>
+    <p>If not, please select NEXT.</p>
+
+    <div class="buttons is-right mr-6">
+      {% if view.ap_available %}
+      {% include "utils/button.html" with button=view.ap_yes_button content="AP Please" class="is-primary mr-4" %}
+      {% else %}
+      {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP is Currently Unavailable 😢" class="mr-4" %}
+      {% endif %}
+      {% include "utils/button.html" with button=view.ap_no_button content="Next" class="is-primary mr-4" %}
+    </div>
+
+    <p class="is-size-7">
+      <strong>About AP:</strong>
+      This means that if you have financial need and would not be able to pay the above price, you may apply for a discount. Payment plan options will be available later in registration whether or not you apply for Accessible Pricing. Accessible Pricing is only for adjusting your order total.
+    </p>
+  </div>
+  
 </form>
 
 
