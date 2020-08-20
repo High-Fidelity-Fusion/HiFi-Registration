@@ -4,8 +4,6 @@ define WGET
 endef
 
 all: migrate style email run
-clean_migrate: clean migrate
-clean_run: clean migrate run
 
 clean:
 	cd hifireg/registration/migrations && ls --ignore=__init__.py | xargs rm -rf
