@@ -6,20 +6,20 @@
     Policy
 </p>
 
-
 <form method="post" novalidate>
+
     {% csrf_token %}
 
     <p>Code of Conduct:</p>
     <p>Accountability Process:</p>
     <p>Terms:</p>
 
-    {% include "utils/form_fields.html" %}
+    {% include "utils/field_checkbox.html" with field=form.agrees_to_policy %}
+    {% include "utils/field_radioselect.html" with field=form.opts_into_photo_review %}
 
-    <div class="control">
-        <button type="submit" name='previous' class="button is-link">Previous</button>
-        <button type="submit" name='next' class="button is-link">Next</button>
-    </div>
+    {% include "utils/button_link.html" with content="Previous" link=view.previous_url %}
+    {% include "utils/button_submit.html" with content="Next" class="is-primary is-pulled-right" %}
+
 </form>
 
 {% endblock %}

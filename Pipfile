@@ -6,16 +6,17 @@ verify_ssl = true
 [dev-packages]
 black = "*"
 pylint = "*"
-requests = "*"
 
 [packages]
 django = {extras = ["argon2"],version = "*"}
 psycopg2-binary = "*"
 pillow = "*"
-django-widget-tweaks = "*"
 stripe = "*"
 python-dateutil = "*"
 mailchimp3 = "*"
+awsebcli = "*"
+requests = "*"
+libsass = "*"
 
 [requires]
 python_version = "3.8"

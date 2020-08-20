@@ -1,0 +1,14 @@
+<div class="field">
+
+    <div class="control">
+        <label class="label">{{ field.label }}</label>
+        {% for radio in field %}
+        <label class="radio">
+            {{ radio }}
+        </label>
+        {% endfor %}
+    </div>
+
+    {% include "utils/form_field_help.html" %}
+
+</div>

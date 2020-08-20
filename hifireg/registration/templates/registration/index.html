@@ -2,13 +2,15 @@
 
 {% block card_content %}
 
+
 <p>Hi, {{ view.request.user.first_name }}!</p>
 <p>We look forward to dancing with you at this year's HiFi Fusion!</p>
 {% include "utils/form_fields.html" %}
 
 <div class="buttons">
     {% include "utils/button.html" with button=view.register_button %}
-    <!-- {% include "utils/button.html" with button=view.invoices_button %} -->
+    {% include "utils/button.html" with button=view.invoices_button %}
+
 
 </div>
 

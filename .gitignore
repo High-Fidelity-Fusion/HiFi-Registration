@@ -52,6 +52,8 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+**/settings/secret.py
+**/settings/developer.py
 
 # Flask stuff:
 instance/
@@ -84,6 +86,7 @@ celerybeat-schedule
 env/
 venv/
 ENV/
+.envrc
 
 # Spyder project settings
 .spyderproject
@@ -103,13 +106,16 @@ ENV/
 .vscode
 
 # Node.js
-node_modules/
-package-lock.json
 css/
-db.sqlite3
 migrations/
 
 .DS_Store
 
 # MJML generated
 **/email/*.html
+
+# Deploy files
+hifireg/Pipfile.lock
+
+# Causes IDE to ignore files in this submodule
+hifireg/bulma

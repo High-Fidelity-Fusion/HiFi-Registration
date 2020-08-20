@@ -19,20 +19,15 @@ urlpatterns = [
     path('beta_login/', views.BetaLoginView.as_view(), name='beta_login'),
 
     # must have registration:
-    path('register/', RedirectView.as_view(url=reverse_lazy('register_comp_code')), name='registration'), # redirects to registration creation view
-    path('register/comp/', views.RegisterCompCodeView.as_view(), name='register_comp_code'),
+    path('register/', RedirectView.as_view(url=reverse_lazy('register_policy')), name='registration'), # redirects to registration creation view
     path('register/policy/', views.RegisterPolicyView.as_view(), name='register_policy'),
 
     # must have order:
-    path('register/order/', RedirectView.as_view(url=reverse_lazy('register_ticket_selection')), name='order'), # redirects to order creation view
+    path('register/selection/', views.RegisterAllProductsView.as_view(), name='register_products'),
+    path('register/order/', RedirectView.as_view(url=reverse_lazy('register_products')), name='order'), # redirects to order creation view
     path('ajax/add_item/', views.AddItemView.as_view(), name='add_item'),
     path('ajax/remove_item/', views.RemoveItemView.as_view(), name='remove_item'),
-    path('register/ticket/', views.RegisterTicketSelectionView.as_view(), name='register_ticket_selection'),
-    path('register/classes/', views.RegisterClassSelectionView.as_view(), name='register_class_selection'),
-    path('register/showcase/', views.RegisterShowcaseView.as_view(), name='register_showcase'),
-    path('register/merchandise/', views.RegisterMerchandiseView.as_view(), name='register_merchandise'),
 
-    path('register/subtotal/', views.RegisterSubtotal.as_view(), name='register_subtotal'),
     path('register/accessible-pricing/', views.RegisterAccessiblePricingView.as_view(), name='register_accessible_pricing'),
     path('register/donate/', views.RegisterDonateView.as_view(), name='register_donate'),
     path('register/volunteer/', views.RegisterVolunteerView.as_view(), name='register_volunteer'),

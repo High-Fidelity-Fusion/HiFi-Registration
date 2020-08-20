@@ -27,6 +27,7 @@ def build_product(product, user, slot_id):
         'description': product.description,
         'price': '${:,.2f}'.format(product.price * 0.01),
         'max_quantity': min(product.max_quantity_per_reg - product.quantity_purchased, product.available_quantity + product.quantity_claimed),
+        'quantity_range': range(0, min(product.max_quantity_per_reg - product.quantity_purchased, product.available_quantity + product.quantity_claimed) + 1),
         'max_quantity_per_reg': product.max_quantity_per_reg,
         'quantity_claimed': product.quantity_claimed,
         'quantity_purchased': product.quantity_purchased,
