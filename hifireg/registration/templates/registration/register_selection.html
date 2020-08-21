@@ -1,17 +1,9 @@
-{% extends "registration/base.html" %}
 
-{% block countdown %}
-{% include 'registration/countdown_widget.html' %}
-{% endblock %}
-
-{% block card_content %}
-<p>Choose your {{section}}!</p>
-{% for category in categories %}
-  <h3 class="title">{{category.name}}</h3>
+{% for category in selection_source.categories %}
   <!-- Starting slots For category {{category.name}}  -->
   {% for slot in category.slots %}
-    <h4 class="title is-4">{{slot.name}}</h4>
-    <div class="columns is-multiline">
+    <h4 class="title is-5 mt-5 pt-2 mb-0 is-uppercase">{{slot.name}}</h4>
+    <div class="">
       <!-- Starting products For category {{category.name}} slot {{slot.name}} -->
       {% for product in slot.products %}
         {% include 'registration/product_card.html' %}
@@ -20,23 +12,12 @@
   {% endfor %}
   
   <!-- Starting products For category {{category.name}}  -->
-  <div class="columns is-multiline">
+  <div class="">
   {% for product in category.products %}
     {% include 'registration/product_card.html' %}
   {% endfor %}
   </div>
 {% endfor %}
 
-<form method="post" novalidate>
-  {% csrf_token %}
 
-  <div class="control">
-    {% include "utils/button.html" with button=view.previous_button %}
-    {% include "utils/button.html" with button=view.next_button %}
-  </div>
-</form>
 
-{% load static %}
-<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-<script src="{% static 'scripts/ticket_selection.js' %}"></script>
-{% endblock %}

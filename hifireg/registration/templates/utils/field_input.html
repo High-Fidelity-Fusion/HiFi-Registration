@@ -1,0 +1,12 @@
+{% load special_sauce %}
+
+<div class="field {{field_classes}}">
+
+    <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <div class="control">
+        {{ field|add_class:"input" }}
+    </div>
+
+    {% include "utils/form_field_help.html" %}
+
+</div>

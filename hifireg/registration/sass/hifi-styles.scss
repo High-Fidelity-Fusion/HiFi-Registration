@@ -4,9 +4,13 @@
 // @import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
 
 // Set your brand colors
+$hifi-lettering: #F7F3EB; 
+$light-teal: #00FFFF;
+$hifi-dark-teal: #00C5C5;
+$hifi-dark: #211827;
 
 // $purple: #8A4D76;
-$pink: #FA7C91;
+// $pink: #FA7C91;
 // $brown: #757763;
 // $beige-light: #D0D1CD;
 // $beige-lighter: #EFF0EB;
@@ -16,7 +20,7 @@ $pink: #FA7C91;
 // $family-sans-serif: "Nunito", sans-serif;
 // $grey-dark: $brown;
 // $grey-light: $beige-light;
-// $primary: $purple;
+$primary: $light-teal;
 // $link: $pink;
 // $background: $pink;
 $widescreen-enabled: false;
@@ -33,9 +37,13 @@ $fullhd-enabled: false;
 // $input-border-color: transparent;
 // $input-shadow: none;
 
+$scheme-invert: black;
+$box-shadow: 0.3em 0.3em 0.3em 0.002em rgba($scheme-invert, 0.25), 0 0px 0 1.2px rgba($scheme-invert, 0.2);
+$box-padding: .75rem;
+$box-color: rgb(19, 20, 20);
 
 // TODO: only import modules that are  used
-@import "../../../node_modules/bulma/bulma.sass";
+@import "../../bulma/bulma.sass";
 
 
 // Sticky Footer
@@ -44,6 +52,7 @@ body {
     min-height: 100vh;
     flex-direction: column;
 }
+
 main {
     flex: 1 0 auto;
 }
@@ -62,7 +71,14 @@ main {
 // Used for the heavy client-side logic on the product selection screens
 .product-card {
 
+    transition: box-shadow 0.1s;
+    cursor: pointer;
+    &:hover {
+        box-shadow: 0.3em 0.3em 0.3em 0.002em rgba($hifi-dark-teal, 0.25), 0 0px 0 1.2px rgba($hifi-dark-teal, 0.2);
+    }
+
     &[class*="conflict-"] {
+        cursor: default;
         background: lightgrey;
         pointer-events: none;
 
@@ -78,9 +94,14 @@ main {
             content: "This conflicts with something you've selected or purchased.";
             color: red;
         }
+
+        &:hover {
+            box-shadow: $box-shadow
+        }
     }
 
     &.unavailable {
+        cursor: default;
         background: lightgrey;
         pointer-events: none;
 
@@ -96,9 +117,14 @@ main {
             content: "This item is out of stock.";
             color: red;
         }
+
+        &:hover {
+            box-shadow: $box-shadow
+        }
     }
 
     &.max-purchased {
+        cursor: default;
         background: #B0C4DE;
         pointer-events: none;
 
@@ -113,17 +139,17 @@ main {
         .error:after {
             content: "You have already purchased the maximum amount.";
         }
+
+        &:hover {
+            box-shadow: $box-shadow
+        }
     }
 
     &.claimed {
-        background: #00d1b2;
+        background: $hifi-dark-teal;
     }
 
     .quantity-selector {
-        input {
-            width: auto;
-        }
-
         * {
             display: inline-flex;
         }
@@ -146,22 +172,6 @@ main {
         pointer-events: none;
     }
 
-    &.minimum {
-        .product-decrement {
-            border-color: gray;
-            background: gray;
-            pointer-events: none;
-        }
-    }
-
-    &.maximum {
-        .product-increment {
-            border-color: gray;
-            background: gray;
-            pointer-events: none;
-        }
-    }
-
     .comped {
         text-decoration: line-through;
     }
@@ -169,4 +179,72 @@ main {
 
 .hidden-div {
     display: none;
+}
+
+input[type="checkbox"].big-checkbox {
+    -webkit-appearance:none;
+    width:20px;
+    height:20px;
+    background:white;
+    border:1px solid #555;
+    vertical-align: text-top;
+}
+
+input[type='checkbox'].big-checkbox:checked {
+    background: rgb(166, 169, 177);
+}
+
+input[type='checkbox'].big-checkbox:checked:after {
+    content: "✓";
+    font-size: 15px;
+    padding-left: 4px;
+    font-family: 'Zapf Dingbats';
+    vertical-align: middle;
+}
+
+.sectionHead {
+    color: black;
+}
+
+.comp-box {
+    margin: 1.5rem 0;
+    box-shadow: 0.2em 0.2em 0.3em 0.002em rgba($scheme-invert, 0.25);
+    background-color: rgb(240, 240, 240);
+}
+
+.comp-box .field {
+    align-items: center;
+}
+
+/* using :first-child here to match specificity of a Bulma rule we want to override */
+.comp-box label:first-child {
+    margin: 0 15px 0 0;
+    font-weight: normal;
+}
+
+.comp-box .control {
+    width: 300px;
+}
+
+hr.heavy-rule {
+    height: 15px;
+    background-color: black;
+    border-radius: 7.5px;
+}
+
+.choose-ap-box {
+    background-color: $hifi-lettering;
+    border-radius: 7px;
+}
+
+.choose-ap-box button {
+    box-shadow: 0.2em 0.2em 0.3em 0.002em rgba($scheme-invert, 0.25);
+}
+
+.subtotal-box {
+    border-top: 1px solid gray;
+}
+
+.subtotal-box label {
+    margin-right: 70px;
 }

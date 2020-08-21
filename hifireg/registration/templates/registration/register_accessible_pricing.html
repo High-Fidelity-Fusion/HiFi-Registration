@@ -11,163 +11,109 @@ The Human Economic Negotiating Adjuster
 
 <form method="post">
     {% csrf_token %}
+    
+    <div class="notification is-primary is-light has text-centered content">
+        <p class="title is-5">Welcome to your accessible price finder!</>
+        <ul>
+            <li>Below is the proposed discounted price for your order.</li>
+            <li>Please use the arrows to adjust to your personal comfort level.</li>
+            <li>The least you may pay is $<span id="min_price"></span>.</li>
+            <li>If you need to start over, just refresh the page.</li>
+        </ul>
+    </div>
 
-    <p>Let's find your accessible price!</p>
-    <p>Your order total is $<span id="max_price"></span>.</p>
-    <p>Your order is eligible for up to $<span id="ap_eligible_amount"></span> in accessible pricing discounts.</p>
-    <p>The least you might pay is $<span id="min_price"></span>.</p>
-    <br>
-
-    <p class="notification is-primary is-light has-text-centered" id="quote_box">
-        Use the controls below to tell me what you think of each price and together. 
-        We will find something that works for you.
-        <br>
-        If you want to start over, just refresh the page.
-    </p>
-
-    <div class="level notification">
-        <p class="is-size-5 has-text-success">
-            <span class="tag is-success">MIN</span><br>
-            <span id="search_min">$</span>
+    <div class="level is-mobile notification">
+        <p class="has-text-left" onclick=PriceDecrease() style="cursor: pointer;">
+            <i class="fa fa-caret-left fa-4x" style="color: #00C5C5;" aria-hidden="true"></i><br>
+            Less<br>
+            <strong>(Min <span id="search_less">$</span>)</strong>
         </p>
+
         <p id="test_price" class="is-size-3">$0</p>
-        <p class="is-size-5 has-text-danger">
-            <span class="tag is-danger">MAX</span><br>
-            <span id="search_max">$</span>
+
+        <p class="has-text-right" onclick=PriceIncrease() style="cursor: pointer;">
+            <i class="fa fa-caret-right fa-4x" style="color: #00C5C5;" aria-hidden="true"></i><br>
+            More<br>
+            <strong>(Max <span id="search_more">$</span>)</strong>
         </p>
     </div>
+
     <input type="hidden" id="price_submit" name="price_submit" value="0">
 
-    <div class="buttons level">
-        <button type="button" class="button is-danger" onclick=PriceDecrease()>I could not pay this price.</button>
-        <button type="submit" class="button is-link" name="ready_to_pay" id="ready_to_pay" title="Find your price first!" disabled>I'm ready to pay!</button>
-        <button type="button" class="button is-success" onclick=PriceIncrease()>I could comfortably pay this price.</button>
-    </div>
-
-    <div class="buttons">
-        {% include "utils/button.html" with button=view.previous_button %}
-    </div>
+    {% include "utils/button.html" with button=view.previous_button %}
+    <button type="submit" class="button is-primary is-pulled-right" name="ready_to_pay" id="ready_to_pay">I'm ready to pay!</button>
 </form>
 
 <script>
     "use strict";
 
-    /* High level parameters */
-    var step_size = 5;
-    var max_price = {{ view.order.original_price }} / 100;
-    var ap_eligible_amount = {{ view.order.ap_eligible_amount }} / 100;
-    //var max_price = 102;
-    //var ap_eligible_amount = 66;
-    var min_price = max_price - ap_eligible_amount;
+    /* Constraints/Constants */
+    const max_price = {{ view.order.original_price }} / 100;
+    const ap_eligible_amount = {{ view.order.ap_eligible_amount }} / 100;
+    {% comment %} const max_price = 243;
+    const ap_eligible_amount = 237; {% endcomment %}
+    const min_price = max_price - ap_eligible_amount;
+    
+    /* Customization */
+    const initial_price_fraction = 0.5; // fraction of AP eligible amount to start at
+    const break_points = [[40, 5], [80, 10], [Number.POSITIVE_INFINITY, 20]];
 
     /* Get DOM elements */
     var price_element = document.getElementById("test_price");
-    var min_element = document.getElementById("search_min");
-    var max_element = document.getElementById("search_max");
+    var less_element = document.getElementById("search_less");
+    var more_element = document.getElementById("search_more");
     var pay_element = document.getElementById("ready_to_pay");
     var price_submit_element = document.getElementById("price_submit");
 
+    /* Algo Variables */
+    const price_list = MakePriceList();
+    var search_index = price_list.findIndex(function(number) {
+        return number >= (min_price + max_price) * initial_price_fraction;
+    });
+
     /* Initialize DOM elements */
     window.onload = function() {
-        document.getElementById("max_price").textContent = max_price;
         document.getElementById("min_price").textContent = min_price;
-        document.getElementById("ap_eligible_amount").textContent = ap_eligible_amount;
-
-        SeekPrice(); // Shows initial middle value
-        min_element.textContent = "$" + min_price;
-        max_element.textContent = "$" + max_price;
+        less_element.textContent = "$" + min_price;
+        more_element.textContent = "$" + max_price;
+        AnimatePrice();
     }
 
     /* Button callbacks */
     function PriceDecrease() {
-        search_max = search_mid;
-        SeekPrice(-1);
-        //LoadQuote();
+        search_index = Math.max(0, search_index - 1);
+        price_submit_element.setAttribute("value", "" + price_list[search_index] * 100);
+        AnimatePrice()
     }
 
     function PriceIncrease() {
-        search_min = search_mid;
-        SeekPrice(1);
-        //LoadQuote();
+        search_index = Math.min(price_list.length - 1, search_index + 1);
+        price_submit_element.setAttribute("value", "" + price_list[search_index] * 100);
+        AnimatePrice()
     }
 
-    /* Search algorithm setup and helper functions */
-    var price_list = make_price_list();
-    var search_min = 0;
-    var search_max = price_list.length - 1;
-    var search_mid = null;
-    var price_found = false;
-    
-    function round_step(num, round_method=Math.round) {
-        return round_method(num / step_size) * step_size;
-    }
+    /* Functions */  
 
-    function make_price_list() {
-        if(ap_eligible_amount == 0) {
-            SetPriceFound();
-            return [max_price];
-        }
-
-        let nested_price_beg = round_step(min_price + step_size, Math.floor);
-        let nested_price_end = round_step(max_price - step_size, Math.ceil);
-        let nested_price_len = (nested_price_end - nested_price_beg) / step_size + 1;
-        let nested_price_list = [...Array(nested_price_len).keys()].map(index => nested_price_beg + index * step_size);
-        return [].concat([min_price], nested_price_list, [max_price]);
-    }
-    
-    function SeekPrice(step_sign) {
-        if (!price_found) {
-            search_mid = Math.floor((search_min + search_max) / 2);
-            if(search_mid == search_min && search_mid == search_max - 1) {
-                SetPriceFound();
+    function MakePriceList() {
+        let price_list = [min_price];
+        let j = 0;
+        for (let i = 0; price_list[i] <= max_price; i++) {
+            while(break_points[j][0] <= price_list[i]) { 
+                j++; 
             }
-        } else {
-            search_mid += step_sign;
-            search_mid = Math.min(search_mid, price_list.length - 1);
-            search_mid = Math.max(search_mid, 0);
-            search_min = 0;
-            search_max = price_list.length - 1;
+            price_list.push(Math.floor(price_list[i]/break_points[j][1] + 1) * break_points[j][1]);
         }
-        min_element.textContent = "$" + price_list[search_min];
-        max_element.textContent = "$" + price_list[search_max];
-        price_submit_element.setAttribute("value", "" + price_list[search_mid] * 100);
-        AnimatePrice();
+        price_list[price_list.length - 1] = max_price;
+        return price_list;
     }
 
-    function SetPriceFound() { // call once when price is found
-        price_found = true;
-        pay_element.removeAttribute("disabled");
-        pay_element.setAttribute("title", "You can continue to fine tune your price.");
-    }
-
-    var display_mid = 0;
+    var search_display = 0;
     async function AnimatePrice() {
-        while(display_mid != price_list[search_mid]) {
-            display_mid += Math.sign(price_list[search_mid] - display_mid);
-            price_element.textContent = "$" + display_mid;
+        while (search_display != price_list[search_index]) {
+            search_display += Math.sign(price_list[search_index] - search_display);
+            price_element.textContent = "$" + search_display;
             await new Promise(r => setTimeout(r, 10));
         }
-    }
-
-    /* Quote Box (currently disabled) */
-    var quote_element = document.getElementById("quote_box");
-    var quote_index = 0;
-    var quote_list = ["Looking forward to seeing you!",
-                      "Make sure you pick a price that you're totally comfortable with.",
-                      "I can't wait to dance with you!",
-                      "You are amazing!",
-                      "<3 <3 <3",
-                      "Zach May will pun for you.",
-                      "See your cute face on the dance floor.",
-                      "We can't wait to hug you (with consent).",
-                      "Not quite the right price? Zach May punderstands.",
-                      "So excite. Much affordable price. Yasss.",
-                      "Heckin' yeah!",
-                      ];
-
-    function LoadQuote() {
-        quote_element.textContent = quote_list[quote_index];
-        quote_index = (quote_index + 1) % quote_list.length;
     }
 
 </script>

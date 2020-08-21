@@ -17,17 +17,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = "/media/"
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -40,7 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'registration.apps.RegistrationConfig',
-    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -74,36 +64,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'hifireg.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
-local_database = {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-}
-
-database = {
-    'ENGINE': 'django.db.backends.postgresql',
-    'HOST': os.getenv('DBHOST'),
-    'PORT': os.getenv('DBPORT'),
-    'USER': os.getenv('DBUSER'),
-    'PASSWORD': os.getenv('DBPASSWORD'),
-    'NAME': os.getenv('DBNAME'),
-}
-
-# If DEBUG mode, override database name with DBNAME_DEV from environment.
-if DEBUG:
-    database['NAME'] = os.getenv('DBNAME_DEV')
-
-# Throw error if database name is not set.
-if database['NAME'] is None:
-    raise RuntimeError('Was not able to read the DBNAME/DBNAME_DEV environment variable.')
-
-DATABASES = {
-    'default': database
-}
 
 ADMINS = [('Admin', 'register@highfidelityfusion.com')]
 
@@ -143,17 +103,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_URL = '/static/'
-
-# SMTP/E-Mail
-# https://docs.djangoproject.com/en/3.0/topics/email/
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
-DEFAULT_FROM_EMAIL = 'High-Fidelity Fusion <info@highfidelityfusion.com>'
+STATIC_ROOT = 'static'
 
 
 # Set Argon2 as default password hash algorithm
@@ -165,9 +116,17 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
+
 # Custom User Model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'registration.User'
+
+
+
+# Redirect HTTP traffic to HTTPS
+# https://docs.djangoproject.com/en/2.2/topics/security/#ssl-https
+SECURE_SSL_REDIRECT = True
+
 
 # LoginView
 # https://docs.djangoproject.com/en/3.0/topics/auth/default/#django.contrib.auth.views.LoginView
@@ -175,16 +134,5 @@ LOGIN_REDIRECT_URL = '/registration/'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'login'
 
-SESSION_COOKIE_AGE = int(os.getenv('SESSION_AGE', '3600'))
 
-# Stripe Keys
-# https://stripe.com/docs/payments/checkout/accept-a-payment
-STRIPE_PUBLIC_TEST_KEY = os.getenv('STRIPE_PUBLIC_TEST_KEY')
-STRIPE_SECRET_TEST_KEY = os.getenv('STRIPE_SECRET_TEST_KEY')
-
-MAILCHIMP_API_KEY = os.getenv('MAILCHIMP_API_KEY')
-MAILCHIMP_USERNAME = os.getenv('MAILCHIMP_USERNAME')
-MAILCHIMP_LIST = os.getenv('MAILCHIMP_LIST')
-
-# Beta Site Password
-BETA_PASSWORD = os.getenv('BETA_PASSWORD')
+SESSION_COOKIE_AGE = 3600

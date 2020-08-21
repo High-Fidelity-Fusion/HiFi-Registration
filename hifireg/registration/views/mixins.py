@@ -36,6 +36,15 @@ class PolicyRequiredMixin:
 
 
 @chain_with(PolicyRequiredMixin)
+class CreateOrderMixin:
+    def dispatch(self, request, *args, **kwargs):
+        self.order, created = Order.objects.update_or_create(
+            registration=self.registration,
+            session__isnull=False, 
+            defaults={'session': Session.objects.get(pk=request.session.session_key)})
+        return super().dispatch(request, *args, **kwargs)
+
+@chain_with(PolicyRequiredMixin)
 class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
@@ -49,7 +58,7 @@ class OrderRequiredMixin:
 class NonZeroOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.order.orderitem_set.exists():
-            return redirect('register_merchandise')
+            return redirect('make_payment')
         return super().dispatch(request, *args, **kwargs)
 
 

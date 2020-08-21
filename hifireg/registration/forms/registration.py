@@ -6,7 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from registration.models import CompCode, Order, Registration, Volunteer, CompCodeHelper
 
 
-YESNO = [(False, 'No'), (True, 'Yes')]
+YESNO = [(True, 'Yes'), (False, 'No')]
 
 
 class BetaPasswordForm(forms.Form):
@@ -19,27 +19,17 @@ class BetaPasswordForm(forms.Form):
             raise forms.ValidationError('Beta password is not correct')
 
 
-class RegPolicyForm(forms.ModelForm):
+class RegisterPolicyForm(forms.ModelForm):
     class Meta:
         model = Registration
         fields = ['agrees_to_policy', 'opts_into_photo_review']
-        widgets = {
-            'agrees_to_policy': forms.Select(choices=YESNO),
-            'opts_into_photo_review': forms.Select(choices=YESNO),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(RegPolicyForm, self).__init__(*args, **kwargs)
-        self.fields['agrees_to_policy'].required = True
-        self.fields['agrees_to_policy'].default = False
-        self.fields['opts_into_photo_review'].required = True
-        self.fields['opts_into_photo_review'].default = False
+        widgets = { 'opts_into_photo_review': forms.RadioSelect(choices=YESNO) }
 
     def clean_agrees_to_policy(self):
-        data = self.cleaned_data.get('agrees_to_policy')
-        if data is not True:
+        agrees = self.cleaned_data.get('agrees_to_policy')
+        if not agrees:
             raise forms.ValidationError('You must agree to the terms to proceed.')
-        return data
+        return agrees
 
 
 class RegVolunteerForm(forms.ModelForm):
@@ -105,7 +95,7 @@ class RegMiscForm(forms.ModelForm):
 
 
 class RegCompCodeForm(forms.Form):
-    code = forms.CharField(label='If you have a Comp Code for a free ticket, enter it here:', max_length=CompCodeHelper.CODE_LENGTH, required=False)
+    code = forms.CharField(label='If so, please enter your comp code here:', max_length=CompCodeHelper.CODE_LENGTH, required=False)
 
     def clean(self):
         code = self.cleaned_data.get('code')
