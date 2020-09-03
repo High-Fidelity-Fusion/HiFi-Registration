@@ -13,10 +13,10 @@ urlpatterns = [
     path('orders', views.OrdersView.as_view(), name='orders'),
 
     #testing email:
-    path('order/send_email', views.SendEmail.as_view(), name='send_email'),
+    path('order/send-email', views.SendEmail.as_view(), name='send_email'),
 
     # beta login url:
-    path('beta_login/', views.BetaLoginView.as_view(), name='beta_login'),
+    path('beta-login/', views.BetaLoginView.as_view(), name='beta_login'),
 
     # must have registration:
     path('register/', RedirectView.as_view(url=reverse_lazy('register_policy')), name='registration'), # redirects to registration creation view
@@ -35,9 +35,9 @@ urlpatterns = [
     path('register/miscellaneous/', views.RegisterMiscView.as_view(), name='register_misc'),
 
     # payment:
-    path('payment/payment_plan/', views.PaymentPlan.as_view(), name='payment_plan'),
+    path('payment/payment-plan/', views.PaymentPlan.as_view(), name='payment_plan'),
     path('payment/', views.MakePaymentView.as_view(), name='make_payment'),
-    path('payment/new_checkout', views.NewCheckoutView.as_view(), name='new_checkout'),
+    path('payment/new-checkout', views.NewCheckoutView.as_view(), name='new_checkout'),
     path('payment/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
 
     # post-order invoices to be paid
