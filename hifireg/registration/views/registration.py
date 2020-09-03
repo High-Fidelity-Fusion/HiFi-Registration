@@ -384,30 +384,27 @@ class MakePaymentView(InvoiceRequiredMixin, TemplateView):
         return super().get(request)
 
 
+class NewCheckoutView(InvoiceRequiredMixin, View):
+    def get(self, request):
+        # Using fake amount and variable because real variable unknown atm 6.15.20
+        invoice = self.order.invoice_set.get(pay_at_checkout=True)
+        reg_amount = invoice.amount
 
-class NewCheckoutView(InvoiceRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'GET':
+        # urls for recieving redirects from Stripe
+        success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
+        cancel_url = request.build_absolute_uri(reverse('make_payment'))
 
-            # Using fake amount and variable because real variable unknown atm 6.15.20
-            invoice = self.order.invoice_set.get(pay_at_checkout=True)
-            reg_amount = invoice.amount
-
-            # urls for recieving redirects from Stripe
-            success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
-            cancel_url = request.build_absolute_uri(reverse('make_payment'))
-      
-            try:
-                checkout_session_id = create_stripe_checkout_session(reg_amount, success_url, cancel_url)
-                
-                # Provide public key to initialize Stripe Client in browser
-                # And checkout session id
-                return JsonResponse({
-                    'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
-                    'session_id': checkout_session_id,
-                })
-            except Exception as e:
-                return JsonResponse({'error': str(e)})
+        try:
+            checkout_session_id = create_stripe_checkout_session(reg_amount, success_url, cancel_url)
+            
+            # Provide public key to initialize Stripe Client in browser
+            # And checkout session id
+            return JsonResponse({
+                'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
+                'session_id': checkout_session_id,
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
 
 
 class PaymentConfirmationView(FinishedOrderRequiredMixin, TemplateView):
