@@ -1,9 +1,11 @@
 {% extends "registration/base.html" %}
 {% load special_sauce %}
 {% load static %}
+
 {% block countdown %}
 {% include 'registration/countdown_widget.html' %}
 {%endblock %}
+
 {% block card_content %}
 
 <p class="title">Additional Contributions</p>
@@ -14,26 +16,24 @@
     <p>Cart Subtotal: <output id="id_subtotal">{{ subtotal }}</output></p>
 
     {% for field in form %}
-    <div class="fieldg">
+    <div class="field">
         <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
 
         <div class="field has-addons">
-
-            <p class="control">
-                <a class="button is-static">
-                    $
-                </a>
-            </p>
-
-            <div class="control">{{ field|add_class:"input" }}</div>
+            <div class="control">
+                <a class="button is-static">$</a>
+            </div>
+            <div class="control">
+                {{ field|add_class:"input" }}
+            </div>
         </div>
-
         {% include "utils/form_field_help.html" %}
     </div>
     {% endfor %}
 
-
-    <p>Total: <output id="id_total"></output></p>
+    <div class="field">
+        <p>Total: <output id="id_total"></output></p>
+    </div>
 
     <div class="control">
         <button type="submit" name="previous" class="button is-link">
