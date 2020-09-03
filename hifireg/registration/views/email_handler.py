@@ -3,6 +3,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.views import View
 
+from hifireg import settings
+
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin
 
 
@@ -21,7 +23,13 @@ def send_confirmation(user, order):
     msg.body = text_content
     msg.attach_alternative(html_content, "text/html")
 
-    msg.send(fail_silently=False)
+    try:
+        confirmation_email_enabled = settings.CONFIRMATION_EMAIL_ENABLED
+    except AttributeError:
+        confirmation_email_enabled = True
+
+    if confirmation_email_enabled:
+        msg.send(fail_silently=False)
 
     # return html_content # For debugging
     return text_content # For debugging
