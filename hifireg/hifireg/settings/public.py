@@ -21,6 +21,10 @@ MEDIA_URL = "/media/"
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -120,7 +124,6 @@ PASSWORD_HASHERS = [
 # Custom User Model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'registration.User'
-
 
 
 # Redirect HTTP traffic to HTTPS

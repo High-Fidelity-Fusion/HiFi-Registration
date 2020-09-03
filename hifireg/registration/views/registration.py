@@ -12,18 +12,17 @@ from django.views import View
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-
 from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 from registration.models.helpers import with_is_paid
 
+from .email_handler import send_confirmation
+from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item
+from .mailchimp_client import create_or_update_subscriber
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
 from .mixins import DispatchMixin, FunctionBasedView
-from .utils import SubmitButton, LinkButton
-from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
-from .mailchimp_client import create_or_update_subscriber
+from .utils import SubmitButton, LinkButton
 
 
 class BetaLoginView(FormView):
@@ -421,6 +420,8 @@ class PaymentConfirmationView(FinishedOrderRequiredMixin, TemplateView):
         self.order.session = None
         self.order.save()
         create_or_update_subscriber(request.user, self.registration)
+
+        send_confirmation(request.user, self.order)
 
         self.amount_due = self.order.invoice_set.get(pay_at_checkout=True).amount if self.order.invoice_set.exists() else 0
         self.items = self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank')
