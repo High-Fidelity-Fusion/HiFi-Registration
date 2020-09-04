@@ -21,7 +21,7 @@ from registration.models.helpers import with_is_paid
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
 from .mixins import DispatchMixin, FunctionBasedView
 from .utils import SubmitButton, LinkButton
-from .helpers import get_context_for_product_selection
+from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .mailchimp_client import create_or_update_subscriber
 
@@ -372,6 +372,7 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
 class MakePaymentView(InvoiceRequiredMixin, TemplateView):
     template_name = 'registration/payment.html'
     previous_button = LinkButton('payment_plan', 'Previous')
+    back_to_selection = LinkButton('register_products', 'Back to Selection')
 
     def post(self, request):
         if 'previous' in request.POST:
@@ -379,7 +380,8 @@ class MakePaymentView(InvoiceRequiredMixin, TemplateView):
 
     def get(self, request):
         self.amount_due = self.order.invoice_set.get(pay_at_checkout=True).amount
-        self.items = self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+        self.items = get_quantity_purchased_for_item(self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank'), request.user).iterator()
+        self.items = map(add_quantity_range_to_item, self.items)
         return super().get(request)
 
 

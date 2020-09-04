@@ -1,4 +1,6 @@
-from registration.models import Product, ProductCategory, ProductSlot, Registration
+from django.db.models import Subquery, OuterRef, Sum
+from django.db.models.functions import Coalesce
+from registration.models import Product, ProductCategory, ProductSlot, Registration, OrderItem
 
 class ProductStatuses:
     MAX_PURCHASED = 'max_purchased'
@@ -54,5 +56,11 @@ def get_context_for_product_selection(section, user):
         } for category in ProductCategory.objects.filter(section=section, product__isnull=False).distinct().order_by('rank').iterator()]
     }
 
+def get_quantity_purchased_for_item(items, user):
+    purchased_order_items = OrderItem.objects.filter(order__registration__user=user, order__session__isnull=True, product=OuterRef('product__pk')).order_by().values('product').annotate(sum=Sum('quantity')).values('sum')
+    return items.annotate(quantity_purchased=Coalesce(Subquery(purchased_order_items), 0))
 
+def add_quantity_range_to_item(item):
+    item.quantity_range = range(0, min(item.product.max_quantity_per_reg - item.quantity_purchased, item.product.available_quantity + item.quantity) + 1)
+    return item
 

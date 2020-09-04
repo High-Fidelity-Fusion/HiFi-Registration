@@ -4,7 +4,7 @@
         <th>Items</th>
         <th></th>
         <th></th>
-        <th></th>
+        <th>{% include "utils/button.html" with button=view.back_to_selection %}</th>
     </tr>
     <tr>
         <th>Category</th>
@@ -65,7 +65,18 @@
     <tr>
         <td>{{item.product.category.get_section_display}}</td>
         <td><strong>{{item.product.title}}</strong></td>
+    {% if item.order.is_accessible_pricing and item.product.is_ap_eligible %}
         <td>{{item.quantity}}</td>
+    {% else %}
+        <td><div class="quantity-selector" data-product="{{item.product.id}}">
+            <select class="quantity-input" data-quantity="{{ item.quantity }}">
+                {% for i in item.quantity_range %}
+                <option value="{{ i }}" {% if i == item.quantity %}selected="selected"{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+            <div class="loader"></div>
+        </div></td>
+    {% endif %}
     {% if item.unit_price == 0 %}
         <td>Comped</td>
     {% elif order.original_price > order.accessible_price and item.product.is_ap_eligible %}
