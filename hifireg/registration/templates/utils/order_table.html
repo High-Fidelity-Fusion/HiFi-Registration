@@ -65,7 +65,7 @@
     <tr>
         <td>{{item.product.category.get_section_display}}</td>
         <td><strong>{{item.product.title}}</strong></td>
-    {% if item.order.is_accessible_pricing and item.product.is_ap_eligible %}
+    {% if item.order.is_accessible_pricing %}
         <td>{{item.quantity}}</td>
     {% else %}
         <td><div class="quantity-selector" data-product="{{item.product.id}}">
