@@ -248,3 +248,18 @@ hr.heavy-rule {
 .subtotal-box label {
     margin-right: 70px;
 }
+
+input .call-in-progress {
+    pointer-events: none;
+}
+
+.quantity-selector {
+    .loader {
+        display: none;
+    }
+    &.loading {
+        .loader {
+            display: inline-flex;
+        }
+    }
+}

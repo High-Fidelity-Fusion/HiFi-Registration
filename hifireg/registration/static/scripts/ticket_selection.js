@@ -110,7 +110,6 @@ $(".quantity-input").change(function() {
   var newQuantity = parseInt(thisSelector.value);
   var increment = newQuantity - oldQuantity;
   thisSelector.dataset.quantity = thisSelector.value;
-  console.log("Incrementing by " + increment);
   if (increment > 0) {
     $.ajax({
       url: '/registration/ajax/add_item/',
