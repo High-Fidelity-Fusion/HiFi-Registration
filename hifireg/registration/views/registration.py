@@ -35,13 +35,27 @@ class BetaLoginView(FormView):
         return super().form_valid(form)
 
 
-class IndexView(LoginRequiredMixin, TemplateView):
-    register_button = LinkButton('register_policy', 'Register')
-    invoices_button = LinkButton('invoices', 'Pay Other Invoices')
+class IndexView(LoginRequiredMixin, DispatchMixin, TemplateView):
+    register_button = LinkButton('register_policy', 'Begin Registration')
+    products_button = LinkButton('register_products', 'Purchase More')
+    invoices_button = LinkButton('invoices', 'Make a Payment')
     template_name = 'registration/index.html'
 
+    def dispatch_mixin(self, request):
+        try:
+            self.registration = Registration.objects.get(user=request.user)
+        except ObjectDoesNotExist:
+            self.registration = Registration(user=request.user)
+            self.registration.save()
+
     def get(self, request):
-        self.items = OrderItem.objects.filter(order__registration__user=request.user).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+        invoices = with_is_paid(Invoice.objects.filter(order__registration__user=request.user))
+        if self.registration.is_submitted:
+            self.items = OrderItem.objects.filter(order__registration__user=request.user).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+            self.is_payment_plan = invoices.count() > Order.objects.filter(registration__user=request.user, session__isnull=True).count()
+            self.has_unpaid_invoice = invoices.filter(is_paid=False).exists()
+            if self.has_unpaid_invoice:
+                self.days_until_due = (invoices.filter(is_paid=False).first().due_date.date() - timezone.now().date()).days
         return super().get(request)
 
 
@@ -61,7 +75,7 @@ class InvoicesView(RegistrationRequiredMixin, FunctionBasedView, View):
         unpaid_invoices = with_is_paid(
             Invoice.objects.filter(
                 order__registration__pk=self.registration.pk
-            ).order_by('due_date')
+            )
         ).filter(is_paid=False)
         
         return render(request, 'registration/invoices.html', {
@@ -105,19 +119,12 @@ class PayInvoicesSuccessView(RegistrationRequiredMixin, FunctionBasedView, View)
         return redirect(reverse('invoices') + '?amount_paid=' + str(payment.amount))
 
 
-class RegisterPolicyView(LoginRequiredMixin, DispatchMixin, UpdateView):
+class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
     template_name = 'registration/register_policy.html'
     model = Registration
     form_class = RegisterPolicyForm
     success_url = reverse_lazy('register_products')
     previous_url = 'index'
-
-    def dispatch_mixin(self, request):
-        try:
-            self.registration = Registration.objects.get(user=request.user)
-        except ObjectDoesNotExist:
-            self.registration = Registration(user=request.user)
-            self.registration.save()
 
     def get_object(self):
         return self.registration
@@ -351,7 +358,7 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
             if payments_per_month == 2:
                 Invoice.objects.create(order=self.order, due_date=date_in_two_weeks, amount=individualPayment)
 
-            for i in range(1, payments_per_month - 1):
+            for i in range(1, months):
                 Invoice.objects.create(order=self.order, due_date=date+relativedelta(months=i), amount=individualPayment)
                 if payments_per_month == 2:
                     Invoice.objects.create(order=self.order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)

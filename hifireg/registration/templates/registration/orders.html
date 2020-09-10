@@ -2,8 +2,13 @@
 {% load special_sauce %}
 {% block card_content %}
 
-<p>Hi, {{ view.request.user.first_name }}! Here is a summary of your completed orders.</p>
+{% if not view.orders %}
+<p>You have not yet registered. Better get on that! Your order summaries will appear here when you're done.</p>
+{% else %}
+<p>Here is a summary of your completed orders.</p>
+{% endif %}
 <br>
+
 {% for order_wrapper in view.orders %}
 {% with order=order_wrapper.order items=order_wrapper.items %}
 <table class="table is-hoverable">

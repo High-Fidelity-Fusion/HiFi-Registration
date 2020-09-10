@@ -3,12 +3,36 @@
 
 <div class="field">
     <p>Hi, {{ view.request.user.first_name }}!</p>
-    <p>We look forward to dancing with you at this year's HiFi Fusion!</p>
-</div>
 
-<div class="buttons">
-    {% include "utils/button.html" with button=view.register_button class="is-primary" %}
-    {% include "utils/button.html" with button=view.invoices_button %}
+    {% if view.registration.is_submitted %}
+<p>Thanks for registering! So far, here's what you've got:</p>
 </div>
+<table class="table is-hoverable">
+    <tbody>
+    {% for item in view.items %}
+    <tr>
+        <td>{{item.product.category.get_section_display}}</td>
+        <td><strong>{{item.product.title}}</strong></td>
+        <td>{{item.quantity}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% include "utils/button.html" with button=view.products_button class="is-primary" %}
+{% else %}
+<p>We look forward to dancing with you at this year's HiFi Fusion!</p>
+</div>
+{% include "utils/button.html" with button=view.register_button class="is-primary" %}
+    {% endif %}
+    <br>
+    <br>
+    {% if view.registration.is_submitted and view.is_payment_plan %}
+        {% if view.has_unpaid_invoice %}
+    <p>Your next payment is due in {{view.days_until_due}} days.</p>
+            {% include "utils/button.html" with button=view.invoices_button %}
+        {% else %}
+    <p>Your Payment Plan is all paid!</p>
+    {% endif %}
+    {% endif %}
 
 {% endblock %}

@@ -23,7 +23,7 @@ class RegistrationRequiredMixin:
         try:
             self.registration = Registration.objects.get(user=request.user)
         except ObjectDoesNotExist:
-            return redirect('registration')
+            return redirect('index')
         return super().dispatch(request, *args, **kwargs)
 
 
