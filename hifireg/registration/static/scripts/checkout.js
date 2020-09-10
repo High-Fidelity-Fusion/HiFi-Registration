@@ -2,7 +2,7 @@
 $("#checkoutButton").on("click", function(e){
     e.preventDefault();
     // make request to new_checkout url
-    $.get("/registration/payment/new_checkout", function(data, status){
+    $.get("/registration/payment/new-checkout", function(data, status){
         // create instance of Stripe 
         var stripe = Stripe(data.public_key);
         // use Stripe to redirect to Checkout
