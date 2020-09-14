@@ -221,7 +221,7 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
         price = int(request.POST.get('price_submit', self.order.original_price))
         self.order.set_accessible_price(price)
         if self.registration.is_submitted:
-            return redirect('payment_plan')
+            return redirect('make_payment')
         else:
             return redirect('register_volunteer')
 
@@ -248,7 +248,7 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
                     order.save()
                     order.invoice_set.all().delete()
                 if self.registration.is_submitted:
-                    return redirect('payment_plan')
+                    return redirect('make_payment')
                 else:
                     return redirect('register_volunteer')
     
@@ -314,58 +314,19 @@ class RegisterMiscView(VolunteerSelectionRequiredMixin, FunctionBasedView, View)
             form = RegMiscForm(request.POST, instance=registration)
             if form.is_valid():
                 form.save()
-                return redirect('payment_plan')  # logic needed here to decide whether payment is needed
+                return redirect('make_payment')  # logic needed here to decide whether payment is needed
         else:
             form = RegMiscForm(instance=self.registration)
         return render(request, 'registration/register_misc.html', {'form': form})
 
 
-class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
-    template_name = 'registration/payment_plan.html'
+class MakePaymentView(VolunteerSelectionRequiredMixin, TemplateView):
+    template_name = 'registration/payment.html'
     previous_button = SubmitButton('Previous')
-    next_button = SubmitButton('Next')
-
-    def get(self, request):
-        if self.order.accessible_price + self.order.donation == 0:
-            return redirect('payment_confirmation')
-
-        self.months_range = range(1, 5)
-        self.already_selected = self.order.invoice_set.exists()
-        if self.already_selected:
-            self.payments_per_month = request.session['payments_per_month']
-            self.months = request.session['months']
-        else:
-            self.payments_per_month = 1
-            self.months = 1
-        return super().get(request)
+    back_to_selection = LinkButton('register_products', 'Back to Selection')
 
     def post(self, request):
-        if self.next_button.name in request.POST:
-            self.order.invoice_set.all().delete()
-            payments_per_month = int(request.POST.get('ppm'))
-            months = int(request.POST.get('months'))
-            request.session['payments_per_month'] = payments_per_month
-            request.session['months'] = months
-
-            numOfPayments = payments_per_month * months
-            individualPayment = int(self.order.total_price / numOfPayments)
-            firstPayment = individualPayment + self.order.total_price - individualPayment * numOfPayments
-
-            date = timezone.now()
-            date_in_two_weeks = date + relativedelta(weeks=+2)
-
-            Invoice.objects.create(order=self.order, pay_at_checkout=True, due_date=date, amount=firstPayment)
-            if payments_per_month == 2:
-                Invoice.objects.create(order=self.order, due_date=date_in_two_weeks, amount=individualPayment)
-
-            for i in range(1, months):
-                Invoice.objects.create(order=self.order, due_date=date+relativedelta(months=i), amount=individualPayment)
-                if payments_per_month == 2:
-                    Invoice.objects.create(order=self.order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)
-
-            return redirect('make_payment')
-
-        elif self.previous_button.name in request.POST:
+        if self.previous_button.name in request.POST:
             if self.registration.is_submitted:
                 if self.order.is_accessible_pricing:
                     return redirect('register_products')
@@ -374,35 +335,49 @@ class PaymentPlan(VolunteerSelectionRequiredMixin, TemplateView):
             else:
                 return redirect('register_misc')
 
-
-class MakePaymentView(InvoiceRequiredMixin, TemplateView):
-    template_name = 'registration/payment.html'
-    previous_button = LinkButton('payment_plan', 'Previous')
-    back_to_selection = LinkButton('register_products', 'Back to Selection')
-
-    def post(self, request):
-        if 'previous' in request.POST:
-            return redirect('payment_plan')
-
     def get(self, request):
-        self.amount_due = self.order.invoice_set.get(pay_at_checkout=True).amount
+        if self.order.accessible_price + self.order.donation == 0:
+            return redirect('payment_confirmation')
+
+        # Set default Payment Plan / resets on Refresh
+        self.months_range = range(1, 5)
+        self.payments_per_month = 1
+        self.months = 1
         self.items = get_quantity_purchased_for_item(self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank'), request.user).iterator()
         self.items = map(add_quantity_range_to_item, self.items)
+
         return super().get(request)
 
 
-class NewCheckoutView(InvoiceRequiredMixin, View):
-    def get(self, request):
-        # Using fake amount and variable because real variable unknown atm 6.15.20
-        invoice = self.order.invoice_set.get(pay_at_checkout=True)
-        reg_amount = invoice.amount
+class NewCheckoutView(VolunteerSelectionRequiredMixin, View):
+    def post(self, request):
 
-        # urls for recieving redirects from Stripe
+        self.order.invoice_set.all().delete()
+        payments_per_month = int(request.POST.get('ppm'))
+        months = int(request.POST.get('months'))
+
+        numOfPayments = payments_per_month * months
+        individualPayment = int(self.order.total_price / numOfPayments)
+        firstPayment = individualPayment + self.order.total_price - individualPayment * numOfPayments
+
+        date = timezone.now()
+        date_in_two_weeks = date + relativedelta(weeks=+2)
+
+        first_invoice = Invoice.objects.create(order=self.order, pay_at_checkout=True, due_date=date, amount=firstPayment)
+        if payments_per_month == 2:
+            Invoice.objects.create(order=self.order, due_date=date_in_two_weeks, amount=individualPayment)
+
+        for i in range(1, months):
+            Invoice.objects.create(order=self.order, due_date=date+relativedelta(months=i), amount=individualPayment)
+            if payments_per_month == 2:
+                Invoice.objects.create(order=self.order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)
+
+        # Stripe Session Code
         success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
         cancel_url = request.build_absolute_uri(reverse('make_payment'))
 
         try:
-            checkout_session_id = create_stripe_checkout_session(reg_amount, success_url, cancel_url)
+            checkout_session_id = create_stripe_checkout_session(firstPayment, success_url, cancel_url)
             
             # Provide public key to initialize Stripe Client in browser
             # And checkout session id
