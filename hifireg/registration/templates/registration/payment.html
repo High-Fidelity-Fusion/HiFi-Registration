@@ -20,8 +20,58 @@
 
     {% include "utils/form_fields.html" %}
 
+
+    <label>
+        <input id="checkbox" onclick="setDefaultPaymentPlan('ppm-dropdown', 'months-dropdown', '1', '1')" type="checkbox">
+            I am not able to pay this up front and need a payment plan.
+    </label>
+
+    <div id="hidden-div" class="hidden-div">
+        <div>By selecting a pyament plan, you are agreeing to the following terms:</div>
+        
+        <div>Asdfasdfasdfasdfasdfasdasvasvsda</div>
+        
+        <div>Make your plan:</div>
+        
+        <span class="field">
+            <span class="control">
+                <span class="select">
+                    <select id= "ppm-dropdown" name="ppm" onchange="calculateAmountPerPayment()">
+                        <option value="1" {% if 1 == view.payments_per_month %}selected="selected"{% endif %}>1</option>
+                        <option value="2" {% if 2 == view.payments_per_month %}selected="selected"{% endif %}>2</option>
+                    </select>
+                </span>
+            </span>
+        </span>
+        
+        <label for="ppm">Payment(s) per month</label>
+
+        <div>for</div>
+
+        <span class="field">
+            <span class="control">
+                <span class="select">
+                    <select id="months-dropdown" name="months" onchange="calculateAmountPerPayment()">
+                        {% for i in view.months_range %}
+                            <option value="{{ i }}" {% if i == view.months %}selected="selected"{% endif %}>{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </span>
+            </span>
+        </span>
+
+        <label for="months">Month(s)</label>
+
+        <p class="subtitle">Estimated due dates:</p>
+        <p>These may be off by a day once your order is finalized. You will be shown confirmed due dates after completing your order.</p>
+
+        <div id="payment-options"></div>
+
+    </div>
+
+
     <div class="control">
-        <button type="submit" name='previous' class="button is-link">Previous</button>
+        {% include "utils/button.html" with button=view.previous_button %}
         <button id="checkoutButton" type="submit" name='submit' class="button is-link">Checkout</button>
     </div>
 

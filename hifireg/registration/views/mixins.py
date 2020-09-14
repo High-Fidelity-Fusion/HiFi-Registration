@@ -76,7 +76,7 @@ class InvoiceRequiredMixin:
         if self.order.invoice_set.exists():
             return super().dispatch(request, *args, **kwargs)
         messages.error(request, 'You have no invoices to pay.')    
-        return redirect('payment_plan')
+        return redirect('make_payment')
 
 
 @chain_with(InvoiceRequiredMixin)
