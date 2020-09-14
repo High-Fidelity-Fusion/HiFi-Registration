@@ -25,13 +25,13 @@
         <th>Accessible Total</th>
         <th></th>
         <th></th>
-        <th>{{order.accessible_price|dollars}}</th>
+        <th id="order-total">{{order.accessible_price|dollars}}</th>
     </tr>
     <tr class="is-size-4">
         <th>Due Now</th>
         <th></th>
         <th></th>
-        <th>{{view.amount_due|dollars}}</th>
+        <th id="dueToday"></th>
     </tr>
 {% else %}
     <tr>
@@ -50,13 +50,13 @@
         <th>Total</th>
         <th></th>
         <th></th>
-        <th>{{order.donation|add:order.original_price|dollars}}</th>
+        <th id="order-total">{{order.donation|add:order.original_price|dollars}}</th>
     </tr>
     <tr class="is-size-4">
         <th>Due Now</th>
         <th></th>
         <th></th>
-        <th>{{view.amount_due|dollars}}</th>
+        <th id="dueToday"></th>
     </tr>
 {% endif %}
     </tfoot>
