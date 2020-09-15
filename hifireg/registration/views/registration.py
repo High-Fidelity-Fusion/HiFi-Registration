@@ -12,7 +12,7 @@ from django.views import View
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
+from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegisterDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
 from registration.models.helpers import with_is_paid
 
@@ -264,35 +264,26 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
         self.order.set_accessible_price(price)
         return redirect('make_payment')
 
+class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, UpdateView):
+    template_name = 'registration/register_donate.html'
+    form_class = RegisterDonateForm
+    success_url = reverse_lazy('make_payment')
+    previous_url = 'register_products'
 
-class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBasedView, View):
+    def get_object(self):
+        # Used by UpdateView via the SingleObjectMixin to set the instance used by the ModelForm:
+        return self.order
+
     def dispatch_mixin(self, request):
         if self.order.is_accessible_pricing:
             return redirect('register_products')
-
-    def fbv(self, request):
-        order = Order.for_user(request.user)
-
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                if self.order.ap_eligible_amount == 0:
-                    return redirect('register_products')
-                return redirect('register_products')
-            form = RegDonateForm(request.POST)
-            if form.is_valid():
-                cd = form.cleaned_data
-                donation = int(100 * cd['donation'])
-                if donation != order.donation:
-                    order.donation = donation
-                    order.save()
-                    order.invoice_set.all().delete()
-                return redirect('make_payment')
+        self.existing_donation = self.order.donation
     
-        subtotal = '${:,.2f}'.format(order.original_price * .01)
-        form = RegDonateForm()
-        form.fields['donation'].initial = float(order.donation) * .01
-        context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
-        return render(request, 'registration/register_donate.html', context)
+    def form_valid(self, form):
+        if self.order.donation != self.existing_donation:
+            self.order.invoice_set.all().delete()           
+        return super().form_valid(form)
+
 
 class MakePaymentView(NonZeroOrderRequiredMixin, TemplateView):
     template_name = 'registration/payment.html'

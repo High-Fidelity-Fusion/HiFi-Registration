@@ -8,39 +8,31 @@
 
 {% block card_content %}
 
-<p class="title">Additional Contributions</p>
+<p class="title">Additional Contribution</p>
 
 <form method="post">
     {% csrf_token %}
 
-    <p>Cart Subtotal: <output id="id_subtotal">{{ subtotal }}</output></p>
-
-    {% for field in form %}
     <div class="field">
-        <label class="label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-
-        <div class="field has-addons">
-            <div class="control">
-                <a class="button is-static">$</a>
-            </div>
-            <div class="control">
-                {{ field|add_class:"input" }}
-            </div>
-        </div>
-        {% include "utils/form_field_help.html" %}
+        <p>Cart Subtotal: <output id="id_subtotal">{{ view.order.original_price|dollars }}</output></p>
     </div>
-    {% endfor %}
+
+    <div class="field">
+        <div class="control">
+            <input class="input" id="donation_input" maxlength="10" value="{{ view.existing_donation|dollars }}"></input>
+        </div>
+        {% include "utils/form_field_help.html" with field=form.donation %}
+    </div>
 
     <div class="field">
         <p>Total: <output id="id_total"></output></p>
     </div>
 
-    <div class="control">
-        <button type="submit" name="previous" class="button is-link">
-            Previous
-        </button>
-        <button type="submit" name="next" class="button is-link">Next</button>
-    </div>
+    {{ form.donation }} <!-- hidden donation field -->
+
+    <a class="button" href="{% url view.previous_url %}">Previous</a>
+    <button type="submit" name="next" class="button is-primary is-pulled-right">Next</button>
+
 </form>
 
 <script src="{% static 'scripts/donate-page-outputs.js' %}"></script>

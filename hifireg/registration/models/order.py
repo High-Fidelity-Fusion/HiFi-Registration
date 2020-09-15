@@ -1,12 +1,13 @@
+from django.contrib.sessions.models import Session
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.db import transaction
-from django.contrib.sessions.models import Session
 from django.db.models import Sum, F
-from .product import Product
-from .registration import Registration
+
 from .ap_fund import APFund
 from .order_item import OrderItem
+from .product import Product
+from .registration import Registration
 
 class Order(models.Model):
     session = models.OneToOneField(Session, on_delete=models.CASCADE, null=True)
