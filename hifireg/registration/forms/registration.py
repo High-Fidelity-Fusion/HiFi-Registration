@@ -108,7 +108,8 @@ class RegCompCodeForm(forms.Form):
         return self.cleaned_data
 
 
-class RegDonateForm(forms.Form):
-    donation = forms.IntegerField(
-        label='I would like to contribute this dollar amount:', initial=0
-    )
+class RegisterDonateForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['donation']
+        widgets = {'donation': forms.HiddenInput()}
