@@ -40,7 +40,7 @@ format:
 lint:
 	pylint hifireg/registration
 
-test-data:
+test-data: migrate
 	$(MANAGE) shell -c "from registration.tests import setup_products; setup_products()"
 
 settings:
