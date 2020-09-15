@@ -21,17 +21,11 @@
         <th></th>
     </tr>
 {% if order.original_price > order.accessible_price %}
-    <tr>
+    <tr class="is-size-4">
         <th>Accessible Total</th>
         <th></th>
         <th></th>
         <th id="order-total">{{order.accessible_price|dollars}}</th>
-    </tr>
-    <tr class="is-size-4">
-        <th>Due Now</th>
-        <th></th>
-        <th></th>
-        <th id="dueToday"></th>
     </tr>
 {% else %}
     <tr>
@@ -46,17 +40,11 @@
         <th></th>
         <th>{{order.donation|dollars}}</th>
     </tr>
-    <tr>
+    <tr class="is-size-4">
         <th>Total</th>
         <th></th>
         <th></th>
         <th id="order-total">{{order.donation|add:order.original_price|dollars}}</th>
-    </tr>
-    <tr class="is-size-4">
-        <th>Due Now</th>
-        <th></th>
-        <th></th>
-        <th id="dueToday"></th>
     </tr>
 {% endif %}
     </tfoot>
