@@ -76,8 +76,9 @@ The Human Economic Negotiating Adjuster
         document.getElementById("min_price").textContent = min_price;
         less_element.textContent = "$" + min_price;
         more_element.textContent = "$" + max_price;
+        price_submit_element.setAttribute("value", "" + price_list[search_index] * 100);
         AnimatePrice();
-    }
+    };
 
     /* Button callbacks */
     function PriceDecrease() {

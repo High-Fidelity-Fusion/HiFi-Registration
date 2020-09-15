@@ -81,6 +81,7 @@ def setup_products():
     ProductCategory.objects.all().delete()
     ProductSlot.objects.all().delete()
     APFund.objects.all().delete()
+    Registration.objects.all().delete()
 
     setup_products_no_delete()
 

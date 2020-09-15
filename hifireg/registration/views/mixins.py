@@ -36,6 +36,14 @@ class PolicyRequiredMixin:
 
 
 @chain_with(PolicyRequiredMixin)
+class FormsRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.registration.wants_to_volunteer is None:
+            return redirect('register_volunteer')
+        return super().dispatch(request, *args, **kwargs)
+
+
+@chain_with(FormsRequiredMixin)
 class CreateOrderMixin:
     def dispatch(self, request, *args, **kwargs):
         self.order, created = Order.objects.update_or_create(
@@ -44,7 +52,7 @@ class CreateOrderMixin:
             defaults={'session': Session.objects.get(pk=request.session.session_key)})
         return super().dispatch(request, *args, **kwargs)
 
-@chain_with(PolicyRequiredMixin)
+@chain_with(FormsRequiredMixin)
 class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
@@ -63,14 +71,6 @@ class NonZeroOrderRequiredMixin:
 
 
 @chain_with(NonZeroOrderRequiredMixin)
-class VolunteerSelectionRequiredMixin:
-    def dispatch(self, request, *args, **kwargs):
-        if self.registration.wants_to_volunteer is None:
-            return redirect('register_volunteer')
-        return super().dispatch(request, *args, **kwargs)
-
-
-@chain_with(VolunteerSelectionRequiredMixin)
 class InvoiceRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if self.order.invoice_set.exists():
@@ -79,7 +79,7 @@ class InvoiceRequiredMixin:
         return redirect('make_payment')
 
 
-@chain_with(InvoiceRequiredMixin)
+@chain_with(NonZeroOrderRequiredMixin)
 class FinishedOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if self.order.accessible_price + self.order.donation == 0:

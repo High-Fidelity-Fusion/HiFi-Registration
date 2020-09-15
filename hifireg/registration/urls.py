@@ -21,6 +21,7 @@ urlpatterns = [
     # must have registration:
     path('register/', RedirectView.as_view(url=reverse_lazy('register_policy')), name='registration'), # redirects to registration creation view
     path('register/policy/', views.RegisterPolicyView.as_view(), name='register_policy'),
+    path('register/forms/', views.RegisterFormsView.as_view(), name='register_forms'),
 
     # must have order:
     path('register/selection/', views.RegisterAllProductsView.as_view(), name='register_products'),
@@ -30,9 +31,6 @@ urlpatterns = [
 
     path('register/accessible-pricing/', views.RegisterAccessiblePricingView.as_view(), name='register_accessible_pricing'),
     path('register/donate/', views.RegisterDonateView.as_view(), name='register_donate'),
-    path('register/volunteer/', views.RegisterVolunteerView.as_view(), name='register_volunteer'),
-    path('register/volunteer/details/', views.RegisterVolunteerDetailsView.as_view(), name='register_volunteer_details'),
-    path('register/miscellaneous/', views.RegisterMiscView.as_view(), name='register_misc'),
 
     # payment:
     path('payment/', views.MakePaymentView.as_view(), name='make_payment'),
