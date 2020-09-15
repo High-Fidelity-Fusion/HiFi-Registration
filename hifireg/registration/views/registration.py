@@ -19,7 +19,7 @@ from registration.models.helpers import with_is_paid
 from .email_handler import send_confirmation
 from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item
 from .mailchimp_client import create_or_update_subscriber
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, VolunteerSelectionRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
+from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
 from .mixins import DispatchMixin, FunctionBasedView
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .utils import SubmitButton, LinkButton
@@ -123,11 +123,53 @@ class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
     template_name = 'registration/register_policy.html'
     model = Registration
     form_class = RegisterPolicyForm
-    success_url = reverse_lazy('register_products')
+    success_url = reverse_lazy('register_forms')
     previous_url = 'index'
 
     def get_object(self):
         return self.registration
+
+class RegisterFormsView(RegistrationRequiredMixin, TemplateView):
+    template_name = 'registration/register_forms.html'
+
+    def get(self, request):
+        self.volunteer_form = RegVolunteerForm(instance=self.registration, prefix='volunteer_form')
+        self.volunteer_details_form = RegVolunteerDetailsForm(instance=self.registration, prefix='volunteer_details_form')
+        self.misc_form = RegMiscForm(instance=self.registration, prefix='misc_form')
+        return super().get(request)
+
+    def post(self, request):
+        if 'next_button' in request.POST:
+            self.volunteer_form = RegVolunteerForm(request.POST, instance=self.registration, prefix='volunteer_form')
+            self.volunteer_details_form = RegVolunteerDetailsForm(instance=self.registration, prefix='volunteer_details_form')
+            self.misc_form = RegMiscForm(request.POST, instance=self.registration, prefix='misc_form')
+            if self.misc_form.is_valid() and self.volunteer_form.is_valid():
+                if self.volunteer_form.cleaned_data['wants_to_volunteer']:
+                    try:
+                        volunteer = Volunteer.objects.get(registration=self.registration)
+                    except ObjectDoesNotExist:
+                        volunteer = Volunteer()
+                        volunteer.save()
+                        volunteer.registration = self.registration
+                        volunteer.save()
+                    self.volunteer_details_form = RegVolunteerDetailsForm(request.POST, request.FILES, instance=volunteer, prefix='volunteer_details_form')
+                    if self.volunteer_details_form.is_valid():
+                        self.volunteer_details_form.save()
+                        self.misc_form.save()
+                        self.volunteer_form.save()
+                        return redirect('register_products')
+                else:
+                    try:
+                        volunteer = Volunteer.objects.get(registration=self.registration)
+                        volunteer.delete()
+                    except ObjectDoesNotExist:
+                        pass
+                    self.misc_form.save()
+                    self.volunteer_form.save()
+                    return redirect('register_products')
+            return super().get(request)
+        else:
+            return redirect('register_policy')
 
 
 class RegisterAllProductsView(CreateOrderMixin, FormView):
@@ -220,10 +262,7 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
     def post(self, request):
         price = int(request.POST.get('price_submit', self.order.original_price))
         self.order.set_accessible_price(price)
-        if self.registration.is_submitted:
-            return redirect('make_payment')
-        else:
-            return redirect('register_volunteer')
+        return redirect('make_payment')
 
 
 class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBasedView, View):
@@ -247,10 +286,7 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
                     order.donation = donation
                     order.save()
                     order.invoice_set.all().delete()
-                if self.registration.is_submitted:
-                    return redirect('make_payment')
-                else:
-                    return redirect('register_volunteer')
+                return redirect('make_payment')
     
         subtotal = '${:,.2f}'.format(order.original_price * .01)
         form = RegDonateForm()
@@ -258,82 +294,17 @@ class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, FunctionBased
         context = {'form': form, 'subtotal': subtotal, 'donation': order.donation}
         return render(request, 'registration/register_donate.html', context)
 
-
-class RegisterVolunteerView(NonZeroOrderRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                if self.order.is_accessible_pricing:
-                    return redirect('register_products')
-                else:
-                    return redirect('register_donate')
-            form = RegVolunteerForm(request.POST, instance=self.registration)
-            if form.is_valid():
-                registration = form.save()
-                if registration.wants_to_volunteer:
-                    return redirect('register_volunteer_details')
-                else:
-                    return redirect('register_misc')
-        else:
-            form = RegVolunteerForm(instance=self.registration)
-        return render(request, 'registration/register_volunteer.html', {'form': form})
-
-
-class RegisterVolunteerDetailsView(VolunteerSelectionRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        registration = self.registration
-        try:
-            volunteer = Volunteer.objects.get(registration=registration)
-        except ObjectDoesNotExist:
-            volunteer = Volunteer()
-            volunteer.save()
-            volunteer.registration = registration
-            volunteer.save()
-
-        if request.method == 'POST':
-            if 'previous' in request.POST:
-                return redirect('register_volunteer')
-            form = RegVolunteerDetailsForm(request.POST, request.FILES, instance=volunteer)
-            if form.is_valid():
-                form.save()
-                return redirect('register_misc')
-        else:
-            form = RegVolunteerDetailsForm(instance=volunteer)
-        return render(request, 'registration/register_volunteer_details.html', {'form': form})
-
-
-class RegisterMiscView(VolunteerSelectionRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            registration = Registration.objects.get(user=request.user)
-            if 'previous' in request.POST:
-                if registration.wants_to_volunteer:
-                    return redirect('register_volunteer_details')
-                else:
-                    return redirect('register_volunteer')
-            form = RegMiscForm(request.POST, instance=registration)
-            if form.is_valid():
-                form.save()
-                return redirect('make_payment')  # logic needed here to decide whether payment is needed
-        else:
-            form = RegMiscForm(instance=self.registration)
-        return render(request, 'registration/register_misc.html', {'form': form})
-
-
-class MakePaymentView(VolunteerSelectionRequiredMixin, TemplateView):
+class MakePaymentView(NonZeroOrderRequiredMixin, TemplateView):
     template_name = 'registration/payment.html'
     previous_button = SubmitButton('Previous')
     back_to_selection = LinkButton('register_products', 'Back to Selection')
 
     def post(self, request):
         if self.previous_button.name in request.POST:
-            if self.registration.is_submitted:
-                if self.order.is_accessible_pricing:
-                    return redirect('register_products')
-                else:
-                    return redirect('register_donate')
+            if self.order.is_accessible_pricing:
+                return redirect('register_products')
             else:
-                return redirect('register_misc')
+                return redirect('register_donate')
 
     def get(self, request):
         if self.order.accessible_price + self.order.donation == 0:
@@ -349,7 +320,7 @@ class MakePaymentView(VolunteerSelectionRequiredMixin, TemplateView):
         return super().get(request)
 
 
-class NewCheckoutView(VolunteerSelectionRequiredMixin, View):
+class NewCheckoutView(NonZeroOrderRequiredMixin, View):
     def post(self, request):
 
         self.order.invoice_set.all().delete()

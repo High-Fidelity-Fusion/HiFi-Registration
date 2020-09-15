@@ -1,0 +1,38 @@
+{% extends "registration/base.html" %}
+
+{% block countdown %}
+{% include 'registration/countdown_widget.html' %}
+{% endblock %}
+
+{% block card_content %}
+
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <h3 class="subtitle is-3">Volunteering</h3>
+  {% with form=view.volunteer_form %}
+  {% include "utils/form_fields.html" %}
+  {% endwith %}
+
+  <div id="volunteer-details-div">
+    {% with form=view.volunteer_details_form %}
+    {% include "utils/form_fields.html" %}
+    {% endwith %}
+  </div>
+
+  <h3 class="subtitle is-3">Miscellaneous</h3>
+  {% with form=view.misc_form %}
+  {% include "utils/form_fields.html" %}
+  {% endwith %}
+
+  <div class="control">
+    <button type="submit" name='previous_button' class="button is-link">Previous</button>
+    <button type="submit" name='next_button' class="button is-link">Next</button>
+  </div>
+</form>
+
+{% load static %}
+<script src="{% static 'scripts/register_forms.js' %}"></script>
+
+{% endblock %}
