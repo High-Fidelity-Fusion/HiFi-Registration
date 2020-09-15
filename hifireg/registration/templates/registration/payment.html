@@ -20,59 +20,57 @@
 
     {% include "utils/form_fields.html" %}
 
-
+<div class="box">
     <label>
         <input id="checkbox" onclick="setDefaultPaymentPlan('ppm-dropdown', 'months-dropdown', '1', '1')" type="checkbox">
-            I am not able to pay this up front and need a payment plan.
+            Check this box if you are not able to pay the total today and need a Payment Plan.
     </label>
 
     <div id="hidden-div" class="hidden-div">
-        <div>By selecting a pyament plan, you are agreeing to the following terms:</div>
+        <br>
+        <h3 class="subtitle is-3">Payment Plan Terms:</h3>
         
-        <div>Asdfasdfasdfasdfasdfasdasvasvsda</div>
+        <div>[Terms]</div>
+<br>
+        <h3 class="subtitle is-3">Make your plan:</h3>
         
-        <div>Make your plan:</div>
-        
-        <span class="field">
-            <span class="control">
-                <span class="select">
-                    <select id= "ppm-dropdown" name="ppm" onchange="calculateAmountPerPayment()">
-                        <option value="1" {% if 1 == view.payments_per_month %}selected="selected"{% endif %}>1</option>
-                        <option value="2" {% if 2 == view.payments_per_month %}selected="selected"{% endif %}>2</option>
-                    </select>
+        <span class="level">
+            <span class="field level-left">
+                <span class="control level-item">
+                    <span class="select">
+                        <select id= "ppm-dropdown" name="ppm" onchange="calculateAmountPerPayment()">
+                            <option value="1" {% if 1 == view.payments_per_month %}selected="selected"{% endif %}>1</option>
+                            <option value="2" {% if 2 == view.payments_per_month %}selected="selected"{% endif %}>2</option>
+                        </select>
+                    </span>
                 </span>
+                <p class="level-item">Payment(s) per month for</p>
+                <span class="control level-item">
+                    <span class="select">
+                        <select id="months-dropdown" name="months" onchange="calculateAmountPerPayment()">
+                            {% for i in view.months_range %}
+                                <option value="{{ i }}" {% if i == view.months %}selected="selected"{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </span>
+                </span>
+                <p class="level-item">Month(s)</p>
             </span>
         </span>
-        
-        <label for="ppm">Payment(s) per month</label>
 
-        <div>for</div>
+        <h3 class="subtitle is-3">Estimated due dates:</h3>
 
-        <span class="field">
-            <span class="control">
-                <span class="select">
-                    <select id="months-dropdown" name="months" onchange="calculateAmountPerPayment()">
-                        {% for i in view.months_range %}
-                            <option value="{{ i }}" {% if i == view.months %}selected="selected"{% endif %}>{{ i }}</option>
-                        {% endfor %}
-                    </select>
-                </span>
-            </span>
-        </span>
-
-        <label for="months">Month(s)</label>
-
-        <p class="subtitle">Estimated due dates:</p>
-        <p>These may be off by a day once your order is finalized. You will be shown confirmed due dates after completing your order.</p>
-
-        <div id="payment-options"></div>
+        <span class="has-text-weight-bold">Due today: </span><span id="dueToday" class="has-text-weight-bold"></span>
+        <div id="payment-options" class="has-text-weight-bold"></div>
+        <br>
+        <p>Final due dates may differ slightly. You will be shown finalized due dates after completing your order.</p>
 
     </div>
-
-
+</div>
+    <br>
     <div class="control">
         {% include "utils/button.html" with button=view.previous_button %}
-        <button id="checkoutButton" type="submit" name='submit' class="button is-link">Checkout</button>
+        <button id="checkoutButton" type="submit" name='submit' class="button is-primary">Checkout</button>
     </div>
 
 </form>
