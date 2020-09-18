@@ -22,7 +22,7 @@ def eq(value, arg):
 
 @register.filter
 def dollars(value):
-    return f"${value * 0.01:,.2f}"
+    return f"${value * 0.01:.2f}"
 
 
 @register.filter
