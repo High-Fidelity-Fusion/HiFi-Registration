@@ -101,7 +101,3 @@ class Order(models.Model):
         return (APFund.objects.aggregate(Sum('contribution'))['contribution__sum'] or 0) \
             - (cls.objects.filter(session__isnull=True).aggregate(disbursed_amount=Sum('original_price') - Sum('accessible_price'))['disbursed_amount'] or 0) \
             - (cls.objects.filter(session__isnull=False, original_price__gt=F('accessible_price')).aggregate(disbursed_amount=Sum('ap_eligible_amount'))['disbursed_amount'] or 0)
-
-    @classmethod
-    def for_user(cls, user):
-        return Registration.for_user(user).order_set.get(session__isnull=False)
