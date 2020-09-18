@@ -35,7 +35,7 @@ $(".product-checkbox").change(function() {
 
   if (this.checked) {
     $.ajax({
-      url: '/registration/ajax/add_item/',
+      url: add_item_url,
       data: {
         'product': productId,
         'increment': 1
@@ -69,7 +69,7 @@ $(".product-checkbox").change(function() {
     });
   } else {
     $.ajax({
-      url: '/registration/ajax/remove_item/',
+      url: remove_item_url,
       data: {
         'product': productId,
         'decrement': 1
@@ -112,7 +112,7 @@ $(".quantity-input").change(function() {
   thisSelector.dataset.quantity = thisSelector.value;
   if (increment > 0) {
     $.ajax({
-      url: '/registration/ajax/add_item/',
+      url: add_item_url,
       data: {
         'product': productId,
         'increment': increment
@@ -146,7 +146,7 @@ $(".quantity-input").change(function() {
   }
   if (increment < 0) {
     $.ajax({
-      url: '/registration/ajax/remove_item/',
+      url: remove_item_url,
       data: {
         'product': productId,
         'decrement': increment * -1

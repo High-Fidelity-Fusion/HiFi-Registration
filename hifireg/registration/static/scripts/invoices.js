@@ -101,7 +101,7 @@
     e.preventDefault();
     var amount = calculateTotalPaymentAmount();
 
-    $.get("/registration/invoices/pay?amount=" + amount, function(data, status){
+    $.get(pay_invoices_url + "?amount=" + amount, function(data, status){
         var stripe = Stripe(data.public_key);
        
         stripe.redirectToCheckout({

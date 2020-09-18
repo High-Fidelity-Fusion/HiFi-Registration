@@ -13,7 +13,7 @@ $("#checkoutButton").on("click", function(e){
     // make request to new_checkout url
     const csrfFormData = $('form').serialize();
 
-    $.post("/registration/payment/new-checkout", csrfFormData, function(data, status){
+    $.post(new_checkout_url, csrfFormData, function(data, status){
         // create instance of Stripe 
         var stripe = Stripe(data.public_key);
         // use Stripe to redirect to Checkout
