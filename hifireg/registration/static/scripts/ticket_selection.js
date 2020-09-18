@@ -33,14 +33,14 @@ $(".product-checkbox").change(function() {
   checkBoxes.not(thisCheckBox).prop('checked', thisCheckBox.checked);
   parents.addClass('loading');
 
+  let data = $('form').serializeArray();
+  data.push({name: 'product', value: productId},
+            {name: 'quantity', value: 1});
   if (this.checked) {
     $.ajax({
       url: add_item_url,
-      data: {
-        'product': productId,
-        'increment': 1
-      },
-      dataType: 'json',
+      method: 'POST',
+      data: data,
       success: function (data) {
         console.log(data);
         if (data.error) {
@@ -70,11 +70,8 @@ $(".product-checkbox").change(function() {
   } else {
     $.ajax({
       url: remove_item_url,
-      data: {
-        'product': productId,
-        'decrement': 1
-      },
-      dataType: 'json',
+      method: 'POST',
+      data: data,
       success: function (data) {
         if (data.error) {
           location.reload();
@@ -110,14 +107,14 @@ $(".quantity-input").change(function() {
   var newQuantity = parseInt(thisSelector.value);
   var increment = newQuantity - oldQuantity;
   thisSelector.dataset.quantity = thisSelector.value;
+  let data = $('form').serializeArray();
+  data.push({name: 'product', value: productId},
+            {name: 'quantity', value: Math.abs(increment)});
   if (increment > 0) {
     $.ajax({
       url: add_item_url,
-      data: {
-        'product': productId,
-        'increment': increment
-      },
-      dataType: 'json',
+      method: "POST",
+      data: data,
       success: function (data) {
         console.log(data);
         if (data.error) {
@@ -147,11 +144,8 @@ $(".quantity-input").change(function() {
   if (increment < 0) {
     $.ajax({
       url: remove_item_url,
-      data: {
-        'product': productId,
-        'decrement': increment * -1
-      },
-      dataType: 'json',
+      method: "POST",
+      data: data,
       success: function (data) {
         if (data.error) {
           location.reload();

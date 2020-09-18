@@ -17,7 +17,7 @@ from registration.models import CompCode, Order, ProductCategory, Registration, 
 from registration.models.helpers import with_is_paid
 
 from .email_handler import send_confirmation
-from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item
+from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item, add_remove_item_view
 from .mailchimp_client import create_or_update_subscriber
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
 from .mixins import DispatchMixin, FunctionBasedView
@@ -220,34 +220,14 @@ class RegisterAllProductsView(CreateOrderMixin, FormView):
         return super().form_valid(form)
 
 
-class AddItemView(FunctionBasedView, View):
-    def fbv(self, request):
-        try:
-            product_id = request.GET.get('product', None)
-            success = Order.for_user(request.user).add_item(product_id, int(request.GET.get('increment', None)))
-
-            data = {
-                'success': success,
-            }
-        except Exception as e:
-            data = {
-                'error': 'error: {0}'.format(e)
-            }
-        return JsonResponse(data)
+class AddItemView(OrderRequiredMixin, View):
+    def post(self, request):
+        return add_remove_item_view(request, self.order.add_item)
 
 
-class RemoveItemView(FunctionBasedView, View):
-    def fbv(self, request):
-        try:
-            product_id = request.GET.get('product', None)
-            Order.for_user(request.user).remove_item(product_id, int(request.GET.get('decrement', None)))
-
-            data = {}
-        except Exception as e:
-            data = {
-                'error': '{0}'.format(e)
-            }
-        return JsonResponse(data)
+class RemoveItemView(OrderRequiredMixin, View):
+    def post(self, request):
+        return add_remove_item_view(request, self.order.remove_item)
 
 
 class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, TemplateView):
@@ -262,6 +242,7 @@ class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, Te
         price = int(request.POST.get('price_submit', self.order.original_price))
         self.order.set_accessible_price(price)
         return redirect('make_payment')
+
 
 class RegisterDonateView(NonZeroOrderRequiredMixin, DispatchMixin, UpdateView):
     template_name = 'registration/register_donate.html'

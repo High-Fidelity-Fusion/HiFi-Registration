@@ -1,5 +1,6 @@
 from django.db.models import Subquery, OuterRef, Sum
 from django.db.models.functions import Coalesce
+from django.http import JsonResponse
 from registration.models import Product, ProductCategory, ProductSlot, Registration, OrderItem
 
 class ProductStatuses:
@@ -64,3 +65,16 @@ def add_quantity_range_to_item(item):
     item.quantity_range = range(0, min(item.product.max_quantity_per_reg - item.quantity_purchased, item.product.available_quantity + item.quantity) + 1)
     return item
 
+def add_remove_item_view(request, action):
+    try:
+        product_id = request.POST['product']
+        success = action(product_id, int(request.POST['quantity']))
+        
+        data = {
+            'success': success,
+        }
+    except Exception as e:
+        data = {
+            'error': 'error: {0}'.format(e)
+        }
+    return JsonResponse(data)

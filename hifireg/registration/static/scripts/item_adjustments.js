@@ -9,14 +9,14 @@ $(".quantity-input").change(function() {
   var newQuantity = parseInt(thisSelector.value);
   var increment = newQuantity - oldQuantity;
   thisSelector.dataset.quantity = thisSelector.value;
+  let data = $('form').serializeArray();
+  data.push({name: 'product', value: productId},
+            {name: 'quantity', value: Math.abs(increment)});
   if (increment > 0) {
     $.ajax({
       url: add_item_url,
-      data: {
-        'product': productId,
-        'increment': increment
-      },
-      dataType: 'json',
+      method: "POST",
+      data: data,
       success: function (data) {
         location.reload();
         // console.log(data);
@@ -41,11 +41,8 @@ $(".quantity-input").change(function() {
   if (increment < 0) {
     $.ajax({
       url: remove_item_url,
-      data: {
-        'product': productId,
-        'decrement': increment * -1
-      },
-      dataType: 'json',
+      method: "POST",
+      data: data,
       success: function (data) {
 
         location.reload();
