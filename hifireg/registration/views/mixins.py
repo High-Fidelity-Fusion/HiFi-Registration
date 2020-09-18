@@ -52,13 +52,14 @@ class CreateOrderMixin:
             defaults={'session': Session.objects.get(pk=request.session.session_key)})
         return super().dispatch(request, *args, **kwargs)
 
+
 @chain_with(FormsRequiredMixin)
 class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
             self.order = Order.objects.get(registration=self.registration, session__pk=request.session.session_key)
         except ObjectDoesNotExist:
-            return redirect('order')
+            return redirect('register_products')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -66,7 +67,7 @@ class OrderRequiredMixin:
 class NonZeroOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.order.orderitem_set.exists():
-            return redirect('make_payment')
+            return redirect('register_products')
         return super().dispatch(request, *args, **kwargs)
 
 
