@@ -20,7 +20,7 @@ from .email_handler import send_confirmation
 from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item, add_remove_item_view
 from .mailchimp_client import create_or_update_subscriber
 from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
-from .mixins import DispatchMixin, FunctionBasedView
+from .mixins import DispatchMixin
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .utils import SubmitButton, LinkButton
 
@@ -70,8 +70,8 @@ class OrdersView(LoginRequiredMixin, TemplateView):
         return super().get(request)
 
 
-class InvoicesView(RegistrationRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
+class InvoicesView(RegistrationRequiredMixin, View):
+    def get(self, request):
         unpaid_invoices = with_is_paid(
             Invoice.objects.filter(
                 order__registration__pk=self.registration.pk
@@ -84,30 +84,28 @@ class InvoicesView(RegistrationRequiredMixin, FunctionBasedView, View):
         })
 
 
-class PayInvoicesView(RegistrationRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'GET':
+class PayInvoicesView(RegistrationRequiredMixin, View):
+    def get(self, request):
+        invoices_amount = request.GET.get('amount', '')
 
-            invoices_amount = request.GET.get('amount', '')
-
-            # urls for recieving redirects from Stripe
-            success_url = request.build_absolute_uri(reverse('pay_success')) + '?session_id={CHECKOUT_SESSION_ID}'
-            cancel_url = request.build_absolute_uri(reverse('invoices'))
-      
-            try:
-                checkout_session_id = create_stripe_checkout_session(invoices_amount, success_url, cancel_url)
-                # Provide public key to initialize Stripe Client in browser
-                # And checkout session id
-                return JsonResponse({
-                    'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
-                    'session_id': checkout_session_id,
-                })
-            except Exception as e:
-                return JsonResponse({'error': str(e)})
+        # urls for recieving redirects from Stripe
+        success_url = request.build_absolute_uri(reverse('pay_success')) + '?session_id={CHECKOUT_SESSION_ID}'
+        cancel_url = request.build_absolute_uri(reverse('invoices'))
+    
+        try:
+            checkout_session_id = create_stripe_checkout_session(invoices_amount, success_url, cancel_url)
+            # Provide public key to initialize Stripe Client in browser
+            # And checkout session id
+            return JsonResponse({
+                'public_key': settings.STRIPE_PUBLIC_TEST_KEY,
+                'session_id': checkout_session_id,
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
 
 
-class PayInvoicesSuccessView(RegistrationRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
+class PayInvoicesSuccessView(RegistrationRequiredMixin, View):
+    def get(self, request):
         session_id = request.GET.get('session_id', '')
         # If user refreshes it will not throw the ugly IntegrityError page
         try: 
@@ -127,6 +125,7 @@ class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
 
     def get_object(self):
         return self.registration
+
 
 class RegisterFormsView(RegistrationRequiredMixin, TemplateView):
     template_name = 'registration/register_forms.html'

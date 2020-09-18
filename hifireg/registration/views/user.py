@@ -10,7 +10,6 @@ from django.views.generic.edit import FormView, UpdateView
 from registration.forms import AuthenticationForm, UserCreationForm, UserUpdateForm, PasswordChangeForm, SetPasswordForm
 from registration.models import User
 
-from .mixins import FunctionBasedView
 from .utils import SubmitButton, LinkButton
 
 
