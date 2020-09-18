@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, UpdateView
 
 from registration.forms import AuthenticationForm, UserCreationForm, UserUpdateForm, PasswordChangeForm, SetPasswordForm
 from registration.models import User
@@ -32,8 +32,8 @@ class CreateUserView(FormView):
         return super().form_valid(form)
 
 
-class ViewUserView(LoginRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
+class ViewUserView(LoginRequiredMixin, View):
+    def get(self, request):
         context = {}
         context['title'] = "View Account"
         context['buttons'] = [LinkButton("index", "Back"), 
@@ -45,20 +45,15 @@ class ViewUserView(LoginRequiredMixin, FunctionBasedView, View):
         return render(request, 'utils/generic_form.html', context)
 
 
-class UpdateUserView(LoginRequiredMixin, FunctionBasedView, View):
-    def fbv(self, request):
-        if request.method == 'POST':
-            form = UserUpdateForm(request.POST, instance=request.user)
-            if form.is_valid():
-                form.save()
-                return redirect('view_user')
-        else:
-            form = UserUpdateForm(instance=request.user)
-        context = {}
-        context['title'] = "Edit Account"
-        context['buttons'] = [LinkButton("view_user", "Cancel"), SubmitButton("submit", "Submit")]
-        context['form'] = form
-        return render(request, 'utils/generic_form.html', context)
+class UpdateUserView(LoginRequiredMixin, UpdateView):
+    template_name = 'utils/generic_form.html'
+    form_class = UserUpdateForm
+    success_url = reverse_lazy('view_user')
+    extra_context = dict(title="Edit Account", 
+                         buttons=[LinkButton("view_user", "Cancel"), SubmitButton("submit", "Submit")])
+    
+    def get_object(self):
+        return self.request.user
 
 
 class PasswordChangeView(auth_views.PasswordChangeView):
