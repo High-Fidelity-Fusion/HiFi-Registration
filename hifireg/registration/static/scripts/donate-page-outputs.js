@@ -27,7 +27,7 @@ function calculateOutputs() {
     
     /* update hidden form input and output */
     const donation = Number(donation_string);
-    donation_hidden_input.value = donation * 100;
+    donation_hidden_input.value = Math.round(donation * 100); // round to eliminate floating point error
     total_output.textContent = "$" + (subtotal + donation).toFixed(2);
 }
 
