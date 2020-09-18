@@ -121,7 +121,6 @@ class PayInvoicesSuccessView(RegistrationRequiredMixin, FunctionBasedView, View)
 
 class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
     template_name = 'registration/register_policy.html'
-    model = Registration
     form_class = RegisterPolicyForm
     success_url = reverse_lazy('register_forms')
     previous_url = 'index'

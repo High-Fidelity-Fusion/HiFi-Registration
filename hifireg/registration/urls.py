@@ -19,7 +19,6 @@ urlpatterns = [
     path('beta-login/', views.BetaLoginView.as_view(), name='beta_login'),
 
     # must have registration:
-    path('register/', RedirectView.as_view(url=reverse_lazy('register_policy')), name='registration'), # redirects to registration creation view
     path('register/policy/', views.RegisterPolicyView.as_view(), name='register_policy'),
     path('register/forms/', views.RegisterFormsView.as_view(), name='register_forms'),
 
@@ -27,7 +26,6 @@ urlpatterns = [
     path('register/selection/', views.RegisterAllProductsView.as_view(), name='register_products'),
     path('ajax/add_item/', views.AddItemView.as_view(), name='add_item'),
     path('ajax/remove_item/', views.RemoveItemView.as_view(), name='remove_item'),
-
     path('register/accessible-pricing/', views.RegisterAccessiblePricingView.as_view(), name='register_accessible_pricing'),
     path('register/donate/', views.RegisterDonateView.as_view(), name='register_donate'),
 
