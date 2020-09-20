@@ -56,8 +56,7 @@
   <div class="is-clearfix is-size-4 mt-6 mb-5">
     <div class="subtotal-box my-5 py-2 px-5 is-pulled-right">
       <label class="has-text-weight-bold">SUBTOTAL</label>
-      <!-- TODO: This is not dynamically populating "Live" when boxes are checked or unchecked (it does if you manually reload) -->
-      {{ view.order.original_price|dollars }}
+      <span id="subtotal">{{ view.order.original_price|dollars }}</span>
     </div>
   </div>
 
@@ -92,5 +91,6 @@
 {% load static %}
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
 {% include "scripts/ajax_urls.js.html" %}
+<script src="{% static 'scripts/helpers.js' %}"></script>
 <script src="{% static 'scripts/ticket_selection.js' %}"></script>
 {% endblock %}

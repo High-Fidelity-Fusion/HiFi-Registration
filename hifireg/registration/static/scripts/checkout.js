@@ -1,10 +1,3 @@
-function dollars(value) {
-  value = value * 0.01;
-  value = value.toLocaleString(undefined, {
-    'minimumFractionDigits':2, 'maximumFractionDigits':2
-  });
-  return "$" + value;
-};
 
 
 // when click checkout button

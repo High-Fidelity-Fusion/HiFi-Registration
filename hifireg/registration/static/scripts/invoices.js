@@ -89,12 +89,7 @@
     return amount;
   };
 
-  // converts total amount to dollars at top of page
-  function dollars(value) {
-    value = value * 0.01;
-    value = value.toFixed(2);
-    return "$" + value;
-  };
+
   
   // AJAX (for brevity sake) request to Stripe API
   payInvoicesButton.onclick = function(e){
