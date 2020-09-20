@@ -65,13 +65,14 @@ def add_quantity_range_to_item(item):
     item.quantity_range = range(0, min(item.product.max_quantity_per_reg - item.quantity_purchased, item.product.available_quantity + item.quantity) + 1)
     return item
 
-def add_remove_item_view(request, action):
+def add_remove_item_view(request, order, action):
     try:
         product_id = request.POST['product']
         success = action(product_id, int(request.POST['quantity']))
         
         data = {
             'success': success,
+            'newTotalInCents': order.original_price,
         }
     except Exception as e:
         data = {

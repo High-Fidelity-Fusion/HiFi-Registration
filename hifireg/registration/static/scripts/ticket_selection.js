@@ -1,3 +1,6 @@
+
+
+
 //product-card clicks can togggle checkbox
 $('.product-card').on('click', function(e) {
   //if this is not a checkbox card, move on
@@ -53,7 +56,9 @@ $(".product-checkbox").change(function() {
             conflicts.addClass(`conflict-${slot}`);
           });
           parents.addClass('claimed');
-
+          var newTotal = dollars(data.newTotalInCents);
+          $('#subtotal').text(newTotal);
+          
         } else {
           resetCountDown();
           checkBoxes.prop('checked', false);
@@ -85,6 +90,8 @@ $(".product-checkbox").change(function() {
 
           $('.product-card').removeClass('call-in-progress');
           parents.removeClass('loading claimed');
+          var newTotal = dollars(data.newTotalInCents);
+          $('#subtotal').text(newTotal);
         }
       },
       error: function (xhr, status, error) {
@@ -128,6 +135,8 @@ $(".quantity-input").change(function() {
             conflicts.addClass(`conflict-${slot}`);
           });
           parent.addClass('claimed');
+          var newTotal = dollars(data.newTotalInCents);
+          $('#subtotal').text(newTotal);
 
         } else {
           location.reload();
@@ -162,6 +171,8 @@ $(".quantity-input").change(function() {
 
           $('.product-card').removeClass('call-in-progress');
           parent.removeClass('loading');
+          var newTotal = dollars(data.newTotalInCents);
+          $('#subtotal').text(newTotal);
         }
       },
       error: function (xhr, status, error) {

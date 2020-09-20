@@ -221,12 +221,12 @@ class RegisterAllProductsView(CreateOrderMixin, FormView):
 
 class AddItemView(OrderRequiredMixin, View):
     def post(self, request):
-        return add_remove_item_view(request, self.order.add_item)
+        return add_remove_item_view(request, self.order, self.order.add_item)
 
 
 class RemoveItemView(OrderRequiredMixin, View):
     def post(self, request):
-        return add_remove_item_view(request, self.order.remove_item)
+        return add_remove_item_view(request, self.order, self.order.remove_item)
 
 
 class RegisterAccessiblePricingView(NonZeroOrderRequiredMixin, DispatchMixin, TemplateView):
