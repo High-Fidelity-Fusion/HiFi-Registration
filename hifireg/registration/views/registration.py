@@ -19,7 +19,7 @@ from registration.models.helpers import with_is_paid
 from .email_handler import send_confirmation
 from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item, add_remove_item_view
 from .mailchimp_client import create_or_update_subscriber
-from .mixins import RegistrationRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, PolicyRequiredMixin, InvoiceRequiredMixin, FinishedOrderRequiredMixin, CreateOrderMixin
+from .mixins import RegistrationRequiredMixin, PolicyRequiredMixin, FormsRequiredMixin, OrderRequiredMixin, NonZeroOrderRequiredMixin, FinishedOrderRequiredMixin
 from .mixins import DispatchMixin
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .utils import SubmitButton, LinkButton
@@ -42,11 +42,7 @@ class IndexView(LoginRequiredMixin, DispatchMixin, TemplateView):
     template_name = 'registration/index.html'
 
     def dispatch_mixin(self, request):
-        try:
-            self.registration = Registration.objects.get(user=request.user)
-        except ObjectDoesNotExist:
-            self.registration = Registration(user=request.user)
-            self.registration.save()
+        self.registration, _ = Registration.objects.get_or_create(user=request.user)
 
     def get(self, request):
         invoices = with_is_paid(Invoice.objects.filter(order__registration__user=request.user))
@@ -170,12 +166,18 @@ class RegisterFormsView(RegistrationRequiredMixin, TemplateView):
             return redirect('register_policy')
 
 
-class RegisterAllProductsView(CreateOrderMixin, FormView):
+class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, FormView):
     template_name = 'registration/register_products.html'
     form_class = RegCompCodeForm
     previous_button = SubmitButton('Previous')
     ap_yes_button = SubmitButton('claim_ap')
     ap_no_button = SubmitButton('not_ap')
+
+    def dispatch_mixin(self, request):
+        self.order, _ = Order.objects.update_or_create(
+            registration=self.registration,
+            session__isnull=False,
+            defaults={'session': Session.objects.get(session_key=request.session.session_key)})
 
     def get_success_url(self):
         if self.ap_yes_button.name in self.request.POST:

@@ -2,9 +2,11 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.shortcuts import redirect
 
 from registration.models import Registration, Order, Payment
+
 from .stripe_helpers import get_stripe_checkout_session_total
 
 
@@ -39,17 +41,7 @@ class PolicyRequiredMixin:
 class FormsRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if self.registration.wants_to_volunteer is None:
-            return redirect('register_volunteer')
-        return super().dispatch(request, *args, **kwargs)
-
-
-@chain_with(FormsRequiredMixin)
-class CreateOrderMixin:
-    def dispatch(self, request, *args, **kwargs):
-        self.order, created = Order.objects.update_or_create(
-            registration=self.registration,
-            session__isnull=False, 
-            defaults={'session': Session.objects.get(pk=request.session.session_key)})
+            return redirect('register_forms')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -57,7 +49,10 @@ class CreateOrderMixin:
 class OrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.order = Order.objects.get(registration=self.registration, session__pk=request.session.session_key)
+            with transaction.atomic():
+                self.order = self.registration.order_set.select_for_update().get(session__isnull=False)
+                self.order.session = Session.objects.get(session_key=request.session.session_key)
+                self.order.save()
         except ObjectDoesNotExist:
             return redirect('register_products')
         return super().dispatch(request, *args, **kwargs)
@@ -69,15 +64,6 @@ class NonZeroOrderRequiredMixin:
         if not self.order.orderitem_set.exists():
             return redirect('register_products')
         return super().dispatch(request, *args, **kwargs)
-
-
-@chain_with(NonZeroOrderRequiredMixin)
-class InvoiceRequiredMixin:
-    def dispatch(self, request, *args, **kwargs):
-        if self.order.invoice_set.exists():
-            return super().dispatch(request, *args, **kwargs)
-        messages.error(request, 'You have no invoices to pay.')    
-        return redirect('make_payment')
 
 
 @chain_with(NonZeroOrderRequiredMixin)
