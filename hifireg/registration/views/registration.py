@@ -173,6 +173,7 @@ class RegisterFormsView(RegistrationRequiredMixin, TemplateView):
 class RegisterAllProductsView(CreateOrderMixin, FormView):
     template_name = 'registration/register_products.html'
     form_class = RegCompCodeForm
+    previous_button = SubmitButton('Previous')
     ap_yes_button = SubmitButton('claim_ap')
     ap_no_button = SubmitButton('not_ap')
 

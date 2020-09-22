@@ -64,15 +64,14 @@
   <div class="choose-ap-box py-3 px-3">
     <h2 class="has-text-weight-bold is-size-5 ">Looking great!</h2>
     <p>Will you be needing any Affordable Pricing (AP) adjustments?</p>
-    <p>If not, please select NEXT.</p>
+    <p>If not, please select the Next button.</p>
 
-    <div class="buttons is-right mr-6">
+    <div class="buttons is-right mr-1">
       {% if view.ap_available %}
       {% include "utils/button.html" with button=view.ap_yes_button content="AP Please" class="is-primary mr-4" %}
       {% else %}
       {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP is Currently Unavailable 😢" class="mr-4" %}
       {% endif %}
-      {% include "utils/button.html" with button=view.ap_no_button content="Next" class="is-primary mr-4" %}
     </div>
 
     <p class="is-size-7">
@@ -81,6 +80,12 @@
     </p>
   </div>
   
+  <div class="control mt-5">
+    {% include "utils/button.html" with button=view.previous_button %}
+
+    {% include "utils/button.html" with button=view.ap_no_button content="Next" class="is-primary is-pulled-right" %}
+  </div>
+
 </form>
 
 
