@@ -31,24 +31,6 @@
 
   <hr class="heavy-rule">
 
-  <h2 class="has-text-weight-bold sectionHead is-size-5 mt-5">3. Add on a Showcase:</h2>
-
-  <p>Do you plan on taking part in the Showcare division? If not, you may skip this question.</p>
-
-  <p class="my-3">
-    <input id="showcase-checkbox" class="big-checkbox" type="checkbox">
-    <label for="showcase-checkbox">Yep! Sign me up!</label>
-  </p>
-
-  <p>
-    Please add your amount here for the show
-    <input type="text" class="is-pulled-right">
-  </p>
-
-  {% include 'registration/register_selection.html' with selection_source=showcase only %}
-
-  <hr class="heavy-rule">
-
   <h2 class="has-text-weight-bold sectionHead is-size-6 mt-5">4. Grab some Swag:</h2>
 
   {% include 'registration/register_selection.html' with selection_source=merch only %}

@@ -192,6 +192,12 @@ class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, FormView):
         elif self.ap_no_button.name in self.request.POST:
             self.order.revoke_accessible_pricing()
             return reverse('register_donate')
+        
+        elif self.previous_button.name in self.request.POST:
+            if not self.registration.is_submitted:
+                return reverse('register_forms')
+            else: 
+                return reverse('index')
 
     def get_initial(self):
         return {
