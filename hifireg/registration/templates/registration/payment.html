@@ -20,7 +20,7 @@
 
     {% include "utils/form_fields.html" %}
 
-<div class="box">
+<div class="box {% if view.is_zero_order %}hidden-div{% endif %}">
     <label>
         <input id="checkbox" onclick="setDefaultPaymentPlan('ppm-dropdown', 'months-dropdown', '1', '1')" type="checkbox">
             Check this box if you are not able to pay the total today and need a Payment Plan.
@@ -70,7 +70,12 @@
     <br>
     <div class="control">
         {% include "utils/button.html" with button=view.previous_button %}
+        {% if view.is_zero_order %}
+        {% include "utils/button.html" with button=view.submit_button %}
+        {% else %}
         <button id="checkoutButton" type="submit" name='submit' class="button is-primary">Checkout</button>
+        {% endif %}
+
     </div>
 
 </form>

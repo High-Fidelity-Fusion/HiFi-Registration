@@ -59,14 +59,22 @@ class OrderRequiredMixin:
 
 
 @chain_with(OrderRequiredMixin)
-class NonZeroOrderRequiredMixin:
+class NonEmptyOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.order.orderitem_set.exists():
+            messages.error(request, 'You must add something to your cart before continuing.')
             return redirect('register_products')
         return super().dispatch(request, *args, **kwargs)
 
+@chain_with(NonEmptyOrderRequiredMixin)
+class NonZeroOrderRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.order.accessible_price + self.order.donation == 0:
+            return redirect('index')
+        return super().dispatch(request, *args, **kwargs)
 
-@chain_with(NonZeroOrderRequiredMixin)
+
+@chain_with(NonEmptyOrderRequiredMixin)
 class FinishedOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if self.order.accessible_price + self.order.donation == 0:

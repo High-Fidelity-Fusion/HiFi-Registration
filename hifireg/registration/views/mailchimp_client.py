@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def create_or_update_subscriber(user, registration):
-    if (settings.MAILCHIMP_API_KEY):
+    if (hasattr(settings,'MAILCHIMP_API_KEY')):
         try:
             client = MailChimp(settings.MAILCHIMP_API_KEY, settings.MAILCHIMP_USERNAME)
             hash = get_subscriber_hash(user.email)
