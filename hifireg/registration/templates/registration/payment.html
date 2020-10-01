@@ -73,9 +73,8 @@
         {% if view.is_zero_order %}
         {% include "utils/button.html" with button=view.submit_button %}
         {% else %}
-        <button id="checkoutButton" type="submit" name='submit' class="button is-primary">Checkout</button>
+        <button id="checkoutButton" type="submit" name='submit' class="button is-primary is-pulled-right">Checkout</button>
         {% endif %}
-
     </div>
 
 </form>
