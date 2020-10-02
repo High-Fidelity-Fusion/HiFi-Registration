@@ -11,6 +11,7 @@ from django.views.generic.edit import FormView, UpdateView
 from django.views import View
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+import json
 
 from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegisterDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
@@ -169,36 +170,30 @@ class RegisterFormsView(PolicyRequiredMixin, TemplateView):
 class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, FormView):
     template_name = 'registration/register_products.html'
     form_class = RegCompCodeForm
-    previous_button = SubmitButton('Previous')
-    ap_yes_button = SubmitButton('claim_ap')
-    ap_no_button = SubmitButton('not_ap')
+    ap_button_name = 'claim-ap'
 
     def dispatch_mixin(self, request):
+        # Create or move order to the current session
         self.order, _ = Order.objects.update_or_create(
             registration=self.registration,
             session__isnull=False,
             defaults={'session': Session.objects.get(session_key=request.session.session_key)})
-
+        
+        # Skip over "forms" page if a registration has already been submitted
+        self.previous_url = 'index' if self.registration.is_submitted else 'register_forms'
+    
     def get_success_url(self):
-        if self.ap_yes_button.name in self.request.POST:
+        if self.ap_button_name in self.request.POST:
             if self.order.is_accessible_pricing or self.order.claim_accessible_pricing():
                 return reverse('register_accessible_pricing')
             else:
-                # TODO: Not sure what to do if this happens
                 # self.ap_available = False
                 # return super().get(self.request)
-                return reverse('register_donate')
-
-        elif self.ap_no_button.name in self.request.POST:
+                return reverse('register_products')
+        else:
             self.order.revoke_accessible_pricing()
             return reverse('register_donate')
         
-        elif self.previous_button.name in self.request.POST:
-            if not self.registration.is_submitted:
-                return reverse('register_forms')
-            else: 
-                return reverse('index')
-
     def get_initial(self):
         return {
             'code': self.registration.comp_code.code if self.registration.comp_code else ''
@@ -207,7 +202,7 @@ class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        self.ap_available = self.order.ap_eligible_amount <= self.order.get_available_ap_funds() or self.order.is_accessible_pricing
+        self.ap_data = json.dumps({'apAvailable': self.order.can_offer_accessible_price})
 
         context.update({
             'dance': get_context_for_product_selection(ProductCategory.DANCE, self.request.user),

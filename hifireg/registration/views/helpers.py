@@ -73,6 +73,7 @@ def add_remove_item_view(request, order, action):
         data = {
             'success': success,
             'newTotalInCents': order.original_price,
+            'apAvailable': order.can_offer_accessible_price,
         }
     except Exception as e:
         data = {

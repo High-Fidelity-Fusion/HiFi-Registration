@@ -32,6 +32,10 @@ class Order(models.Model):
     @property
     def is_payment_plan(self):
         return self.invoice_set.filter(pay_at_checkout=False).exists()
+    
+    @property
+    def can_offer_accessible_price(self):
+        return self.ap_eligible_amount <= self.get_available_ap_funds() or self.is_accessible_pricing
 
     def add_item(self, product_id, quantity):
         product = Product.objects.get(pk=product_id)

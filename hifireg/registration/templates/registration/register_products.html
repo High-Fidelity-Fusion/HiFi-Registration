@@ -48,23 +48,22 @@
     <p>If not, please select the Next button.</p>
 
     <div class="buttons is-right mr-1">
-      {% if view.ap_available %}
-      {% include "utils/button.html" with button=view.ap_yes_button content="AP Please" class="is-primary mr-4" %}
-      {% else %}
-      {% include "utils/button.html" with button=view.ap_yes_button attrs="disabled" content="AP is Currently Unavailable 😢" class="mr-4" %}
-      {% endif %}
+      <button type="submit" name="{{view.ap_button_name}}" id="claim-ap" class="button is-primary mr-4" data-ap-data='{{view.ap_data}}'>
+        AP Please
+      </button>
     </div>
 
     <p class="is-size-7">
       <strong>About AP:</strong>
-      This means that if you have financial need and would not be able to pay the above price, you may apply for a discount. Payment plan options will be available later in registration whether or not you apply for Accessible Pricing. Accessible Pricing is only for adjusting your order total.
+      This means that if you have financial need and would not be able to pay the above price, you may apply for a discount. 
+      Payment plan options will be available later in registration whether or not you apply for Accessible Pricing. 
+      Accessible Pricing is only for adjusting your order total.
     </p>
   </div>
   
   <div class="control mt-5">
-    {% include "utils/button.html" with button=view.previous_button %}
-
-    {% include "utils/button.html" with button=view.ap_no_button content="Next" class="is-primary is-pulled-right" %}
+    <a href={% url view.previous_url %} class="button">Previous</a>
+    <button type="submit" name="next" class="button is-primary is-pulled-right">Next</button>
   </div>
 
 </form>

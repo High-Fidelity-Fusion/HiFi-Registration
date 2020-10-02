@@ -1,5 +1,27 @@
+'use strict';
 
+const ap_button = $("#claim-ap");
 
+window.onload = function() {
+  UpdateApButton(ap_button.data("ap-data"));
+}
+
+function UpdateApButton(data) {
+  if (data.apAvailable) {
+    ap_button.text("AP Please");
+    ap_button.addClass("is-primary");
+    ap_button.prop('disabled', false);
+  } else {
+    ap_button.text("AP is Currently Unavailable 😢");
+    ap_button.removeClass("is-primary");
+    ap_button.prop('disabled', true);
+  }
+}
+
+function UpdatePage(data) {
+  $('#subtotal').text(dollars(data.newTotalInCents));
+  UpdateApButton(data);
+}
 
 //product-card clicks can togggle checkbox
 $('.product-card').on('click', function(e) {
@@ -56,9 +78,7 @@ $(".product-checkbox").change(function() {
             conflicts.addClass(`conflict-${slot}`);
           });
           parents.addClass('claimed');
-          var newTotal = dollars(data.newTotalInCents);
-          $('#subtotal').text(newTotal);
-          
+          UpdatePage(data);
         } else {
           resetCountDown();
           checkBoxes.prop('checked', false);
@@ -90,8 +110,7 @@ $(".product-checkbox").change(function() {
 
           $('.product-card').removeClass('call-in-progress');
           parents.removeClass('loading claimed');
-          var newTotal = dollars(data.newTotalInCents);
-          $('#subtotal').text(newTotal);
+          UpdatePage(data);
         }
       },
       error: function (xhr, status, error) {
@@ -135,9 +154,7 @@ $(".quantity-input").change(function() {
             conflicts.addClass(`conflict-${slot}`);
           });
           parent.addClass('claimed');
-          var newTotal = dollars(data.newTotalInCents);
-          $('#subtotal').text(newTotal);
-
+          UpdatePage(data);
         } else {
           location.reload();
         }
@@ -171,8 +188,7 @@ $(".quantity-input").change(function() {
 
           $('.product-card').removeClass('call-in-progress');
           parent.removeClass('loading');
-          var newTotal = dollars(data.newTotalInCents);
-          $('#subtotal').text(newTotal);
+          UpdatePage(data);
         }
       },
       error: function (xhr, status, error) {
