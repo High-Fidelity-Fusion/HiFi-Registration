@@ -14,11 +14,6 @@
 <form method="post">
   {% csrf_token %}
 
-  <div class="box comp-box">
-    <p>Are you a Event Partner?</p>
-    {% include "utils/form_fields.html" with field_classes="is-horizontal" %}
-  </div>
-
   <h2 class="has-text-weight-bold sectionHead is-size-5 mt-6">1. Let's get started! Select your dances:</h2>
 
   {% include 'registration/register_selection.html' with selection_source=dance only %}
