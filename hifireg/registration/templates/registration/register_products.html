@@ -14,11 +14,6 @@
 <form method="post">
   {% csrf_token %}
 
-  <div class="box comp-box">
-    <p>Are you a Event Partner?</p>
-    {% include "utils/form_fields.html" with field_classes="is-horizontal" %}
-  </div>
-
   <h2 class="has-text-weight-bold sectionHead is-size-5 mt-6">1. Let's get started! Select your dances:</h2>
 
   {% include 'registration/register_selection.html' with selection_source=dance only %}
@@ -77,10 +72,12 @@
 
     <p class="is-size-7">
       <strong>About AP:</strong>
-      This means that if you have financial need and would not be able to pay the above price, you may apply for a discount. Payment plan options will be available later in registration whether or not you apply for Accessible Pricing. Accessible Pricing is only for adjusting your order total.
+      This means that if you have financial need and would not be able to pay the above price, you may apply for a
+      discount. Payment plan options will be available later in registration whether or not you apply for Accessible
+      Pricing. Accessible Pricing is only for adjusting your order total.
     </p>
   </div>
-  
+
 </form>
 
 
@@ -88,4 +85,3 @@
 <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
 <script src="{% static 'scripts/ticket_selection.js' %}"></script>
 {% endblock %}
-
