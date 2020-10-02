@@ -43,9 +43,8 @@
     <p>If not, please select the Next button.</p>
 
     <div class="buttons is-right mr-1">
-      <button type="submit" name="{{view.ap_button_name}}" id="claim-ap" class="button is-primary mr-4" data-ap-data='{{view.ap_data}}'>
-        AP Please
-      </button>
+      <button type="button" onclick="window.location.href='{% url view.claim_ap_url %}';" 
+       id="claim-ap" class="button is-primary mr-4" data-ap-data='{{view.ap_data}}'/>
     </div>
 
     <p class="is-size-7">
@@ -58,7 +57,7 @@
   
   <div class="control mt-5">
     <a href={% url view.previous_url %} class="button">Previous</a>
-    <button type="submit" name="next" class="button is-primary is-pulled-right">Next</button>
+    <a href={% url view.next_url %} class="button is-primary is-pulled-right">Next</a>
   </div>
 
 </form>

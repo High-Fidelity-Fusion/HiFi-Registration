@@ -167,10 +167,10 @@ class RegisterFormsView(PolicyRequiredMixin, TemplateView):
             return redirect('register_policy')
 
 
-class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, FormView):
+class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, TemplateView):
     template_name = 'registration/register_products.html'
-    form_class = RegCompCodeForm
-    ap_button_name = 'claim-ap'
+    claim_ap_url = 'register_accessible_pricing'
+    next_url = 'register_donate'
 
     def dispatch_mixin(self, request):
         # Create or move order to the current session
@@ -181,47 +181,18 @@ class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, FormView):
         
         # Skip over "forms" page if a registration has already been submitted
         self.previous_url = 'index' if self.registration.is_submitted else 'register_forms'
-    
-    def get_success_url(self):
-        if self.ap_button_name in self.request.POST:
-            if self.order.is_accessible_pricing or self.order.claim_accessible_pricing():
-                return reverse('register_accessible_pricing')
-            else:
-                # self.ap_available = False
-                # return super().get(self.request)
-                return reverse('register_products')
-        else:
-            self.order.revoke_accessible_pricing()
-            return reverse('register_donate')
-        
-    def get_initial(self):
-        return {
-            'code': self.registration.comp_code.code if self.registration.comp_code else ''
-        }
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        self.ap_data = json.dumps({'apAvailable': self.order.can_offer_accessible_price})
-
-        context.update({
+        # Add product selection content to context
+        self.extra_context = {
             'dance': get_context_for_product_selection(ProductCategory.DANCE, self.request.user),
             'class': get_context_for_product_selection(ProductCategory.CLASS, self.request.user),
             'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, self.request.user),
             'merch': get_context_for_product_selection(ProductCategory.MERCH, self.request.user)
-        })
+        }
 
-        return context
-
-    def form_valid(self, form):
-        with transaction.atomic():
-            CompCode.objects.select_for_update()
-            if form.cleaned_data.get('code'):
-                self.registration.comp_code = CompCode.objects.get(code=form.cleaned_data.get('code'))
-                self.registration.order_set.filter(session__isnull=False).delete()
-                self.registration.save()
-        return super().form_valid(form)
-
+        # Add initial state of AP button
+        self.ap_data = json.dumps({'apAvailable': self.order.can_offer_accessible_price})
+        
 
 class AddItemView(OrderRequiredMixin, View):
     def post(self, request):
@@ -238,7 +209,7 @@ class RegisterAccessiblePricingView(NonEmptyOrderRequiredMixin, DispatchMixin, T
     previous_button = LinkButton('register_products', 'Previous')
 
     def dispatch_mixin(self, request):
-        if not self.order.is_accessible_pricing:
+        if not (self.order.is_accessible_pricing or self.order.claim_accessible_pricing()):
             return redirect('register_products')
 
     def post(self, request):
@@ -258,8 +229,7 @@ class RegisterDonateView(NonEmptyOrderRequiredMixin, DispatchMixin, UpdateView):
         return self.order
 
     def dispatch_mixin(self, request):
-        if self.order.is_accessible_pricing:
-            return redirect('register_products')
+        self.order.revoke_accessible_pricing()
         self.existing_donation = self.order.donation
     
     def form_valid(self, form):

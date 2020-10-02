@@ -24,8 +24,8 @@ urlpatterns = [
 
     # must have order:
     path('register/selection/', views.RegisterAllProductsView.as_view(), name='register_products'),
-    path('ajax/add_item/', views.AddItemView.as_view(), name='add_item'),
-    path('ajax/remove_item/', views.RemoveItemView.as_view(), name='remove_item'),
+    path('ajax/add-item/', views.AddItemView.as_view(), name='add_item'),
+    path('ajax/remove-item/', views.RemoveItemView.as_view(), name='remove_item'),
     path('register/accessible-pricing/', views.RegisterAccessiblePricingView.as_view(), name='register_accessible_pricing'),
     path('register/donate/', views.RegisterDonateView.as_view(), name='register_donate'),
 
