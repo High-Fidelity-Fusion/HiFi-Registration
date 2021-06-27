@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.shortcuts import redirect
 
-from registration.models import Registration, Order, Payment
+from registration.models import Registration, Order, Payment, Event
 
 from .stripe_helpers import get_stripe_checkout_session_total
 
@@ -20,10 +20,23 @@ def chain_with(base_class):
 
 
 @chain_with(LoginRequiredMixin)
+class EventRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            if (kwargs.get('event_slug') is not None):
+                request.session['event_slug'] = kwargs.get('event_slug')
+                self.event = Event.objects.get(slug=kwargs.get('event_slug'))
+            else:
+                self.event = Event.objects.get(slug=request.session['event_slug'])
+        except:
+            return redirect('event_selection')
+        return super().dispatch(request, *args, **kwargs)
+
+@chain_with(EventRequiredMixin)
 class RegistrationRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.registration = Registration.objects.get(user=request.user)
+            self.registration = Registration.objects.get(user=request.user, event=self.event)
         except ObjectDoesNotExist:
             return redirect('index')
         return super().dispatch(request, *args, **kwargs)

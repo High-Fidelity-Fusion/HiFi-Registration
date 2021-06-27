@@ -6,7 +6,7 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    path('', RedirectView.as_view(url=reverse_lazy('index'))), # set default URL
+    path('', RedirectView.as_view(url=reverse_lazy('event_selection'))), # set default URL
     path('registration/', include('registration.urls'), name='reg'),
     path('admin/', admin.site.urls),
 ]

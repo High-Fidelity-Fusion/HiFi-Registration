@@ -27,52 +27,61 @@ def clean_db():
     Session.objects.all().delete()
     CompCode.objects.all().delete()
     Payment.objects.all().delete()
+    Event.objects.all().delete()
 
 def setup_test_data():
-    category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3)
-    slot_1 = ProductSlot.objects.create(name='11amFriday', rank=3, display_name='timeDay')
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=category_1)
+    event1 = Event.objects.create(name='Event #1', slug='event1')
+    category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3, event=event1)
+    slot_1 = ProductSlot.objects.create(name='11amFriday', rank=3, display_name='timeDay', event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=category_1, event=event1)
     product.slots.set([slot_1])
     user1 = User.objects.create_user(email='asdf@asdf.asdf')
-    registration1 = Registration.objects.create(user=user1)
+    registration1 = Registration.objects.create(user=user1, event=event1)
     session1 = Session.objects.create(pk='a', expire_date=timezone.now())
     Order.objects.create(registration=registration1, session=session1)
-    registration2 = Registration.objects.create()
+    registration2 = Registration.objects.create(event=event1)
     session2 = Session.objects.create(pk='b', expire_date=timezone.now())
     Order.objects.create(registration=registration2, session=session2)
-    APFund.objects.create(contribution=2001, notes='notes')
-    CompCode.objects.create(type=CompCode.STAFF, max_uses=1)
+    APFund.objects.create(contribution=2001, notes='notes', event=event1)
+    CompCode.objects.create(type=CompCode.STAFF, max_uses=1, event=event1)
 
 def setup_products_no_delete():
-    slot1 = ProductSlot.objects.create(name='Friday1pm', rank=3, display_name='1pm')
-    slot2 = ProductSlot.objects.create(name='Friday11am', rank=2, display_name='11am')
+    event1 = Event.objects.create(name='Event #1', slug='event1')
+    slot1 = ProductSlot.objects.create(name='Friday1pm', rank=3, display_name='1pm', event=event1)
+    slot2 = ProductSlot.objects.create(name='Friday11am', rank=2, display_name='11am', event=event1)
 
-    category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2)
-    expensive_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=200000, title='Expensive Training', subtitle='subtitle', description='description', category=category)
-    multi_slot_product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
+    category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2, event=event1)
+    expensive_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=200000, title='Expensive Training', subtitle='subtitle', description='description', category=category, event=event1)
+    multi_slot_product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category, event=event1)
     multi_slot_product1.slots.add(slot1)
     multi_slot_product1.slots.add(slot2)
 
-    category = ProductCategory.objects.create(name='Friday', section='CLASS', rank=3)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Dance like a Baby Giraffe', subtitle='featuring a real baby giraffe!', description='description', category=category)
+    category = ProductCategory.objects.create(name='Friday', section='CLASS', rank=3, event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Dance like a Baby Giraffe', subtitle='featuring a real baby giraffe!', description='description', category=category, event=event1)
     product.slots.add(slot1)
-    product = Product.objects.create(total_quantity=0, max_quantity_per_reg = 1, price=2000, title='Dance like you are Out of Stock', subtitle='subtitle', description='description', category=category)
+    product = Product.objects.create(total_quantity=0, max_quantity_per_reg = 1, price=2000, title='Dance like you are Out of Stock', subtitle='subtitle', description='description', category=category, event=event1)
     product.slots.add(slot1)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Ants in your Pants', subtitle='teacher: Ant Man', description='We are going to put literal ants in your literal pants.', category=category)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Ants in your Pants', subtitle='teacher: Ant Man', description='We are going to put literal ants in your literal pants.', category=category, event=event1)
     product.slots.add(slot2)
-    multi_slot_product2 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category)
+    multi_slot_product2 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category, event=event1)
     multi_slot_product2.slots.add(slot1)
     multi_slot_product2.slots.add(slot2)
 
-    category = ProductCategory.objects.create(name='Clothing', section='MERCH', is_slot_based=False, rank=2)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 3, price=1500, title='t-shirt', subtitle='subtitle', description='description', category=category, is_ap_eligible=False)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 10, price=1500, title='hoodie', subtitle='subtitle', description='description', category=category, is_ap_eligible=False)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=1500, title='AP hoodie', subtitle='subtitle', description='description', category=category, is_ap_eligible=True)
+    category = ProductCategory.objects.create(name='Clothing', section='MERCH', is_slot_based=False, rank=2, event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 3, price=1500, title='t-shirt', subtitle='subtitle', description='description', category=category, is_ap_eligible=False, event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 10, price=1500, title='hoodie', subtitle='subtitle', description='description', category=category, is_ap_eligible=False, event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=1500, title='AP hoodie', subtitle='subtitle', description='description', category=category, is_ap_eligible=True, event=event1)
 
-    category = ProductCategory.objects.create(name='Dance Passes', section='DANCE', is_slot_based=False, rank=3)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: rebecca black', description='description', category=category, is_compable=True)
-    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category, is_compable=True)
-    APFund.objects.create(contribution=100000, notes='notes')
+    category = ProductCategory.objects.create(name='Dance Passes', section='DANCE', is_slot_based=False, rank=3, event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: rebecca black', description='description', category=category, is_compable=True, event=event1)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category, is_compable=True, event=event1)
+    APFund.objects.create(contribution=100000, notes='notes', event=event1)
+
+    event2 = Event.objects.create(name='Event #2', slug='event2')
+    category = ProductCategory.objects.create(name='Dance Tickets', section='DANCE', is_slot_based=False, rank=2, event=event2)
+    product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: space face', description='description', category=category, is_compable=True, event=event2)
+
+
 
 def setup_products():
     Order.objects.all().delete()
@@ -82,6 +91,7 @@ def setup_products():
     ProductSlot.objects.all().delete()
     APFund.objects.all().delete()
     Registration.objects.all().delete()
+    Event.objects.all().delete()
 
     setup_products_no_delete()
 
@@ -113,15 +123,17 @@ def setup_performance_test(NUM_PRODUCTS, NUM_REGISTRATIONS, ORDER_ITEMS_PER_ORDE
     Session.objects.all().delete()
     CompCode.objects.all().delete()
     Payment.objects.all().delete()
+    Event.objects.all().delete()
 
     # create products
-    category = ProductCategory.objects.create(name='Passes', section='CLASS', rank=3)
-    slot1 = ProductSlot.objects.create(name='slot1', rank=3, display_name='1pm')
-    slot2 = ProductSlot.objects.create(name='slot2', rank=2, display_name='1pm')
-    slot3 = ProductSlot.objects.create(name='slot3', rank=2, display_name='1pm')
+    event1 = Event.objects.create(name='Event #1', slug='event1')
+    category = ProductCategory.objects.create(name='Passes', section='CLASS', rank=3, event=event1)
+    slot1 = ProductSlot.objects.create(name='slot1', rank=3, display_name='1pm', event=event1)
+    slot2 = ProductSlot.objects.create(name='slot2', rank=2, display_name='1pm', event=event1)
+    slot3 = ProductSlot.objects.create(name='slot3', rank=2, display_name='1pm', event=event1)
 
     for i in range(NUM_PRODUCTS):
-        p = Product.objects.create(total_quantity=5000, max_quantity_per_reg = 1, price=2000, title='title', subtitle='subtitle', description='description', category=category)
+        p = Product.objects.create(total_quantity=5000, max_quantity_per_reg = 1, price=2000, title='title', subtitle='subtitle', description='description', category=category, event=event1)
 
         if i % 3 == 0:
             p.slots.add(slot1)
@@ -133,10 +145,10 @@ def setup_performance_test(NUM_PRODUCTS, NUM_REGISTRATIONS, ORDER_ITEMS_PER_ORDE
     last_p = Product.objects.first().pk
 
     # create users/registrations
-    APFund.objects.create(contribution=300000000, notes='notes')
+    APFund.objects.create(contribution=300000000, notes='notes', event=event1)
     for i in range(NUM_REGISTRATIONS):
         user = User.objects.create_user(email=random_string() + '@asdf.asdf')
-        registration = Registration.objects.create(user=user)
+        registration = Registration.objects.create(user=user, event=event1)
         session = Session.objects.create(pk=random_string(), expire_date=timezone.now() + relativedelta(weeks=+2))
 
         order = Order.objects.create(registration=registration, session=session)
@@ -275,7 +287,7 @@ class OrderTestCase(TestCase):
         slot = ProductSlot.objects.first()
         order = Order.objects.first()
         product = Product.objects.first()
-        conflicting_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        conflicting_product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         conflicting_product.slots.set([slot])
 
         order.add_item(product.pk, 1)
@@ -299,12 +311,12 @@ class OrderTestCase(TestCase):
 
     def test_add_item__comped(self):
         comp_code = CompCode.objects.first()
-        registration = Registration.objects.create()
+        registration = Registration.objects.create(event=Event.objects.first())
         registration.comp_code = comp_code
         registration.save()
         order = Order.objects.create(registration=registration, session=Session.objects.create(pk='test_add_item__comped', expire_date=timezone.now()))
         non_compable_product = Product.objects.first()
-        compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        compable_product = Product.objects.create(is_compable=True, total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
 
         order.add_item(non_compable_product.pk, 1)
         order.add_item(compable_product.pk, 1)
@@ -374,7 +386,7 @@ class OrderTestCase(TestCase):
     def test_claim_accessible_pricing__partially_ineligible(self):
         order = Order.objects.first()
         product = Product.objects.first()
-        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         order.add_item(product.pk, 1)
         order.add_item(ineligible_product.pk, 1)
 
@@ -388,7 +400,7 @@ class OrderTestCase(TestCase):
 
     def test_claim_accessible_pricing__fully_ineligible(self):
         order = Order.objects.first()
-        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        ineligible_product = Product.objects.create(is_ap_eligible=False, total_quantity=5, max_quantity_per_reg = 2, price=1000, title='title', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         order.add_item(ineligible_product.pk, 1)
 
         result = order.claim_accessible_pricing()
@@ -405,8 +417,10 @@ class ProductTestCase(TestCase):
 
     def test_get_product_info_for_user(self):
         #Arrange
+        event3 = Event.objects.create(name='Event 3', slug='event3')
+        event3_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title3', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=event3)
         product = Product.objects.first()
-        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
         complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
@@ -417,12 +431,13 @@ class ProductTestCase(TestCase):
         complete_order.save()
 
         #Act
-        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
         product_result = product_info.get(pk=product.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
 
         #Assert
         self.assertEqual(product_info.filter(pk=product.pk).count(), 1)
+        self.assertEqual(product_info.filter(pk=event3_product.pk).count(), 0)
         self.assertEqual(product_result.quantity_purchased, 1)
         self.assertEqual(unclaimed_product_result.quantity_purchased, 0)
         self.assertEqual(product_result.quantity_claimed, 1)
@@ -433,11 +448,11 @@ class ProductTestCase(TestCase):
     def test_get_product_info_for_user__empty_cart(self):
         #Arrange
         product = Product.objects.first()
-        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         registration = Registration.objects.first()
 
         #Act
-        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
         product_result = product_info.get(pk=product.pk)
         unclaimed_product_result = product_info.get(pk=unclaimed_product.pk)
 
@@ -454,13 +469,13 @@ class ProductTestCase(TestCase):
 
     def test_get_product_info_for_user__multi_slot_products_with_conflict(self):
         #Arrange
-        slot1 = ProductSlot.objects.create(name='1pm', rank=3)
-        slot2 = ProductSlot.objects.create(name='11am', rank=2)
-        category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2)
-        product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category)
+        slot1 = ProductSlot.objects.create(name='1pm', rank=3, event=Event.objects.first())
+        slot2 = ProductSlot.objects.create(name='11am', rank=2, event=Event.objects.first())
+        category = ProductCategory.objects.create(name='Teacher Training', section='CLASS', is_slot_based=False, rank=2, event=Event.objects.first())
+        product1 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Full Weekend Teacher Training', subtitle='subtitle', description='description', category=category, event=Event.objects.first())
         product1.slots.add(slot1)
         product1.slots.add(slot2)
-        product2 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category)
+        product2 = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Long Class', subtitle='subtitle', description='description', category=category, event=Event.objects.first())
         product2.slots.add(slot1)
         product2.slots.add(slot2)
 
@@ -469,7 +484,7 @@ class ProductTestCase(TestCase):
         incomplete_order.add_item(product1.pk, 1)
 
         #Act
-        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
         product_result = product_info.get(pk=product1.pk)
         product_result2 = product_info.get(pk=product2.pk)
 
@@ -482,13 +497,13 @@ class ProductTestCase(TestCase):
         self.assertEqual(product_result2.quantity_purchased, 0)
         self.assertEqual(product_result2.quantity_claimed, 0)
         self.assertEqual(product_result2.available_quantity, 5)
-        self.assertEqual(product_result2.slot_conflicts, [slot2.pk, slot1.pk])
+        self.assertEqual(product_result2.slot_conflicts, [slot1.pk, slot2.pk])
 
     def test_get_product_info_for_user__product_does_not_conflict(self):
         #Arrange
         product_slot = ProductSlot.objects.first()
         product = Product.objects.first()
-        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
         complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
@@ -499,7 +514,7 @@ class ProductTestCase(TestCase):
         complete_order.save()
 
         #Act
-        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
 
         #Assert
         product_result = product_info.get(pk=product.pk)
@@ -511,14 +526,14 @@ class ProductTestCase(TestCase):
         #Arrange
         product_slot = ProductSlot.objects.first()
         product_in_cart = Product.objects.first()
-        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         registration = Registration.objects.first()
         incomplete_order = registration.order_set.first()
         unclaimed_product.slots.set([product_slot])
         incomplete_order.add_item(product_in_cart.pk, 1)
 
         #Act
-        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
 
         #Assert
         product_result = product_info.get(pk=product_in_cart.pk)
@@ -530,7 +545,7 @@ class ProductTestCase(TestCase):
         #Arrange
         product_slot = ProductSlot.objects.first()
         product_purchased = Product.objects.first()
-        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first())
+        unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
         registration = Registration.objects.first()
 
         complete_order = Order.objects.create(registration=registration, session=Session.objects.create(pk='product_test', expire_date=timezone.now()))
@@ -546,7 +561,7 @@ class ProductTestCase(TestCase):
         unclaimed_product.slots.set([ProductSlot.objects.first()])
 
         #Act
-        product_info = Product.objects.get_product_info_for_user(registration.user)
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
 
         #Assert
         product_result = product_info.get(pk=product_purchased.pk)

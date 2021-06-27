@@ -39,7 +39,7 @@
 
             <div id="navbarHighFidelity" class="navbar-menu">
                 <div class="navbar-start">
-                    <a class="navbar-item" href="{% url 'index'%}">
+                    <a class="navbar-item" href="{% url 'index' %}">
                         Home
                     </a>
                 </div>
@@ -80,7 +80,7 @@
         <section class="section">
             <div class="container">
                 {% block countdown %}{% endblock %}
-                <h1 class="title has-text-white">High Fidelity Registration</h1>
+                <h1 class="title has-text-white">{% if view.event %}{{view.event.name}}{% else %}High Fidelity Registration{% endif %}</h1>
                 {% if messages %}
                 <div class="message is-danger messages">
                     {% for message in messages %}

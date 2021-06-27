@@ -41,7 +41,7 @@ def build_product(product, user, slot_id):
         'is_comped': product.is_compable and Registration.for_user(user).is_comped
     }
 
-def get_context_for_product_selection(section, user):
+def get_context_for_product_selection(section, user, event):
     return {
         'section': [v[1] for v in ProductCategory.SECTION_CHOICES if v[0] == section][0],
         'categories': [{
@@ -49,16 +49,16 @@ def get_context_for_product_selection(section, user):
             'slots': [{
                 'name': slot.display_name,
                 'is_exclusionary': slot.is_exclusionary,
-                'products': [build_product(product, user, slot.pk) for product in Product.objects.get_product_info_for_user(user).filter(category=category, slots=slot).iterator()]
-            } for slot in ProductSlot.objects.filter(product__in=category.product_set.all()).distinct().order_by('rank').iterator()]
+                'products': [build_product(product, user, slot.pk) for product in Product.objects.get_product_info_for_user(user, event).filter(category=category, slots=slot).iterator()]
+            } for slot in ProductSlot.objects.filter(event=event, product__in=category.product_set.all()).distinct().order_by('rank').iterator()]
         } if category.is_slot_based else {
             'name': category.name,
-            'products': [build_product(product, user, None) for product in Product.objects.get_product_info_for_user(user).filter(category=category).iterator()]
-        } for category in ProductCategory.objects.filter(section=section, product__isnull=False).distinct().order_by('rank').iterator()]
+            'products': [build_product(product, user, None) for product in Product.objects.get_product_info_for_user(user, event).filter(category=category).iterator()]
+        } for category in ProductCategory.objects.filter(section=section, product__isnull=False, event=event).distinct().order_by('rank').iterator()]
     }
 
-def get_quantity_purchased_for_item(items, user):
-    purchased_order_items = OrderItem.objects.filter(order__registration__user=user, order__session__isnull=True, product=OuterRef('product__pk')).order_by().values('product').annotate(sum=Sum('quantity')).values('sum')
+def get_quantity_purchased_for_item(items, user, event):
+    purchased_order_items = OrderItem.objects.filter(order__registration__event=event, order__registration__user=user, order__session__isnull=True, product=OuterRef('product__pk')).order_by().values('product').annotate(sum=Sum('quantity')).values('sum')
     return items.annotate(quantity_purchased=Coalesce(Subquery(purchased_order_items), 0))
 
 def add_quantity_range_to_item(item):

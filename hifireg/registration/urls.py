@@ -10,6 +10,7 @@ from . import views
 urlpatterns = [
     # index:
     path('', views.IndexView.as_view(), name='index'),
+    path('event-selection', views.EventSelectionView.as_view(), name='event_selection'),
     path('orders', views.OrdersView.as_view(), name='orders'),
 
     #testing email:
@@ -51,4 +52,6 @@ urlpatterns = [
     path('account/password-reset/done/', views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('account/reset/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('account/reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+    path('<slug:event_slug>', views.IndexView.as_view(), name='event'),
 ]

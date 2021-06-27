@@ -34,6 +34,7 @@ class CompCode(models.Model):
         (OTHER, 'Other')
     ]
 
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
     code = UpperCaseCharField(help_text='Enter a custom code or leave blank to auto generate', max_length=CompCodeHelper.CODE_LENGTH, default=CompCodeHelper.generate_random_code)
     type = models.CharField(max_length=5, choices=TYPES)
     max_uses = models.PositiveIntegerField()

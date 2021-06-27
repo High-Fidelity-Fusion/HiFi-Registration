@@ -8,3 +8,4 @@ from .ap_fund import APFund
 from .product_slot import ProductSlot
 from .payment import Payment
 from .invoice import Invoice
+from .event import Event

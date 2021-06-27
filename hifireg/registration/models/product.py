@@ -15,6 +15,7 @@ class ProductCategory(models.Model):
         (SHOWCASE, 'Showcase Admission'),
         (MERCH, 'Merchandise')
     ]
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     section = models.CharField(max_length=5, choices=SECTION_CHOICES)
     is_slot_based = models.BooleanField(default=True)
@@ -25,6 +26,7 @@ class ProductCategory(models.Model):
 
 
 class Product(models.Model):
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
     slots = models.ManyToManyField('ProductSlot')
     category = models.ForeignKey(ProductCategory, on_delete=models.PROTECT)
     total_quantity = models.PositiveIntegerField()

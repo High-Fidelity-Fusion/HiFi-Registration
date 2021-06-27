@@ -24,6 +24,7 @@ class RegistrationManager(models.Manager):
 
 
 class Registration(models.Model):
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     comp_code = models.ForeignKey(CompCode, on_delete=models.PROTECT, null=True, blank=True)

@@ -14,14 +14,14 @@ from dateutil.relativedelta import relativedelta
 import json
 
 from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegisterDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem, Event
 from registration.models.helpers import with_is_paid
 
 from .email_handler import send_confirmation
 from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item, add_remove_item_view
 from .mailchimp_client import create_or_update_subscriber
 from .mixins import RegistrationRequiredMixin, PolicyRequiredMixin, FormsRequiredMixin, OrderRequiredMixin, NonEmptyOrderRequiredMixin, FinishedOrderRequiredMixin, NonZeroOrderRequiredMixin
-from .mixins import DispatchMixin
+from .mixins import DispatchMixin, EventRequiredMixin
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .utils import SubmitButton, LinkButton
 
@@ -35,21 +35,27 @@ class BetaLoginView(FormView):
         self.request.session['site_password'] = True
         return super().form_valid(form)
 
+class EventSelectionView(TemplateView):
+    template_name = 'event_selection.html'
 
-class IndexView(LoginRequiredMixin, DispatchMixin, TemplateView):
+    def get(self, request):
+        self.events = Event.objects.all()
+        return super().get(request)
+
+class IndexView(EventRequiredMixin, DispatchMixin, TemplateView):
     register_button = LinkButton('register_policy', 'Begin Registration')
     products_button = LinkButton('register_products', 'Purchase More')
     invoices_button = LinkButton('invoices', 'Make a Payment')
     template_name = 'registration/index.html'
 
     def dispatch_mixin(self, request):
-        self.registration, _ = Registration.objects.get_or_create(user=request.user)
+        self.registration, _ = Registration.objects.get_or_create(user=request.user, event=self.event)
 
-    def get(self, request):
-        invoices = with_is_paid(Invoice.objects.filter(order__registration__user=request.user))
+    def get(self, request, *args, **kwargs):
+        invoices = with_is_paid(Invoice.objects.filter(order__registration=self.registration))
         if self.registration.is_submitted:
-            self.items = OrderItem.objects.filter(order__registration__user=request.user, order__session__isnull=True).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
-            self.is_payment_plan = invoices.count() > Order.objects.filter(registration__user=request.user, session__isnull=True).count()
+            self.items = OrderItem.objects.filter(order__registration=self.registration, order__session__isnull=True).order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
+            self.is_payment_plan = invoices.count() > Order.objects.filter(registration=self.registration, session__isnull=True).count()
             self.has_unpaid_invoice = invoices.filter(is_paid=False).exists()
             if self.has_unpaid_invoice:
                 self.days_until_due = (invoices.filter(is_paid=False).first().due_date.date() - timezone.now().date()).days
@@ -63,7 +69,7 @@ class OrdersView(LoginRequiredMixin, TemplateView):
         self.orders = [{
             'order': order,
             'items': order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
-        } for order in Order.objects.filter(registration__user=request.user, session__isnull=True).order_by('-pk').iterator()]
+        } for order in Order.objects.filter(registration=self.registration, session__isnull=True).order_by('-pk').iterator()]
         return super().get(request)
 
 
@@ -184,10 +190,10 @@ class RegisterAllProductsView(FormsRequiredMixin, DispatchMixin, TemplateView):
 
         # Add product selection content to context
         self.extra_context = {
-            'dance': get_context_for_product_selection(ProductCategory.DANCE, self.request.user),
-            'class': get_context_for_product_selection(ProductCategory.CLASS, self.request.user),
-            'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, self.request.user),
-            'merch': get_context_for_product_selection(ProductCategory.MERCH, self.request.user)
+            'dance': get_context_for_product_selection(ProductCategory.DANCE, self.request.user, self.event),
+            'class': get_context_for_product_selection(ProductCategory.CLASS, self.request.user, self.event),
+            'showcase': get_context_for_product_selection(ProductCategory.SHOWCASE, self.request.user, self.event),
+            'merch': get_context_for_product_selection(ProductCategory.MERCH, self.request.user, self.event)
         }
 
         # Add initial state of AP button
