@@ -12,6 +12,7 @@ from django.views import View
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 import json
+import markdown
 
 from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegisterDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
 from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem, Event
@@ -120,11 +121,14 @@ class PayInvoicesSuccessView(RegistrationRequiredMixin, View):
         return redirect(reverse('invoices') + '?amount_paid=' + str(payment.amount))
 
 
-class RegisterPolicyView(RegistrationRequiredMixin, UpdateView):
+class RegisterPolicyView(RegistrationRequiredMixin, DispatchMixin, UpdateView):
     template_name = 'registration/register_policy.html'
     form_class = RegisterPolicyForm
     success_url = reverse_lazy('register_forms')
     previous_url = 'index'
+
+    def dispatch_mixin(self, request):
+        self.policies = markdown.markdown(self.event.policies)
 
     def get_object(self):
         return self.registration

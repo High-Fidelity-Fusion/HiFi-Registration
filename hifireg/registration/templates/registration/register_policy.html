@@ -2,24 +2,22 @@
 
 {% block card_content %}
 
-<p class="title">
-    Policy
-</p>
+<h1 class="title">
+    Policies
+</h1>
+<span class="content">
+    {{view.policies|safe}}
+</span>
+<hr>
 
 <form method="post" novalidate>
-
     {% csrf_token %}
-
-    <p>Code of Conduct:</p>
-    <p>Accountability Process:</p>
-    <p>Terms:</p>
 
     {% include "utils/field_checkbox.html" with field=form.agrees_to_policy %}
     {% include "utils/field_radioselect.html" with field=form.opts_into_photo_review %}
 
     {% include "utils/button_link.html" with content="Previous" link=view.previous_url %}
     {% include "utils/button_submit.html" with content="Next" class="is-primary is-pulled-right" %}
-
 </form>
 
 {% endblock %}

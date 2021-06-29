@@ -46,7 +46,7 @@ def setup_test_data():
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1, event=event1)
 
 def setup_products_no_delete():
-    event1 = Event.objects.create(name='Event #1', slug='event1')
+    event1 = Event.objects.create(name='Event #1', slug='event1', policies='## Code of Conduct\nBe **excellent** to each other n that good stuff.\n## Yay')
     slot1 = ProductSlot.objects.create(name='Friday1pm', rank=3, display_name='1pm', event=event1)
     slot2 = ProductSlot.objects.create(name='Friday11am', rank=2, display_name='11am', event=event1)
 
@@ -82,7 +82,7 @@ def setup_products_no_delete():
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: space face', description='description', category=category, is_compable=True, event=event2)
 
 
-
+# This is used for manual testing data
 def setup_products():
     Order.objects.all().delete()
     Product.slots.through.objects.all().delete()

@@ -22,8 +22,7 @@ class BetaPasswordForm(forms.Form):
 class RegisterPolicyForm(forms.ModelForm):
     class Meta:
         model = Registration
-        fields = ['agrees_to_policy', 'opts_into_photo_review']
-        widgets = { 'opts_into_photo_review': forms.RadioSelect(choices=YESNO) }
+        fields = ['agrees_to_policy']
 
     def clean_agrees_to_policy(self):
         agrees = self.cleaned_data.get('agrees_to_policy')
