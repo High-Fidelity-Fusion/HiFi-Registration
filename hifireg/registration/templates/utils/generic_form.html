@@ -9,7 +9,7 @@
 <p class="subtitle">{{ subtitle }}</p>
 {% endif %}
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     {% include "utils/form_fields.html" %}

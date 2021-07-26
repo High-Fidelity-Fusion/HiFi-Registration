@@ -2,7 +2,7 @@
 {% block card_content %}
 <p>Select which event you want to register for.</p>
 {% for e in view.events %}
-<a href="{{e.slug}}" class="button">
+<a href="e/{{e.slug}}" class="button">
   {{ e.name }}
 </a>
 {% endfor %}

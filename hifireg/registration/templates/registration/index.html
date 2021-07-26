@@ -2,7 +2,9 @@
 {% block card_content %}
 
 <div class="field">
+    {% if view.request.user.first_name %}
     <p>Hi, {{ view.request.user.first_name }}!</p>
+    {% endif %}
 
     {% if view.registration.is_submitted %}
 <p>Thanks for registering! So far, here's what you've got:</p>
@@ -20,9 +22,14 @@
 </table>
 {% include "utils/button.html" with button=view.products_button class="is-primary" %}
 {% else %}
-<p>We look forward to dancing with you at this year's HiFi Fusion!</p>
+<p>We look forward to dancing with you at {{view.event.name}}!</p>
 </div>
+{% if view.vaccine_missing %}
+<p><strong>This event requires proof of COVID-19 vaccination or proof of medical exemption.</strong></p>
+{% include "utils/button.html" with button=view.vaccine_button class="is-primary" %}
+{% else %}
 {% include "utils/button.html" with button=view.register_button class="is-primary" %}
+{% endif %}
     {% endif %}
     <br>
     <br>

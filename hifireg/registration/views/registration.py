@@ -47,6 +47,7 @@ class IndexView(EventRequiredMixin, DispatchMixin, TemplateView):
     register_button = LinkButton('register_policy', 'Begin Registration')
     products_button = LinkButton('register_products', 'Purchase More')
     invoices_button = LinkButton('invoices', 'Make a Payment')
+    vaccine_button = LinkButton('edit_user', 'Upload Info')
     template_name = 'registration/index.html'
 
     def dispatch_mixin(self, request):
@@ -60,6 +61,7 @@ class IndexView(EventRequiredMixin, DispatchMixin, TemplateView):
             self.has_unpaid_invoice = invoices.filter(is_paid=False).exists()
             if self.has_unpaid_invoice:
                 self.days_until_due = (invoices.filter(is_paid=False).first().due_date.date() - timezone.now().date()).days
+        self.vaccine_missing = self.event.requires_vaccination and not request.user.covid_vaccine_picture
         return super().get(request)
 
 

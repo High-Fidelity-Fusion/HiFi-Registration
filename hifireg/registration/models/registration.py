@@ -64,6 +64,6 @@ class Volunteer(models.Model):
     registration = models.OneToOneField(Registration, on_delete=models.CASCADE, null=True, blank=True)
     cellphone_number = models.CharField(verbose_name='Cell Phone Number', max_length=30, null=True, blank=True)
     hours_max = models.IntegerField(verbose_name='How many hours are you willing to Contribute?', null=True, blank=True)
-    image = models.ImageField(upload_to='2020/volunteers/', verbose_name='Please upload an image of your face', help_text='We need to know what you look like so we know who to look for!', null=True, blank=True)
+    image = models.ImageField(upload_to='volunteers/', verbose_name='Please upload an image of your face', help_text='We need to know what you look like so we know who to look for!', null=True, blank=True)
     skills = models.TextField(verbose_name="How can we best utilize your skills?", help_text="Are you particularly talented at something? Do you have a strong preference toward helping in a particular way? We would like to know more!", null=True, blank=True)
     cantwont = models.TextField(verbose_name="What can't/won't you do?", help_text="You can't lift heavy things? Garbage evokes nausea in you? You are afraid of spiders? These are things we want to know! We don't want to ask you to do anything that does not suit you.", null=True, blank=True)

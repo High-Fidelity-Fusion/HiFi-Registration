@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from registration.models import User
 
 
-user_fields = ('first_name', 'last_name', 'personal_pronouns', 'city', 'severe_allergies')
+user_fields = ('first_name', 'last_name', 'personal_pronouns', 'city', 'severe_allergies', 'covid_vaccine_picture')
 
 
 # Redefine password field without the default help_text

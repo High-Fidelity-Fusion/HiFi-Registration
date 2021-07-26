@@ -33,6 +33,13 @@ class EventRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 @chain_with(EventRequiredMixin)
+class VaccinationRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if (self.event.requires_vaccination and not request.user.covid_vaccine_picture):  
+            return redirect('index')
+        return super().dispatch(request, *args, **kwargs)
+
+@chain_with(VaccinationRequiredMixin)
 class RegistrationRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         try:

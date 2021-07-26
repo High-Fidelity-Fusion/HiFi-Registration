@@ -53,5 +53,6 @@ urlpatterns = [
     path('account/reset/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('account/reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
-    path('<slug:event_slug>', views.IndexView.as_view(), name='event'),
+    path('e/<slug:event_slug>', views.IndexView.as_view(), name='event'),
 ]
+
