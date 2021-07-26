@@ -30,7 +30,7 @@ def clean_db():
     Event.objects.all().delete()
 
 def setup_test_data():
-    event1 = Event.objects.create(name='Event #1', slug='event1')
+    event1 = Event.objects.create(name='Event #1', slug='event1', requires_vaccination=True)
     category_1 = ProductCategory.objects.create(name='Friday Classes', section='DANCE', rank=3, event=event1)
     slot_1 = ProductSlot.objects.create(name='11amFriday', rank=3, display_name='timeDay', event=event1)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=2000, title='title', subtitle='subtitle', description='description', category=category_1, event=event1)
@@ -46,7 +46,7 @@ def setup_test_data():
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1, event=event1)
 
 def setup_products_no_delete():
-    event1 = Event.objects.create(name='Event #1', slug='event1', policies='## Code of Conduct\nBe **excellent** to each other n that good stuff.\n## Yay')
+    event1 = Event.objects.create(name='Event #1', slug='event1', policies='## Code of Conduct\nBe **excellent** to each other n that good stuff.\n## Yay', requires_vaccination=True)
     slot1 = ProductSlot.objects.create(name='Friday1pm', rank=3, display_name='1pm', event=event1)
     slot2 = ProductSlot.objects.create(name='Friday11am', rank=2, display_name='11am', event=event1)
 
@@ -77,7 +77,7 @@ def setup_products_no_delete():
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category, is_compable=True, event=event1)
     APFund.objects.create(contribution=100000, notes='notes', event=event1)
 
-    event2 = Event.objects.create(name='Event #2', slug='event2')
+    event2 = Event.objects.create(name='Event #2', slug='event2', requires_vaccination=False)
     category = ProductCategory.objects.create(name='Dance Tickets', section='DANCE', is_slot_based=False, rank=2, event=event2)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: space face', description='description', category=category, is_compable=True, event=event2)
 
@@ -126,7 +126,7 @@ def setup_performance_test(NUM_PRODUCTS, NUM_REGISTRATIONS, ORDER_ITEMS_PER_ORDE
     Event.objects.all().delete()
 
     # create products
-    event1 = Event.objects.create(name='Event #1', slug='event1')
+    event1 = Event.objects.create(name='Event #1', slug='event1', requires_vaccination=True)
     category = ProductCategory.objects.create(name='Passes', section='CLASS', rank=3, event=event1)
     slot1 = ProductSlot.objects.create(name='slot1', rank=3, display_name='1pm', event=event1)
     slot2 = ProductSlot.objects.create(name='slot2', rank=2, display_name='1pm', event=event1)
@@ -417,7 +417,7 @@ class ProductTestCase(TestCase):
 
     def test_get_product_info_for_user(self):
         #Arrange
-        event3 = Event.objects.create(name='Event 3', slug='event3')
+        event3 = Event.objects.create(name='Event 3', slug='event3', requires_vaccination=True)
         event3_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title3', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=event3)
         product = Product.objects.first()
         unclaimed_product = Product.objects.create(total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser, UserManager as UserManager_
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from .utils import get_obfuscated_upload_to
+from .utils import get_path_obfuscator
 
 
 # This website was initially used as a reference for how to implement a user model without an explicit username:
@@ -42,6 +42,8 @@ class UserManager(UserManager_):
 
         return self._create_user(email, password, **extra_fields)
 
+def upload_to(instance, filename):
+    return '{0}/{1}_{2}'.format("covid", get_path_obfuscator(), filename)
 
 # Custom User model
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#substituting-a-custom-user-model
@@ -56,7 +58,7 @@ class User(AbstractUser):
     personal_pronouns = models.CharField(help_text="example: they/them/theirs", max_length=20, null=True, blank=True)
     city = models.CharField(help_text="Your home city.", max_length=50, null=True, blank=True)
     severe_allergies = models.TextField(verbose_name="Severe Allergies", help_text="List allergens that would be a threat to you if they were present in the venue.", max_length=1000, null=True, blank=True)
-    covid_vaccine_picture = models.ImageField(upload_to=get_obfuscated_upload_to("covid"), verbose_name="COVID Vaccine or Exemption", help_text="Upload a picture of your COVID-19 vaccination card or a doctor note permissing an exemption. This may be required for some events.", null=True, blank=True)
+    covid_vaccine_picture = models.ImageField(upload_to=upload_to, verbose_name="COVID Vaccine or Exemption", help_text="Upload a picture of your COVID-19 vaccination card or a doctor note permissing an exemption. This may be required for some events.", null=True, blank=True)
 
     # set model manager
     objects = UserManager()
