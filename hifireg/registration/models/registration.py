@@ -29,7 +29,7 @@ class Registration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     comp_code = models.ForeignKey(CompCode, on_delete=models.PROTECT, null=True, blank=True)
     referral_code = models.CharField(max_length=15, null=True, blank=True)
-    agrees_to_policy = models.BooleanField(verbose_name='Do you agree to the Code of Conduct?', default=False)
+    agrees_to_policy = models.BooleanField(verbose_name='Do you agree to the above policies?', default=False)
     wants_to_volunteer = models.BooleanField(verbose_name='Do you want to volunteer?', null=True, blank=True)
     mailing_list = models.BooleanField(verbose_name="Keep up-to-date with HiFi?", help_text="Would you like us to email you in the future with news about Hi-Fi (not more than once monthly)?", null=True, blank=True)
     registration_feedback = models.TextField(verbose_name='Feedback', help_text='What do you think about our registration process? What can we do better for you next time?', null=True, blank=True)
@@ -55,8 +55,8 @@ class Registration(models.Model):
         return self.comp_code is not None
 
     @classmethod
-    def for_user(cls, user):
-        return cls.objects.get(user=user)
+    def for_user(cls, user, event):
+        return cls.objects.get(user=user, event=event)
 
 
 

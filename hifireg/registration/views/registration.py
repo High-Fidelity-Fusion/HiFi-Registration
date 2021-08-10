@@ -130,6 +130,10 @@ class RegisterPolicyView(RegistrationRequiredMixin, DispatchMixin, UpdateView):
     previous_url = 'index'
 
     def dispatch_mixin(self, request):
+        if (self.event.policies is None):
+            self.registration.agrees_to_policy = True
+            self.registration.save()
+            return redirect(reverse('register_forms'))
         self.policies = markdown.markdown(self.event.policies)
 
     def get_object(self):

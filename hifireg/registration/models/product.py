@@ -2,7 +2,8 @@ from django.db import models
 from django.db import transaction
 from django.db.models import Sum
 from .product_manager import ProductManager
-
+from django.utils.timezone import now
+from django.core.exceptions import ValidationError
 
 class ProductCategory(models.Model):
     DANCE = 'DANCE'
@@ -27,7 +28,7 @@ class ProductCategory(models.Model):
 
 class Product(models.Model):
     event = models.ForeignKey('Event', on_delete=models.CASCADE)
-    slots = models.ManyToManyField('ProductSlot')
+    slots = models.ManyToManyField('ProductSlot', blank=True)
     category = models.ForeignKey(ProductCategory, on_delete=models.PROTECT)
     total_quantity = models.PositiveIntegerField()
     available_quantity = models.PositiveIntegerField()
@@ -37,8 +38,9 @@ class Product(models.Model):
     description = models.CharField(max_length=1000, blank=True)
     price = models.PositiveIntegerField()
     is_compable = models.BooleanField(default=False)
-    is_visible = models.BooleanField(default=True)
     is_ap_eligible = models.BooleanField(default=True)
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True, validators=[])
 
     objects = ProductManager()
 
@@ -48,6 +50,11 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding is True:
             self.available_quantity = self.total_quantity
+        super().save(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        if self.start_date and self.end_date and self.start_date > self.end_date:
+            raise ValidationError({'end_date': 'End date must be after Start date.'})
         super().save(*args, **kwargs)
 
     @classmethod

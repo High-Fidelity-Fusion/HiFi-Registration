@@ -3,6 +3,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.db import transaction
 from django.db.models import Sum, F
+from django.utils.timezone import now
 
 from .ap_fund import APFund
 from .order_item import OrderItem
@@ -10,7 +11,7 @@ from .product import Product
 from .registration import Registration
 
 class Order(models.Model):
-    session = models.OneToOneField(Session, on_delete=models.CASCADE, null=True)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, null=True)
     registration = models.ForeignKey(Registration, on_delete=models.CASCADE)
     original_price = models.PositiveIntegerField(default=0)
     accessible_price = models.PositiveIntegerField(default=0)
@@ -47,6 +48,8 @@ class Order(models.Model):
                 raise SuspiciousOperation('You cannot have more than one product in an exclusionary slot.')
         if (all_order_items_for_registration.filter(product=product).aggregate(Sum('quantity'))['quantity__sum'] or 0) + quantity > product.max_quantity_per_reg:
             raise SuspiciousOperation('You cannot exceed the max quantity per registration for that product.')
+        if ((product.start_date and product.start_date > now()) or (product.end_date and product.end_date < now())):
+            raise SuspiciousOperation('That product is not currently available.')
 
 
         with transaction.atomic():

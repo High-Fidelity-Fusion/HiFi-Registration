@@ -445,6 +445,21 @@ class ProductTestCase(TestCase):
         self.assertEqual(product_result.available_quantity, 3)
         self.assertEqual(unclaimed_product_result.available_quantity, 5)
 
+    def test_get_product_info_for_user__visibility_dates(self):
+        #Arrange
+        product_with_visible_dates = Product.objects.create(start_date=timezone.now()+ relativedelta(weeks=-1), end_date=timezone.now()+ relativedelta(weeks=+1), total_quantity=5, max_quantity_per_reg=2, price=2000, title='title1', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
+        product_with_past_dates = Product.objects.create(start_date=timezone.now()+ relativedelta(weeks=-2), end_date=timezone.now()+ relativedelta(weeks=-1), total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
+        product_with_future_dates = Product.objects.create(start_date=timezone.now()+ relativedelta(weeks=+1), end_date=timezone.now()+ relativedelta(weeks=+2), total_quantity=5, max_quantity_per_reg=2, price=2000, title='title2', subtitle='subtitle', description='description', category=ProductCategory.objects.first(), event=Event.objects.first())
+        registration = Registration.objects.first()
+
+        #Act
+        product_info = Product.objects.get_product_info_for_user(registration.user, Event.objects.first())
+
+        #Assert
+        self.assertEqual(product_info.filter(pk=product_with_visible_dates.pk).count(), 1)
+        self.assertEqual(product_info.filter(pk=product_with_past_dates.pk).count(), 0)
+        self.assertEqual(product_info.filter(pk=product_with_future_dates.pk).count(), 0)
+
     def test_get_product_info_for_user__empty_cart(self):
         #Arrange
         product = Product.objects.first()

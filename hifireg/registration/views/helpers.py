@@ -18,7 +18,7 @@ def get_status_for_product(product):
         return 'conflict'
     return 'available'
 
-def build_product(product, user, slot_id):
+def build_product(product, registration, slot_id):
     slots = list(map(str, product.slots.values_list('pk', flat=True)))
     return {
         'id': product.pk,
@@ -38,10 +38,11 @@ def build_product(product, user, slot_id):
         'slots': ','.join(slots),
         'slotClasses': ' '.join(map(lambda id: 'slot-' + id, slots)),
         'conflictClasses': ' '.join(map(lambda id: 'conflict-' + str(id), product.slot_conflicts)),
-        'is_comped': product.is_compable and Registration.for_user(user).is_comped
+        'is_comped': product.is_compable and registration.is_comped
     }
 
 def get_context_for_product_selection(section, user, event):
+    registration = Registration.for_user(user, event)
     return {
         'section': [v[1] for v in ProductCategory.SECTION_CHOICES if v[0] == section][0],
         'categories': [{
@@ -49,11 +50,11 @@ def get_context_for_product_selection(section, user, event):
             'slots': [{
                 'name': slot.display_name,
                 'is_exclusionary': slot.is_exclusionary,
-                'products': [build_product(product, user, slot.pk) for product in Product.objects.get_product_info_for_user(user, event).filter(category=category, slots=slot).iterator()]
+                'products': [build_product(product, registration, slot.pk) for product in Product.objects.get_product_info_for_user(user, event).filter(category=category, slots=slot).iterator()]
             } for slot in ProductSlot.objects.filter(event=event, product__in=category.product_set.all()).distinct().order_by('rank').iterator()]
         } if category.is_slot_based else {
             'name': category.name,
-            'products': [build_product(product, user, None) for product in Product.objects.get_product_info_for_user(user, event).filter(category=category).iterator()]
+            'products': [build_product(product, registration, None) for product in Product.objects.get_product_info_for_user(user, event).filter(category=category).iterator()]
         } for category in ProductCategory.objects.filter(section=section, product__isnull=False, event=event).distinct().order_by('rank').iterator()]
     }
 
