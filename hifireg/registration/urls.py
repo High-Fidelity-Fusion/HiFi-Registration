@@ -31,7 +31,7 @@ urlpatterns = [
     path('register/donate/', views.RegisterDonateView.as_view(), name='register_donate'),
 
     # payment:
-    path('payment/', views.MakePaymentView.as_view(), name='make_payment'),
+    path('payment/preview', views.PaymentPreviewView.as_view(), name='payment_preview'),
     path('payment/new-checkout/', views.NewCheckoutView.as_view(), name='new_checkout'),
     path('payment/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
 

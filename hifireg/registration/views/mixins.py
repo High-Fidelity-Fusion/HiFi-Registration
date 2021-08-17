@@ -105,7 +105,7 @@ class FinishedOrderRequiredMixin:
             payment = Payment.objects.create(amount=total_amount, registration=self.registration, stripe_session_id=session_id)
             return super().dispatch(request, *args, **kwargs)
         except:
-            return redirect('make_payment')
+            return redirect('payment_preview')
 
 
 # This Mixin injects arbitrary dispatch code wherever it exists in the MRO. Just
