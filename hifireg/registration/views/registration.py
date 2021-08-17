@@ -231,13 +231,13 @@ class RegisterAccessiblePricingView(NonEmptyOrderRequiredMixin, DispatchMixin, T
     def post(self, request):
         price = int(request.POST.get('price_submit', self.order.original_price))
         self.order.set_accessible_price(price)
-        return redirect('make_payment')
+        return redirect('payment_preview')
 
 
 class RegisterDonateView(NonEmptyOrderRequiredMixin, DispatchMixin, UpdateView):
     template_name = 'registration/register_donate.html'
     form_class = RegisterDonateForm
-    success_url = reverse_lazy('make_payment')
+    success_url = reverse_lazy('payment_preview')
     previous_url = 'register_products'
 
     def get_object(self):
@@ -254,7 +254,7 @@ class RegisterDonateView(NonEmptyOrderRequiredMixin, DispatchMixin, UpdateView):
         return super().form_valid(form)
 
 
-class MakePaymentView(NonEmptyOrderRequiredMixin, TemplateView):
+class PaymentPreviewView(NonEmptyOrderRequiredMixin, TemplateView):
     template_name = 'registration/payment.html'
     submit_button = SubmitButton('Submit')
     previous_button = SubmitButton('Previous')
@@ -276,7 +276,7 @@ class MakePaymentView(NonEmptyOrderRequiredMixin, TemplateView):
         self.months_range = range(1, 5)
         self.payments_per_month = 1
         self.months = 1
-        self.items = get_quantity_purchased_for_item(self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank'), request.user).iterator()
+        self.items = get_quantity_purchased_for_item(self.order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank'), request.user, self.event).iterator()
         self.items = map(add_quantity_range_to_item, self.items)
         self.is_zero_order = self.order.accessible_price + self.order.donation == 0
 
@@ -308,7 +308,7 @@ class NewCheckoutView(NonZeroOrderRequiredMixin, View):
 
         # Stripe Session Code
         success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
-        cancel_url = request.build_absolute_uri(reverse('make_payment'))
+        cancel_url = request.build_absolute_uri(reverse('payment_preview'))
 
         try:
             checkout_session_id = create_stripe_checkout_session(firstPayment, success_url, cancel_url)
