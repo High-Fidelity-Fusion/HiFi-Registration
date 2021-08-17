@@ -61,3 +61,9 @@ deploy-init:
 
 deploy-open:
 	cd hifireg && eb open
+
+https-tunnel:
+	stunnel stunnel/dev_https.conf
+
+https-run:
+	HTTPS=1 ${MANAGE} runserver 8001
