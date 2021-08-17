@@ -1,3 +1,4 @@
+
 class LinkButton:
     def __init__(self, link, content=None, attrs=None):
         self.link = link
@@ -10,3 +11,4 @@ class SubmitButton:
         self.name = name
         self.content = content if content is not None else name
         self.attrs = attrs
+

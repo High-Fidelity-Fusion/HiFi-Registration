@@ -1,7 +1,9 @@
 from django.db.models import Subquery, OuterRef, Sum
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
-from registration.models import Product, ProductCategory, ProductSlot, Registration, OrderItem
+from registration.models import Product, ProductCategory, ProductSlot, Registration, OrderItem, Invoice
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 class ProductStatuses:
     MAX_PURCHASED = 'max_purchased'
@@ -81,3 +83,24 @@ def add_remove_item_view(request, order, action):
             'error': 'error: {0}'.format(e)
         }
     return JsonResponse(data)
+
+
+def create_invoices(order, payments_per_month, months):
+    order.invoice_set.all().delete()
+    numOfPayments = payments_per_month * months
+    individualPayment = int(order.total_price / numOfPayments)
+    firstPayment = individualPayment + order.total_price - individualPayment * numOfPayments
+
+    date = timezone.now()
+    date_in_two_weeks = date + relativedelta(weeks=+2)
+
+    first_invoice = Invoice.objects.create(order=order, pay_at_checkout=True, due_date=date, amount=firstPayment)
+    if payments_per_month == 2:
+        Invoice.objects.create(order=order, due_date=date_in_two_weeks, amount=individualPayment)
+
+    for i in range(1, months):
+        Invoice.objects.create(order=order, due_date=date+relativedelta(months=i), amount=individualPayment)
+        if payments_per_month == 2:
+            Invoice.objects.create(order=order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)
+
+    return first_invoice

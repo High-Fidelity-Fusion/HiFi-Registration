@@ -31,9 +31,11 @@ urlpatterns = [
     path('register/donate/', views.RegisterDonateView.as_view(), name='register_donate'),
 
     # payment:
-    path('payment/preview', views.PaymentPreviewView.as_view(), name='payment_preview'),
-    path('payment/new-checkout/', views.NewCheckoutView.as_view(), name='new_checkout'),
-    path('payment/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
+    path('checkout/preview', views.PaymentPreviewView.as_view(), name='payment_preview'),
+    path('checkout/new-checkout-stripe/', views.NewCheckoutStripeView.as_view(), name='new_checkout_stripe'),
+    path('checkout/confirmation/', views.PaymentConfirmationView.as_view(), name='payment_confirmation'),
+    path('checkout/pay', views.MakePaymentView.as_view(), name='make_payment'),
+    path('checkout/new-checkout', views.NewCheckoutView.as_view(), name='new_checkout'),
 
     # post-order invoices to be paid
     path('invoices/', views.InvoicesView.as_view(), name='invoices'),

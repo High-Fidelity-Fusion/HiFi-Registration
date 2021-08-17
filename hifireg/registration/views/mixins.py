@@ -87,6 +87,13 @@ class NonEmptyOrderRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 @chain_with(NonEmptyOrderRequiredMixin)
+class CheckoutIntegrationRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        # TODO
+        self.checkout_type = 'SQUARE'
+        return super().dispatch(request, *args, **kwargs)
+
+@chain_with(CheckoutIntegrationRequiredMixin)
 class NonZeroOrderRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if self.order.accessible_price + self.order.donation == 0:
@@ -106,6 +113,15 @@ class FinishedOrderRequiredMixin:
             return super().dispatch(request, *args, **kwargs)
         except:
             return redirect('payment_preview')
+
+
+@chain_with(NonZeroOrderRequiredMixin)
+class InvoicesRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if self.order.invoice_set.exists():
+            self.first_invoice = self.order.invoice_set.order_by('due_date').first()
+            return super().dispatch(request, *args, **kwargs)
+        return redirect('payment_preview')
 
 
 # This Mixin injects arbitrary dispatch code wherever it exists in the MRO. Just

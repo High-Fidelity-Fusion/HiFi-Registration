@@ -1,0 +1,26 @@
+{% extends "registration/base.html" %}
+{% load special_sauce %}
+
+{% block countdown %}
+{% include 'registration/countdown_widget.html' %}
+{% endblock %}
+
+{% block card_content %}
+{% load static %}
+{% if view.checkout_type == 'SQUARE' %}
+<p>This page is powered by Square. Your card information will not be sent to our server.</p>
+<br>
+<form id="payment-form">
+  <div id="card-container"></div>
+  <button id="card-button" class="button is-primary" type="button">Pay {{view.first_invoice.amount|dollars}}</button>
+</form>
+<div id="payment-status-container"></div>
+<script>
+  const appId = '{{view.application_id}}';
+  const locationId = '{{view.location_id}}'; 
+</script>
+{% include "scripts/ajax_urls.js.html" %}
+<script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+<script src="{% static 'scripts/square_checkout.js' %}"></script>
+{% endif %}
+{% endblock %}

@@ -10,7 +10,6 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, UpdateView
 from django.views import View
 from django.utils import timezone
-from dateutil.relativedelta import relativedelta
 import json
 import markdown
 
@@ -19,10 +18,10 @@ from registration.models import CompCode, Order, ProductCategory, Registration, 
 from registration.models.helpers import with_is_paid
 
 from .email_handler import send_confirmation
-from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item, add_remove_item_view
+from .helpers import get_context_for_product_selection, get_quantity_purchased_for_item, add_quantity_range_to_item, add_remove_item_view, create_invoices
 from .mailchimp_client import create_or_update_subscriber
 from .mixins import RegistrationRequiredMixin, PolicyRequiredMixin, FormsRequiredMixin, OrderRequiredMixin, NonEmptyOrderRequiredMixin, FinishedOrderRequiredMixin, NonZeroOrderRequiredMixin
-from .mixins import DispatchMixin, EventRequiredMixin
+from .mixins import DispatchMixin, EventRequiredMixin, InvoicesRequiredMixin
 from .stripe_helpers import create_stripe_checkout_session, get_stripe_checkout_session_total
 from .utils import SubmitButton, LinkButton
 
@@ -255,7 +254,7 @@ class RegisterDonateView(NonEmptyOrderRequiredMixin, DispatchMixin, UpdateView):
 
 
 class PaymentPreviewView(NonEmptyOrderRequiredMixin, TemplateView):
-    template_name = 'registration/payment.html'
+    template_name = 'registration/payment_preview.html'
     submit_button = SubmitButton('Submit')
     previous_button = SubmitButton('Previous')
     back_to_selection = LinkButton('register_products', 'Back to Selection')
@@ -271,6 +270,13 @@ class PaymentPreviewView(NonEmptyOrderRequiredMixin, TemplateView):
             self.order.invoice_set.all().delete()
             return redirect('payment_confirmation')
 
+        #TODO validate input
+        #TODO switch on checkout type?
+        payments_per_month = int(request.POST.get('ppm'))
+        months = int(request.POST.get('months'))
+        create_invoices(self.order, payments_per_month, months)
+        return redirect('make_payment')
+
     def get(self, request):
         # Set default Payment Plan / resets on Refresh
         self.months_range = range(1, 5)
@@ -282,36 +288,32 @@ class PaymentPreviewView(NonEmptyOrderRequiredMixin, TemplateView):
 
         return super().get(request)
 
+class MakePaymentView(InvoicesRequiredMixin, TemplateView):
+    template_name = 'registration/payment_make.html'
+
+    def get(self, request):
+        self.application_id = 'sandbox-sq0idb-AaBlhY5GAQOoekMNsW1nOQ'
+        self.location_id = 'L23VAQSKA9BWQ'
+        return super().get(request)
 
 class NewCheckoutView(NonZeroOrderRequiredMixin, View):
     def post(self, request):
-        self.order.invoice_set.all().delete()
+        pass
 
+class NewCheckoutStripeView(NonZeroOrderRequiredMixin, View):
+    def post(self, request):
+        if (self.checkout_type != 'STRIPE'):
+            return redirect('payment_preview')
         payments_per_month = int(request.POST.get('ppm'))
         months = int(request.POST.get('months'))
-
-        numOfPayments = payments_per_month * months
-        individualPayment = int(self.order.total_price / numOfPayments)
-        firstPayment = individualPayment + self.order.total_price - individualPayment * numOfPayments
-
-        date = timezone.now()
-        date_in_two_weeks = date + relativedelta(weeks=+2)
-
-        first_invoice = Invoice.objects.create(order=self.order, pay_at_checkout=True, due_date=date, amount=firstPayment)
-        if payments_per_month == 2:
-            Invoice.objects.create(order=self.order, due_date=date_in_two_weeks, amount=individualPayment)
-
-        for i in range(1, months):
-            Invoice.objects.create(order=self.order, due_date=date+relativedelta(months=i), amount=individualPayment)
-            if payments_per_month == 2:
-                Invoice.objects.create(order=self.order, due_date=date_in_two_weeks+relativedelta(months=i), amount=individualPayment)
+        first_invoice = create_invoices(self.order, payments_per_month, months)
 
         # Stripe Session Code
         success_url = request.build_absolute_uri(reverse('payment_confirmation')) + '?session_id={CHECKOUT_SESSION_ID}'
         cancel_url = request.build_absolute_uri(reverse('payment_preview'))
 
         try:
-            checkout_session_id = create_stripe_checkout_session(firstPayment, success_url, cancel_url)
+            checkout_session_id = create_stripe_checkout_session(first_invoice.amount, success_url, cancel_url)
             
             # Provide public key to initialize Stripe Client in browser
             # And checkout session id

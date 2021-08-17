@@ -1,0 +1,93 @@
+{% extends "registration/base.html" %}
+
+{% block countdown %}
+{% include 'registration/countdown_widget.html' %}
+{% endblock %}
+
+{% block card_content %}
+
+<p class="title">
+    Payment
+</p>
+
+<table class="table is-hoverable">
+    {% include "utils/order_table.html" with order=view.order items=view.items %}
+</table>
+
+
+<form method="post">
+    {% csrf_token %}
+
+    {% include "utils/form_fields.html" %}
+
+<div class="box {% if view.is_zero_order %}hidden-div{% endif %}">
+    <label>
+        <input id="checkbox" onclick="setDefaultPaymentPlan('ppm-dropdown', 'months-dropdown', '1', '1')" type="checkbox">
+            Check this box if you are not able to pay the total today and need a Payment Plan.
+    </label>
+
+    <div id="hidden-div" class="hidden-div">
+        <br>
+        <h3 class="subtitle is-3">Payment Plan Terms:</h3>
+        
+        <div>[Terms]</div>
+<br>
+        <h3 class="subtitle is-3">Make your plan:</h3>
+        
+        <span class="level">
+            <span class="field level-left">
+                <span class="control level-item">
+                    <span class="select">
+                        <select id= "ppm-dropdown" name="ppm" onchange="calculateAmountPerPayment()">
+                            <option value="1" {% if 1 == view.payments_per_month %}selected="selected"{% endif %}>1</option>
+                            <option value="2" {% if 2 == view.payments_per_month %}selected="selected"{% endif %}>2</option>
+                        </select>
+                    </span>
+                </span>
+                <p class="level-item">Payment(s) per month for</p>
+                <span class="control level-item">
+                    <span class="select">
+                        <select id="months-dropdown" name="months" onchange="calculateAmountPerPayment()">
+                            {% for i in view.months_range %}
+                                <option value="{{ i }}" {% if i == view.months %}selected="selected"{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </span>
+                </span>
+                <p class="level-item">Month(s)</p>
+            </span>
+        </span>
+
+        <h3 class="subtitle is-3">Estimated due dates:</h3>
+
+        <span class="has-text-weight-bold">Due today: </span><span id="dueToday" class="has-text-weight-bold"></span>
+        <div id="payment-options" class="has-text-weight-bold"></div>
+        <br>
+        <p>Final due dates may differ slightly. You will be shown finalized due dates after completing your order.</p>
+
+    </div>
+</div>
+    <br>
+    <div class="control">
+        {% include "utils/button.html" with button=view.previous_button %}
+        {% if view.is_zero_order %}
+        {% include "utils/button.html" with button=view.submit_button %}
+        {% else %}
+        <button id="checkoutButton" type="submit" name='submit' class="button is-primary is-pulled-right">Checkout</button>
+        {% endif %}
+    </div>
+
+</form>
+
+{% load static %}
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+{% if view.checkout_type == 'STRIPE' %}
+<script src="https://js.stripe.com/v3/"></script>
+<script src="{% static 'scripts/stripe_checkout.js' %}"></script>
+{% endif %}
+{% include "scripts/ajax_urls.js.html" %}
+<script src="{% static 'scripts/helpers.js' %}"></script>
+<script src="{% static 'scripts/payment_plan.js' %}"></script>
+<script src="{% static 'scripts/item_adjustments.js' %}"></script>
+{% endblock %}

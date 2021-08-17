@@ -120,3 +120,5 @@ hifireg/Pipfile.lock
 # Causes IDE to ignore files in this submodule
 hifireg/bulma
 hifireg/hifireg/media/
+
+stunnel
