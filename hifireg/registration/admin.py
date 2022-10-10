@@ -1,9 +1,11 @@
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as UserAdmin_, Group
 from django.utils.translation import gettext_lazy as _
 
+
 from .models import CompCode, Product, ProductCategory, ProductSlot, Registration
-from .models import User
+from .models import User, Event, APFund
 
 
 class UserAdmin(UserAdmin_):
@@ -37,6 +39,8 @@ admin.site.register(CompCode)
 admin.site.register(Product)
 admin.site.register(ProductCategory)
 admin.site.register(ProductSlot)
+admin.site.register(Event)
+admin.site.register(APFund)
 
 #
 admin.site.unregister(Group)

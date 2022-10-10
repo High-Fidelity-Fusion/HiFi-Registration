@@ -65,14 +65,14 @@ class IndexView(EventRequiredMixin, DispatchMixin, TemplateView):
         return super().get(request)
 
 
-class OrdersView(LoginRequiredMixin, TemplateView):
+class OrdersView(EventRequiredMixin, TemplateView):
     template_name = 'registration/orders.html'
 
     def get(self, request):
         self.orders = [{
             'order': order,
             'items': order.orderitem_set.order_by('product__category__section', 'product__category__rank', 'product__slots__rank').iterator()
-        } for order in Order.objects.filter(registration=self.registration, session__isnull=True).order_by('-pk').iterator()]
+        } for order in Order.objects.filter(registration=Registration.objects.get(user=request.user, event=self.event), session__isnull=True).order_by('-pk').iterator()]
         return super().get(request)
 
 
@@ -255,7 +255,7 @@ class RegisterDonateView(NonEmptyOrderRequiredMixin, DispatchMixin, UpdateView):
 
 
 class PaymentPreviewView(NonEmptyOrderRequiredMixin, TemplateView):
-    template_name = 'registration/payment.html'
+    template_name = 'registration/make_payment.html'
     submit_button = SubmitButton('Submit')
     previous_button = SubmitButton('Previous')
     back_to_selection = LinkButton('register_products', 'Back to Selection')
