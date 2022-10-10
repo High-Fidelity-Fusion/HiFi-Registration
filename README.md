@@ -12,6 +12,10 @@ https://docs.google.com/document/d/1qdJ-26sYB21YMrn7ydTUSXP6XCWlehiwo_vOs1cUhM0/
 - Generate custom css: `make style`
 - The css will be placed into `hifireg/registration/static/css`
 
+## Running End-to-End tests with Cypress
+- `npm install` (will take a while)
+- `npm test`
+
 ## Deploying via Elastic Beanstalk
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html#python-django-deploy
 

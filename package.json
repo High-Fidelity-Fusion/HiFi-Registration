@@ -1,0 +1,22 @@
+{
+  "name": "hifi-registration",
+  "version": "1.0.0",
+  "description": "Testing utils for what is otherwise a Python stack",
+  "main": "cypress.config.js",
+  "scripts": {
+    "test": "./node_modules/.bin/cypress run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/High-Fidelity-Fusion/HiFi-Registration.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/High-Fidelity-Fusion/HiFi-Registration/issues"
+  },
+  "homepage": "https://github.com/High-Fidelity-Fusion/HiFi-Registration#readme",
+  "devDependencies": {
+    "cypress": "^10.9.0"
+  }
+}

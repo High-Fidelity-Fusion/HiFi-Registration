@@ -46,7 +46,7 @@ def setup_test_data():
     CompCode.objects.create(type=CompCode.STAFF, max_uses=1, event=event1)
 
 def setup_products_no_delete():
-    event1 = Event.objects.create(name='Event #1', slug='event1', policies='## Code of Conduct\nBe **excellent** to each other n that good stuff.\n## Yay', requires_vaccination=True)
+    event1 = Event.objects.create(name='Event #1', slug='event1', policies='## Code of Conduct\nBe **excellent** to each other n that good stuff.\n## Yay', requires_vaccination=False)
     slot1 = ProductSlot.objects.create(name='Friday1pm', rank=3, display_name='1pm', event=event1)
     slot2 = ProductSlot.objects.create(name='Friday11am', rank=2, display_name='11am', event=event1)
 
@@ -71,19 +71,21 @@ def setup_products_no_delete():
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 3, price=1500, title='t-shirt', subtitle='subtitle', description='description', category=category, is_ap_eligible=False, event=event1)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 10, price=1500, title='hoodie', subtitle='subtitle', description='description', category=category, is_ap_eligible=False, event=event1)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 2, price=1500, title='AP hoodie', subtitle='subtitle', description='description', category=category, is_ap_eligible=True, event=event1)
+    product = Product.objects.create(total_quantity=9999999, max_quantity_per_reg = 3, price=1500, title='Cypress Test Product Multi', description='description', category=category, is_ap_eligible=False, event=event1)
 
     category = ProductCategory.objects.create(name='Dance Passes', section='DANCE', is_slot_based=False, rank=3, event=event1)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: rebecca black', description='description', category=category, is_compable=True, event=event1)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Saturday', subtitle='theme: Satyrday', description='description', category=category, is_compable=True, event=event1)
+    product = Product.objects.create(total_quantity=9999999, max_quantity_per_reg = 1, price=2000, title='Cypress Test Product Single', description='description', category=category, is_compable=True, event=event1)
     APFund.objects.create(contribution=100000, notes='notes', event=event1)
 
-    event2 = Event.objects.create(name='Event #2', slug='event2', requires_vaccination=False)
+    event2 = Event.objects.create(name='Event #2', slug='event2', requires_vaccination=True)
     category = ProductCategory.objects.create(name='Dance Tickets', section='DANCE', is_slot_based=False, rank=2, event=event2)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: space face', description='description', category=category, is_compable=True, event=event2)
 
 
 # This is used for manual testing data
-def setup_products():
+def setup_manual_test_data():
     Order.objects.all().delete()
     Product.slots.through.objects.all().delete()
     Product.objects.all().delete()

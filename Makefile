@@ -41,7 +41,7 @@ lint:
 	pylint hifireg/registration
 
 test-data: migrate
-	$(MANAGE) shell -c "from registration.tests import setup_products; setup_products()"
+	$(MANAGE) shell -c "from registration.tests import setup_manual_test_data; setup_manual_test_data()"
 
 settings:
 	python -c "from hifireg.tools.setup import wget; wget('${SETTINGS_SECRET_URL}', 'hifireg/hifireg/settings/secret.py')"

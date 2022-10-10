@@ -227,10 +227,13 @@ class RegisterAccessiblePricingView(NonEmptyOrderRequiredMixin, DispatchMixin, T
     def dispatch_mixin(self, request):
         if not (self.order.is_accessible_pricing or self.order.claim_accessible_pricing()):
             return redirect('register_products')
+            
 
     def post(self, request):
         price = int(request.POST.get('price_submit', self.order.original_price))
         self.order.set_accessible_price(price)
+        self.order.donation = 0
+        self.order.save()
         return redirect('payment_preview')
 
 
