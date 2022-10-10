@@ -94,6 +94,7 @@ def setup_manual_test_data():
     APFund.objects.all().delete()
     Registration.objects.all().delete()
     Event.objects.all().delete()
+    User.objects.filter(email__startswith='cy_test_').delete()
 
     setup_products_no_delete()
 

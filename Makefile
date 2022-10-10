@@ -23,7 +23,12 @@ test:
 	$(MANAGE) test registration.tests
 
 test-e2e:
-	npm test
+	$(MANAGE) migrate --settings=hifireg.settings.test
+	$(MANAGE) shell -c "from registration.tests import setup_manual_test_data; setup_manual_test_data()" \
+	  --settings=hifireg.settings.test 
+	./node_modules/.bin/concurrently -k --success=first -n cy,server --hide server \
+	  "./node_modules/.bin/cypress run --config '{\"e2e\": {\"baseUrl\": \"http://localhost:8001\"}}'" \
+	  "$(MANAGE) runserver 8001 --settings=hifireg.settings.test" \
 
 
 shell:
