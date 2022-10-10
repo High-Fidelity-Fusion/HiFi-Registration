@@ -122,3 +122,4 @@ hifireg/bulma
 hifireg/hifireg/media/
 stunnel
 node_modules
+cypress/videos

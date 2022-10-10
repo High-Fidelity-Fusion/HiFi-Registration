@@ -22,6 +22,10 @@ super:
 test:
 	$(MANAGE) test registration.tests
 
+test-e2e:
+	npm test
+
+
 shell:
 	$(MANAGE) shell
 
