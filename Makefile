@@ -30,6 +30,7 @@ test-e2e:
 	  "./node_modules/.bin/cypress run --config '{\"e2e\": {\"baseUrl\": \"http://localhost:8001\"}}'" \
 	  "$(MANAGE) runserver 8001 --settings=hifireg.settings.test" \
 
+test-full: test test-e2e
 
 shell:
 	$(MANAGE) shell

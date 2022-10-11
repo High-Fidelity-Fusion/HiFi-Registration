@@ -15,7 +15,7 @@ import json
 import markdown
 
 from registration.forms import BetaPasswordForm, RegCompCodeForm, RegisterPolicyForm, RegisterDonateForm, RegVolunteerForm, RegVolunteerDetailsForm, RegMiscForm
-from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem, Event
+from registration.models import CompCode, Order, ProductCategory, Registration, Volunteer, Product, APFund, Invoice, Payment, OrderItem, Event, SiteConfig
 from registration.models.helpers import with_is_paid
 
 from .email_handler import send_confirmation
@@ -40,6 +40,7 @@ class EventSelectionView(TemplateView):
     template_name = 'event_selection.html'
 
     def get(self, request):
+        self.site_config = SiteConfig.objects.last()
         self.events = Event.objects.all()
         return super().get(request)
 

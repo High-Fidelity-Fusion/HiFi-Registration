@@ -19,8 +19,9 @@ describe('Registration Flow', () => {
 
   it('works', () => {
     const username = "cy_test_" + Date.now().toFixed() + "@thena.gay"
+    cy.contains('Test Registration Site').should('have.length', 1)
     cy.contains('Event #1').should('have.length', 1).click()
-    cy.contains('Create one!').click()
+    cy.contains('Create one!').should('have.length', 1).click()
     cy.get('input[name=email]').type(username)
     cy.get('input[name=password1]').type("12345678!Aa")
     cy.get('input[name=password2]').type("12345678!Aa")

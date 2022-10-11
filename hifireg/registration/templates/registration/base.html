@@ -80,7 +80,12 @@
         <section class="section">
             <div class="container">
                 {% block countdown %}{% endblock %}
-                <h1 class="title has-text-white">{% if view.event %}{{view.event.name}}{% else %}High Fidelity Registration{% endif %}</h1>
+                <h1 class="title has-text-white">
+                    {% if view.event %}
+                        {{view.event.name}}
+                    {% elif view.site_config %}
+                        {{view.site_config.site_name}}
+                    {% else %}Registration{% endif %}</h1>
                 {% if messages %}
                 <div class="message is-danger messages">
                     {% for message in messages %}

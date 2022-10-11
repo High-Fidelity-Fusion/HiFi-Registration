@@ -82,6 +82,7 @@ def setup_products_no_delete():
     event2 = Event.objects.create(name='Event #2', slug='event2', requires_vaccination=True)
     category = ProductCategory.objects.create(name='Dance Tickets', section='DANCE', is_slot_based=False, rank=2, event=event2)
     product = Product.objects.create(total_quantity=5, max_quantity_per_reg = 1, price=2000, title='Friday', subtitle='theme: space face', description='description', category=category, is_compable=True, event=event2)
+    SiteConfig.objects.create(site_name='Test Registration Site')
 
 
 # This is used for manual testing data
@@ -94,6 +95,7 @@ def setup_manual_test_data():
     APFund.objects.all().delete()
     Registration.objects.all().delete()
     Event.objects.all().delete()
+    SiteConfig.objects.all().delete()
     User.objects.filter(email__startswith='cy_test_').delete()
 
     setup_products_no_delete()

@@ -9,3 +9,4 @@ from .product_slot import ProductSlot
 from .payment import Payment
 from .invoice import Invoice
 from .event import Event
+from .site_config import SiteConfig
