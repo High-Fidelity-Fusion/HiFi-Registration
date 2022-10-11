@@ -20,11 +20,11 @@ super:
 	$(MANAGE) createsuperuser
 
 test:
-	$(MANAGE) test registration.tests
+	$(MANAGE) test registration.tests.tests
 
 test-e2e:
 	$(MANAGE) migrate --settings=hifireg.settings.test
-	$(MANAGE) shell -c "from registration.tests import setup_manual_test_data; setup_manual_test_data()" \
+	$(MANAGE) shell -c "from registration.tests.cypress_test_seed import setup_cypress_test_data; setup_cypress_test_data()" \
 	  --settings=hifireg.settings.test 
 	./node_modules/.bin/concurrently -k --success=first -n cy,server --hide server \
 	  "./node_modules/.bin/cypress run --config '{\"e2e\": {\"baseUrl\": \"http://localhost:8001\"}}'" \
@@ -51,7 +51,7 @@ lint:
 	pylint hifireg/registration
 
 test-data: migrate
-	$(MANAGE) shell -c "from registration.tests import setup_manual_test_data; setup_manual_test_data()"
+	$(MANAGE) shell -c "from registration.tests.manual_test_seed import setup_manual_test_data; setup_manual_test_data()"
 
 settings:
 	python -c "from hifireg.tools.setup import wget; wget('${SETTINGS_SECRET_URL}', 'hifireg/hifireg/settings/secret.py')"
