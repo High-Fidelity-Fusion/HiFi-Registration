@@ -26,20 +26,26 @@ Change directory into `./hifireg`.
 
 Run `eb init -p python-3.7 hifireg` selecting reasonable options (probably the defaults):
 - On your first run of `eb` you'll need to create AWS credentials.
-  (https://console.aws.amazon.com/iam/home?region=us-west-2#/security_credentials)
+  (https://console.aws.amazon.com/iam/home?region=us-west-2#/security_credentials) The credentials need permissions to access Elastic Beanstalk, EC2, and S3.
 - Choose the default region.
+
+You may need to run `eb create` again to:
 - Setup SSH...
 - Create a local keypair.
 
 Run `eb create hifireg-env`.
 
-Run `eb status`
-- Replace the one entry of `ALLOWED_HOSTS` in your "secret.py" settings with the CNAME from `eb status`.
-  (Make sure you update the remote copy of "secret.py" not just your local copy.)
+Note: SETTINGS_SECRET_URL and secret.py are deprecated; all secrets should be added as env variables.
 
-Run `eb setenv SETTINGS_SECRET_URL="${SETTINGS_SECRET_URL}"`
-- This will set the URL on the environment for your "secret.py" settings.
-- Shortcut target: `make deploy-env`
+Run `eb status`
+- Replace the one entry of `ALLOWED_HOSTS` in your ~~"secret.py"~~ .env settings with the CNAME from `eb status`.
+  ~~(Make sure you update the remote copy of "secret.py" not just your local copy.)~~
+
+Use `eb setenv ...` to set all required environment variables.
+
+~~Run `eb setenv SETTINGS_SECRET_URL="${SETTINGS_SECRET_URL}"`~~
+- ~~This will set the URL on the environment for your "secret.py" settings.~~
+- ~~Shortcut target: `make deploy-env`~~
 
 Deploying:
 - Return to the top level directory and run `make deploy`

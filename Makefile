@@ -53,11 +53,11 @@ lint:
 test-data: migrate
 	$(MANAGE) shell -c "from registration.tests.manual_test_seed import setup_manual_test_data; setup_manual_test_data()"
 
-settings:
-	python -c "from hifireg.tools.setup import wget; wget('${SETTINGS_SECRET_URL}', 'hifireg/hifireg/settings/secret.py')"
+# settings:
+# 	python -c "from hifireg.tools.setup import wget; wget('${SETTINGS_SECRET_URL}', 'hifireg/hifireg/settings/secret.py')"
 
-settings-dev:
-	python -c "from hifireg.tools import setup; setup.get_dev_settings('${SETTINGS_DEV_URL}', 'hifireg/hifireg/settings/developer.py')"
+# settings-dev:
+# 	python -c "from hifireg.tools import setup; setup.get_dev_settings('${SETTINGS_DEV_URL}', 'hifireg/hifireg/settings/developer.py')"
 
 deploy: style email
 	cp Pipfile.lock hifireg/Pipfile.lock
