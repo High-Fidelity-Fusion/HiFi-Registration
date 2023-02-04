@@ -139,3 +139,46 @@ LOGOUT_REDIRECT_URL = 'login'
 
 
 SESSION_COOKIE_AGE = 3600
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
+# Deployment host
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS')]
+
+# Database
+# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql', # Only postgres is supported
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+        'USER':os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'NAME': os.environ.get('DB_NAME'),
+    }
+}
+
+# SMTP/E-Mail
+# https://docs.djangoproject.com/en/3.0/topics/email/
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+
+# Stripe Keys
+# https://stripe.com/docs/payments/checkout/accept-a-payment
+STRIPE_PUBLIC_TEST_KEY = os.environ.get('STRIPE_PUBLIC_TEST_KEY')
+STRIPE_SECRET_TEST_KEY = os.environ.get('STRIPE_SECRET_TEST_KEY')
+
+# Mailchimp Secrets
+#MAILCHIMP_API_KEY = 'MAILCHIMP_API_KEY'
+#MAILCHIMP_USERNAME = 'MAILCHIMP_USERNAME'
+#MAILCHIMP_LIST = 'MAILCHIMP_LIST'
+
+# Beta Password
+BETA_PASSWORD = os.environ.get('BETA_PASSWORD')
+
+SQUARE_API_KEY = os.environ.get('SQUARE_API_KEY')
