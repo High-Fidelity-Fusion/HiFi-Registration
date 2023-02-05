@@ -1,6 +1,7 @@
 # High Fidelity Registration
-This README contains the minimum information needed for a developer to setup the package.
-For more complete information, see our setup instructions and onboarding guide here:
+This README contains the minimum information needed for a developer to deploy the package
+to a remote environment.
+For setting up a local developer environment, see our setup instructions and onboarding guide here:
 https://docs.google.com/document/d/1qdJ-26sYB21YMrn7ydTUSXP6XCWlehiwo_vOs1cUhM0/edit?usp=sharing
 
 ## Django setup
@@ -24,7 +25,7 @@ Change directory into `./hifireg`.
 - This is where all deployment actions take place.
 - Anything above this directory is invisible to deployment.
 
-Run `eb init -p python-3.7 hifireg` selecting reasonable options (probably the defaults):
+Run `eb init -p python-3.8 hifireg` selecting reasonable options (probably the defaults):
 - On your first run of `eb` you'll need to create AWS credentials.
   (https://console.aws.amazon.com/iam/home?region=us-west-2#/security_credentials) The credentials need permissions to access Elastic Beanstalk, EC2, and S3.
 - Choose the default region.
@@ -35,12 +36,13 @@ You may need to run `eb create` again to:
 
 Run `eb create hifireg-env`.
 
-Note: SETTINGS_SECRET_URL and secret.py are deprecated; all secrets should be added as env variables.
 
-Run `eb status`
-- Replace the one entry of `ALLOWED_HOSTS` in your ~~"secret.py"~~ .env settings with the CNAME from `eb status`.
+Run `eb status` use CNAME from output to create a CNAME record on your own domain
+and use your domain as ALLOWED_HOSTS env variable.
+- ~~Replace the one entry of `ALLOWED_HOSTS` in your ~~"secret.py"~~ .env settings with the CNAME from `eb status`.~~
   ~~(Make sure you update the remote copy of "secret.py" not just your local copy.)~~
 
+Note: SETTINGS_SECRET_URL and secret.py are deprecated; all secrets should be added as env variables.
 Use `eb setenv ...` to set all required environment variables.
 
 ~~Run `eb setenv SETTINGS_SECRET_URL="${SETTINGS_SECRET_URL}"`~~
@@ -51,6 +53,7 @@ Deploying:
 - Return to the top level directory and run `make deploy`
   (This task builds all of the necessary styling and bootstrapping for deploying)
 - Check out the running instance by running: `make deploy-open`
+
 
 ### Setting up IAM Deployer
 You may choose to setup a non-root account with access to your AWS console:

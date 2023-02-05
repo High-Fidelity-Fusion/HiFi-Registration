@@ -17,6 +17,7 @@ mailchimp3 = "*"
 awsebcli = "*"
 requests = "*"
 libsass = "*"
+markdown = "*"
 
 [requires]
 python_version = "3.8"

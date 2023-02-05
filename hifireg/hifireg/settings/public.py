@@ -69,7 +69,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hifireg.wsgi.application'
 
-ADMINS = [('Admin', 'register@highfidelityfusion.com')]
+ADMINS = [('Admin', 'seerthena@gmail.com')]
 
 
 # Password validation
