@@ -144,7 +144,7 @@ SESSION_COOKIE_AGE = 3600
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # Deployment host
-ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS'), '127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
