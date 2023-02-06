@@ -159,6 +159,34 @@ DATABASES = {
     }
 }
 
+# LOGGING
+# https://docs.djangoproject.com/en/4.1/topics/logging/#configuring-logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+    },
+    'loggers': {
+        'django.security.DisallowedHost': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    }
+}
+
 # SMTP/E-Mail
 # https://docs.djangoproject.com/en/3.0/topics/email/
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
